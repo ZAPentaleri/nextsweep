@@ -201,7 +201,7 @@ define(['N/record',], (record,) => {
      * @param {boolean} [options.commit] Commit line (dynamic mode only)
      * @param {boolean} [options.set] Set value
      * @param {*[]} [options.values] Values to be set
-     * @param {boolean} [options.text] Set value as text
+     * @param {boolean} [options.valuesAreText] Get/set values as text
      * @param {boolean} [options.ignoreFieldChange]
      * @param {boolean} [options.forceSyncSourcing]
      */
@@ -214,7 +214,7 @@ define(['N/record',], (record,) => {
             }
 
             if (options.set) {
-                if (options.text) {
+                if (options.valuesAreText) {
                     recordInst.setCurrentSublistText({
                         sublistId: sublistId,
                         fieldId:   fieldId,
@@ -236,7 +236,7 @@ define(['N/record',], (record,) => {
                     recordInst.commitLine({ sublistId: sublistId, });
                 }
             } else {
-                if (options.text) {
+                if (options.valuesAreText) {
                     return [].concat(recordInst.getCurrentSublistText({
                         sublistId: sublistId,
                         fieldId:   fieldId,
@@ -483,8 +483,8 @@ define(['N/record',], (record,) => {
                             {
                                 commit: lastSubStep,
                                 set: true,
-                                values: [].concat(subStep.text),
-                                text: checkForValue(subStep.text),
+                                values: [].concat(subStep.values),
+                                valuesAreText: checkForValue(subStep.text),
                                 ignoreFieldChange: flagSuppressEvents,
                                 forceSyncSourcing: flagForceSyncSource,
                             },
@@ -530,7 +530,7 @@ define(['N/record',], (record,) => {
                         options.sublistId,
                         lineIndex,
                         node.columnId,
-                        { set: false, text: node.valuesAreText, forceSyncSourcing: true, },
+                        { set: false, valuesAreText: node.valuesAreText, forceSyncSourcing: true, },
                     );
 
                     switch (node.comparator) {
