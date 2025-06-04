@@ -71,6 +71,13 @@
  * @property {boolean} [flags.forceSyncSource=false] Force synchronous field sourcing
  */
 
+class CriteriaRelationship {
+    static PARENT = 'parent';
+    static LEFT   = 'left';
+    static RIGHT  = 'right';
+    static NONE   = 'none';
+}
+
 class OperatorDefinition {
     /**
      * @param {string[]} representations
@@ -193,13 +200,6 @@ class Comparator {
 
         throw new Error('Invalid comparator');
     }
-}
-
-class CriteriaRelationship {
-    static PARENT = 'parent';
-    static LEFT   = 'left';
-    static RIGHT  = 'right';
-    static NONE   = 'none';
 }
 
 class CriteriaNode {
