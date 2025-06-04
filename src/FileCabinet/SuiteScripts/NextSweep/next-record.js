@@ -450,7 +450,7 @@ define(['N/record',], (record,) => {
                     }
 
                     for (let indexIndex = 0; indexIndex < matchedIndices.length; indexIndex++) {
-                        if (step.selections.includes(null) || step.selections.includes(indexIndex)) {
+                        if (matchSelections.includes(null) || matchSelections.includes(indexIndex)) {
                             unboundedLineIndices.push(matchedIndices[indexIndex]);
                         }
                     }
