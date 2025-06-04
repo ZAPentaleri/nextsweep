@@ -398,13 +398,6 @@ define(['N/record',], (record,) => {
             }
         }
 
-        if (
-            !(rootNode.hasLeft(CriteriaNode))
-            || [Operator.AND, Operator.OR,].includes(rootNode.operator) && !(rootNode.right instanceof CriteriaNode)
-        ) {
-            throw new Error('Could not create criteria tree');
-        }
-
         return rootNode;
     }
 
