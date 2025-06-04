@@ -174,7 +174,7 @@ class CriteriaBranch extends CriteriaNode {
     }
 }
 
-class CriterionLeaf extends CriteriaNode {
+class CriteriaLeaf extends CriteriaNode {
     constructor(parent, columnId, comparator, values, valuesAreText=false,) {
         super(parent,);
         this.columnId      = columnId;
@@ -524,7 +524,7 @@ define(['N/record',], (record,) => {
             const evaluateCriteriaNode = node => {
                 if (!(node instanceof CriteriaNode)) {
                     return null;
-                } if (node instanceof CriterionLeaf) {
+                } if (node instanceof CriteriaLeaf) {
                     const recordValues = getOrSetSublistValues(
                         options.record,
                         options.sublistId,
@@ -627,7 +627,7 @@ define(['N/record',], (record,) => {
                     // operator is AND, may traverse inward right
                     if (workNode.operator === Operator.NO_OP) {
                         workNode.operator = Operator.AND;  // update working node operator from no-op to AND
-                    } else if (workNode.hasRight(CriterionLeaf)) {
+                    } else if (workNode.hasRight(CriteriaLeaf)) {
                         const oldRight = workNode.right;   // store old right
                         workNode = workNode.right = new CriteriaBranch(workNode, Operator.AND, oldRight,);  // new AND
                                                            // right, relocating old right to new's left; traverse in
@@ -662,13 +662,13 @@ define(['N/record',], (record,) => {
                     }
                 } else if (operator === Operator.NOT) {
                     // operator is NOT, may traverse inward left or right
-                    if (workNode.operator === Operator.NO_OP && !workNode.hasLeft(CriterionLeaf)) {
+                    if (workNode.operator === Operator.NO_OP && !workNode.hasLeft(CriteriaLeaf)) {
                         workNode.operator = Operator.NOT;  // update working node operator from no-op to NOT
-                    } else if (!workNode.hasLeft(CriterionLeaf)) {
+                    } else if (!workNode.hasLeft(CriteriaLeaf)) {
                         // new NOT left, traverse inward
                         workNode = workNode.left = new CriteriaBranch(workNode, Operator.NOT,);
                         branchRecord.push(workNode);
-                    } else if (!workNode.hasRight(CriterionLeaf)) {
+                    } else if (!workNode.hasRight(CriteriaLeaf)) {
                         // new NOT right, traverse inward
                         workNode = workNode.right = new CriteriaBranch(workNode, Operator.NOT,);
                         branchRecord.push(workNode);
@@ -686,11 +686,11 @@ define(['N/record',], (record,) => {
                 // first two children of a criterion definition must be strings, and the only "bare" strings that may
                 // occur in a depth level are operators -- two of which must not occur at the beginning of a depth level
 
-                if (!workNode.hasLeft(CriterionLeaf)) {
+                if (!workNode.hasLeft(CriteriaLeaf)) {
                     // new NO_OP left, traverse inward
                     workNode = workNode.left = new CriteriaBranch(workNode, Operator.NO_OP,);
                     branchRecord.push(workNode);
-                } else if (!workNode.hasRight(CriterionLeaf)) {
+                } else if (!workNode.hasRight(CriteriaLeaf)) {
                     // new NO_OP right, traverse inward
                     workNode = workNode.right = new CriteriaBranch(workNode, Operator.NO_OP,);
                     branchRecord.push(workNode);
@@ -709,7 +709,7 @@ define(['N/record',], (record,) => {
                         || ((typeof cElement.values) !== 'undefined' || (typeof cElement.text) !== 'undefined')
                     ) {
                         const valuesAreText = (typeof cElement.values) === 'undefined';  // if not basic, must be text
-                        newLeaf = new CriterionLeaf(
+                        newLeaf = new CriteriaLeaf(
                             workNode,
                             cElement.column,
                             Comparator.identify(cElement.comparator),
@@ -724,7 +724,7 @@ define(['N/record',], (record,) => {
                     && ((typeof cElement[0]) === 'string' && (typeof cElement[1]) === 'string')
                 ) {
                     // current element is assumed to be a criterion definition array (e.g. ["id", "==", "123"])
-                    newLeaf = new CriterionLeaf(
+                    newLeaf = new CriteriaLeaf(
                         workNode,
                         cElement[0],
                         Comparator.identify(cElement[1]),
