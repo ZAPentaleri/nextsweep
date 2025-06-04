@@ -770,14 +770,14 @@ define(['N/record',], (record,) => {
                 case Operator.NO_OP: {
                     if (branch.hasRight()) {
                         throw new Error('Invalid criteria tree state: NO-OP branch has right child');
+                    } else if (!branch.hasLeft(CriteriaNode)) {
+                        throw new Error('Invalid criteria tree state: NO-OP branch has no left child');
                     } else if (branch.isRoot()) {
-                        // branch is root, set left child as new root
-                        if (branch.hasLeft(CriteriaNode)) {
-                            rootNode = branch.left;
-                            rootNode.parent = null;
-                        }
+                        // branch is root, prune by making left child new root
+                        rootNode = branch.left;
+                        rootNode.parent = null;
                     } else {
-                        // branch is not root, prune from tree
+                        // branch is not root, prune by splice
                         branch.parent.left = branch.left;
                         branch.left.parent = branch.parent;
                     }
