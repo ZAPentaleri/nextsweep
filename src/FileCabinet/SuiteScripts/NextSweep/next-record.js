@@ -398,5 +398,5 @@ define(['N/record',], (record,) => {
         return rootNode;
     }
 
-    return {Comparator,Operator};
+    return { Comparator, Operator, createCriteriaTree, };
 });
