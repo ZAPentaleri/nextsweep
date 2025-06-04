@@ -759,7 +759,7 @@ define(['N/record',], (record,) => {
                         throw new Error('Invalid criteria tree state: NO-OP branch has right child');
                     } else if (branch.isRoot()) {
                         // branch is root, set left child as new root
-                        if (branch.hasLeft(CriteriaBranch)) {
+                        if (branch.hasLeft(CriteriaNode)) {
                             rootNode = branch.left;
                             rootNode.parent = null;
                         }
