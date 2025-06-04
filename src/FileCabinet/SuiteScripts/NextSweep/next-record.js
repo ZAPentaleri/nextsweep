@@ -29,8 +29,8 @@
 /**
  * @typedef {object} QuickUpdateStep
  * @property {string} field Field ID
- * @property {string|string[]|number|number[]|boolean} [value] Simple field value
- * @property {string|string[]} [text] Text field value
+ * @property {string|string[]|number|number[]|boolean|Date} [values] Simple field values
+ * @property {string|string[]} [text] Text field values
  * @property {boolean} [flags.suppressEvents=false] Suppress field change events
  */
 
@@ -65,8 +65,8 @@
 /**
  * @typedef {object} QuickUpdateSubStep
  * @property {string} column Column ID
- * @property {string|string[]|number|number[]|boolean|Date} [value] Simple field value
- * @property {string|string[]} [text] Text field value
+ * @property {string|string[]|number|number[]|boolean|Date} [values] Simple field values
+ * @property {string|string[]} [text] Text field values
  * @property {boolean} [flags.suppressEvents=false] Suppress field change events
  * @property {boolean} [flags.forceSyncSource=false] Force synchronous field sourcing
  */
@@ -319,17 +319,17 @@ define(['N/record',], (record,) => {
 
                 if (!checkForValue(step.field)) {
                     throw new Error(`Step #${stepIndex+1}: No field ID was provided`);
-                } else if (checkForValue(step.value) && checkForValue(step.text)) {
+                } else if (checkForValue(step.values) && checkForValue(step.text)) {
                     throw new Error(
                         `Step #${stepIndex+1}: Simple field value and text field value must not be provided `
                         + `together (${step.field})`
                     );
-                } else if (!checkForValue(step.value) && !checkForValue(step.text)) {
+                } else if (!checkForValue(step.values) && !checkForValue(step.text)) {
                     throw new Error(`Step #${stepIndex+1}: No value was specified for "${step.field}"`);
                 }
 
-                if (checkForValue(step.value)) {
-                    recordInst.setValue({ fieldId: step.field, value: step.value, ignoreFieldChange: flagSuppress, });
+                if (checkForValue(step.values)) {
+                    recordInst.setValue({ fieldId: step.field, value: step.values, ignoreFieldChange: flagSuppress, });
                 } else {
                     recordInst.setText({ fieldId: step.field, text: step.text, ignoreFieldChange: flagSuppress, });
                 }
@@ -550,19 +550,19 @@ define(['N/record',], (record,) => {
                             throw new Error(
                                 `Sub-Step #${subStepIndex+1}: No column ID was provided`
                             );
-                        } else if (checkForValue(subStep.value) && checkForValue(subStep.text)) {
+                        } else if (checkForValue(subStep.values) && checkForValue(subStep.text)) {
                             throw new Error(
                                 `Sub-Step #${subStepIndex+1}: Simple column value and text column value must not `
                                 + `be provided together (${subStep.column})`
                             );
-                        } else if (!checkForValue(subStep.value) && !checkForValue(subStep.text)) {
+                        } else if (!checkForValue(subStep.values) && !checkForValue(subStep.text)) {
                             throw new Error(
                                 `Step #${subStepIndex+1}: No value was specified for "${subStep.field}"`
                             );
                         }
 
-                        if (checkForValue(subStep.value)) {
-                            setSublistValue(lineIndex, subStep.column, [].concat(subStep.value),
+                        if (checkForValue(subStep.values)) {
+                            setSublistValue(lineIndex, subStep.column, [].concat(subStep.values),
                                 flagSuppress, flagSyncSrc, !lastSubStep,);
                         } else {
                             setSublistText(lineIndex, subStep.column, [].concat(subStep.text),
