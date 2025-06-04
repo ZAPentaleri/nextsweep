@@ -788,9 +788,9 @@ define(['N/record',], (record,) => {
                 case Operator.OR: {
                     if (!branch.hasChildren()) {
                         throw new Error(`Invalid criteria tree state: ${branch.operator} branch has no children`);
-                    } else if (!branch.hasLeft()) {
+                    } else if (!branch.hasLeft(CriteriaNode)) {
                         throw new Error(`Invalid criteria tree state: ${branch.operator} branch has no left child`);
-                    } else if (!branch.hasRight()) {
+                    } else if (!branch.hasRight(CriteriaNode)) {
                         throw new Error(`Invalid criteria tree state: ${branch.operator} branch has no right child`);
                     }
 
@@ -799,7 +799,7 @@ define(['N/record',], (record,) => {
                 case Operator.NOT: {
                     if (!branch.hasLeft()) {
                         throw new Error('Invalid criteria tree state: NOT branch has no left child');
-                    } else if (branch.hasRight()) {
+                    } else if (branch.hasRight(CriteriaNode)) {
                         throw new Error('Invalid criteria tree state: NOT branch has right child');
                     }
 
