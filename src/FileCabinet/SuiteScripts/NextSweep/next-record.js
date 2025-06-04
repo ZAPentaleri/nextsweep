@@ -79,8 +79,8 @@ class OperatorDefinition {
      * @param {function} rightOperator
      */
     constructor(representations, leftOperator=(x=>null), rightOperator=(y=>null)) {
-        this.name = arguments[0].toUpperCase();
-        this.representations = [...arguments].map(op => op.toLowerCase());
+        this.name = representations.toUpperCase();
+        this.representations = representations.map(op => op.toLowerCase());
 
         this.leftOperator  = leftOperator;
         this.rightOperator = rightOperator;
@@ -110,8 +110,8 @@ class Operator {
 
 class ComparatorDefinition {
     constructor(representations, comparator) {
-        this.name = arguments[0].toUpperCase();
-        this.representations = [...arguments].map(op => op.toLowerCase());
+        this.name = representations.toUpperCase();
+        this.representations = representations.map(op => op.toLowerCase());
 
         this.comparator = comparator;
     }
@@ -157,6 +157,7 @@ class Comparator {
     static identify(operator) {
         const candidates = [
             this.ANY,
+            this.NONE,
             this.EQUAL,
             this.NOT_EQUAL,
             this.GREATER_THAN,
