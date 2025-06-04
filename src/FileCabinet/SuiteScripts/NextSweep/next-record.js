@@ -96,6 +96,7 @@ class Operator {
 
 class Comparator {
     static ANY          = new OperatorInstance('any', 'anyof',);
+    static NONE         = new OperatorInstance('none', 'noneof',);
     static EQUAL        = new OperatorInstance('eq', '==', '=', 'equalto', 'is',);
     static NOT_EQUAL    = new OperatorInstance('ne', '!=', '<>', 'notequalto', 'isnot',);
     static GREATER_THAN = new OperatorInstance('gt', '>', 'greaterthan',);
