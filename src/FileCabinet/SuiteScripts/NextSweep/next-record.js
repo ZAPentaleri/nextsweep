@@ -315,14 +315,47 @@ define(['N/record',], (record,) => {
      * @param {integer} line
      * @param {string} fieldId
      * @param {object} options
+     * @param {boolean} [options.valuesAreText] Get/set values as text
+     * @param {boolean} [options.forceSyncSourcing]
+     */
+    function getSublistValues(recordInst, sublistId, line, fieldId, options={},) {
+        if (recordInst.isDynamic) {
+            if (recordInst.getCurrentSublistIndex({ sublistId: sublistId, }) !== line) {
+                recordInst.selectLine({ sublistId: sublistId, line: line, });
+            }
+
+            if (options.valuesAreText) {
+                return [].concat(recordInst.getCurrentSublistText({
+                    sublistId: sublistId,
+                    fieldId:   fieldId,
+                    forceSyncSourcing: options.forceSyncSourcing ?? false,
+                }));
+            } else {
+                return [].concat(recordInst.getCurrentSublistValue({ sublistId: sublistId, fieldId: fieldId, }));
+            }
+        } else {
+            if (options.valuesAreText) {
+                recordInst.getSublistText({ sublistId: sublistId, line: line, fieldId: fieldId, });
+            } else {
+                recordInst.getSublistValue({ sublistId: sublistId, line: line, fieldId: fieldId, });
+            }
+        }
+    }
+
+    /**
+     *
+     * @param {Record} recordInst
+     * @param {string} sublistId
+     * @param {integer} line
+     * @param {string} fieldId
+     * @param {object} options
      * @param {boolean} [options.commit] Commit line (dynamic mode only)
-     * @param {boolean} [options.set] Set value
      * @param {*[]} [options.values] Values to be set
      * @param {boolean} [options.valuesAreText] Get/set values as text
      * @param {boolean} [options.ignoreFieldChange]
      * @param {boolean} [options.forceSyncSourcing]
      */
-    function getOrSetSublistValues(recordInst, sublistId, line, fieldId, options={},) {
+    function setSublistValues(recordInst, sublistId, line, fieldId, options={},) {
         const value = options.values?.length === 1 ? options.values[0] : options.values;
 
         if (recordInst.isDynamic) {
@@ -330,52 +363,32 @@ define(['N/record',], (record,) => {
                 recordInst.selectLine({ sublistId: sublistId, line: line, });
             }
 
-            if (options.set) {
-                if (options.valuesAreText) {
-                    recordInst.setCurrentSublistText({
-                        sublistId: sublistId,
-                        fieldId:   fieldId,
-                        text:      value,
-                        ignoreFieldChange: options.ignoreFieldChange ?? false,
-                        forceSyncSourcing: options.forceSyncSourcing ?? false,
-                    });
-                } else {
-                    recordInst.setCurrentSublistValue({
-                        sublistId: sublistId,
-                        fieldId:   fieldId,
-                        value:     value,
-                        ignoreFieldChange: options.ignoreFieldChange ?? false,
-                        forceSyncSourcing: options.forceSyncSourcing ?? false,
-                    });
-                }
-
-                if (options.commit) {
-                    recordInst.commitLine({ sublistId: sublistId, });
-                }
+            if (options.valuesAreText) {
+                recordInst.setCurrentSublistText({
+                    sublistId: sublistId,
+                    fieldId:   fieldId,
+                    text:      value,
+                    ignoreFieldChange: options.ignoreFieldChange ?? false,
+                    forceSyncSourcing: options.forceSyncSourcing ?? false,
+                });
             } else {
-                if (options.valuesAreText) {
-                    return [].concat(recordInst.getCurrentSublistText({
-                        sublistId: sublistId,
-                        fieldId:   fieldId,
-                        forceSyncSourcing: options.forceSyncSourcing ?? false,
-                    }));
-                } else {
-                    return [].concat(recordInst.getCurrentSublistValue({ sublistId: sublistId, fieldId: fieldId, }));
-                }
+                recordInst.setCurrentSublistValue({
+                    sublistId: sublistId,
+                    fieldId:   fieldId,
+                    value:     value,
+                    ignoreFieldChange: options.ignoreFieldChange ?? false,
+                    forceSyncSourcing: options.forceSyncSourcing ?? false,
+                });
+            }
+
+            if (options.commit) {
+                recordInst.commitLine({ sublistId: sublistId, });
             }
         } else {
-            if (options.set) {
-                if (options.text) {
-                    recordInst.setSublistText({ sublistId: sublistId, line: line, fieldId: fieldId, text: value, });
-                } else {
-                    recordInst.setSublistValue({ sublistId: sublistId, line: line, fieldId: fieldId, value: value, });
-                }
+            if (options.valuesAreText) {
+                recordInst.setSublistText({ sublistId: sublistId, line: line, fieldId: fieldId, text: value, });
             } else {
-                if (options.text) {
-                    recordInst.getSublistText({ sublistId: sublistId, line: line, fieldId: fieldId, });
-                } else {
-                    recordInst.getSublistValue({ sublistId: sublistId, line: line, fieldId: fieldId, });
-                }
+                recordInst.setSublistValue({ sublistId: sublistId, line: line, fieldId: fieldId, value: value, });
             }
         }
     }
@@ -592,14 +605,10 @@ define(['N/record',], (record,) => {
                             );
                         }
 
-                        getOrSetSublistValues(
-                            recordInst,
-                            sublistId,
-                            lineIndex,
-                            subStep.column,
+                        setSublistValues(
+                            recordInst, sublistId, lineIndex, subStep.column,
                             {
                                 commit: lastSubStep,
-                                set: true,
                                 values: [].concat(subStep.values),
                                 valuesAreText: checkForValue(subStep.text),
                                 ignoreFieldChange: flagSuppressEvents,
@@ -644,9 +653,9 @@ define(['N/record',], (record,) => {
                 } if (node instanceof CriteriaLeaf) {
                     // compute leaf result
                     return node.comparator.compare(
-                        getOrSetSublistValues(
+                        getSublistValues(
                             options.record, options.sublistId, lineIndex, node.columnId,
-                            { set: false, valuesAreText: node.valuesAreText, forceSyncSourcing: true, },
+                            { valuesAreText: node.valuesAreText, forceSyncSourcing: true, },
                         ),
                         node.values,
                     );
