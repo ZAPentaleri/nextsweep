@@ -43,8 +43,9 @@
  *     rendering new line positions of 3 (A) and 4 (B).
  * @property {QuickUpdateSubCriterion|(QuickUpdateSubCriterion|string|string[]|*[])[]} [criteria] Modify mode line match
  *     criteria
- * @property {number|number[]} [selections=0] Modify mode line match selection indices (positive, negative, or null for
- *     all matches)
+ * @property {number|number[]} [selections=null] Modify mode line match selection indices (positive, negative, or null
+ *     for all matches)
+ * @property {number} [offset=0] Specified/matched line index offset
  * @property {QuickUpdateSubStep[]} steps Subprocedure steps
  * @property {boolean} [flags.suppressRecalc=false] Flag to suppress NS scripting recalculation
  * @property {boolean} [flags.permissive=false] Flag to suppress errors related to out-of-bounds line indices (bad
@@ -56,7 +57,7 @@
  * @property {string} column Match column ID
  * @property {string} [comparator] Match comparator
  * @property {string|string[]|number|number[]|boolean|Date} [values] Simple field value(s) to match against
- * @property {string|string[]} [text] Text field value to match against
+ * @property {string|string[]} [text] Text field values to match against
  */
 
 /**
