@@ -98,9 +98,7 @@ class Operator {
     static NOT   = new OperatorDefinition(['not', '!',],  x=>!x,);
 
     static identify(operator) {
-        const candidates = [this.NO_OP, this.AND, this.OR, this.NOT,];
-
-        for (const candidate of candidates) {
+        for (const candidate of Object.values(this)) {
             if (operator === candidate || candidate.representations.includes(operator.toLowerCase())) return candidate;
         }
 
@@ -155,18 +153,7 @@ class Comparator {
     );
 
     static identify(operator) {
-        const candidates = [
-            this.ANY,
-            this.NONE,
-            this.EQUAL,
-            this.NOT_EQUAL,
-            this.GREATER_THAN,
-            this.LESS_THAN,
-            this.GT_OR_EQUAL,
-            this.LT_OR_EQUAL,
-        ];
-
-        for (const candidate of candidates) {
+        for (const candidate of Object.values(this)) {
             if (operator === candidate || candidate.representations.includes(operator.toLowerCase())) return candidate;
         }
 
