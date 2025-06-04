@@ -209,12 +209,6 @@ define(['N/record',], (record,) => {
                 }
             } while ((typeof cElement) === 'undefined')
 
-            console.log(rootNode);
-            console.log(workNode);
-            console.log(cElement);
-            console.log(traversalPath);
-            console.log('');
-
             if (traversalPath.length === 0) {
                 break;  //TODO: reevaluate redundancy of this break
             } else if ((typeof cElement) === 'string') {
@@ -349,10 +343,6 @@ define(['N/record',], (record,) => {
                 incrementTraversalPath(traversalPath);
             }
         } while (traversalPath.length > 0)
-
-        console.log(originalCriteria);
-        console.log(rootNode);
-        console.log('');
 
         // validate and prune tree
         for (const branch of branchRecord) {
