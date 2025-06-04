@@ -85,7 +85,7 @@ class OperatorDefinition {
      * @param {function} leftOperator
      * @param {function} rightOperator
      */
-    constructor(representations, requiredRelationships, leftOperator=(x=>null), rightOperator=(y=>null)) {
+    constructor(representations, requiredRelationships, leftOperator=(()=>null), rightOperator=(()=>null)) {
         this.name = representations[0].toUpperCase();
         this.representations = representations.map(op => op.toLowerCase());
 
