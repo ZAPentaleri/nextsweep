@@ -74,12 +74,15 @@
 class OperatorDefinition {
     /**
      * @param {string[]} representations
+     * @param {string[]} requiredRelationships
      * @param {function} leftOperator
      * @param {function} rightOperator
      */
-    constructor(representations, leftOperator=(x=>null), rightOperator=(y=>null)) {
+    constructor(representations, requiredRelationships, leftOperator=(x=>null), rightOperator=(y=>null)) {
         this.name = representations[0].toUpperCase();
         this.representations = representations.map(op => op.toLowerCase());
+
+        this.requiredRelationships = requiredRelationships;
 
         this.leftOperator  = leftOperator;
         this.rightOperator = rightOperator;
@@ -92,10 +95,28 @@ class OperatorDefinition {
 }
 
 class Operator {
-    static NO_OP = new OperatorDefinition(['nop',],       x=>x,);
-    static AND   = new OperatorDefinition(['and', '&&',], x=>!x?false:null, y=>y,);
-    static OR    = new OperatorDefinition(['or',  '||',], x=>x||null, y=>y===true,);
-    static NOT   = new OperatorDefinition(['not', '!',],  x=>!x,);
+    static NO_OP = new OperatorDefinition(
+        ['nop',],
+        [CriteriaRelationship.LEFT,],
+        x => x,
+    );
+    static AND = new OperatorDefinition(
+        ['and', '&&',],
+        [CriteriaRelationship.LEFT, CriteriaRelationship.RIGHT,],
+        x => !x ? false : null,
+        y => y,
+    );
+    static OR = new OperatorDefinition(
+        ['or',  '||',],
+        [CriteriaRelationship.LEFT, CriteriaRelationship.RIGHT,],
+        x => x || null,
+        y => y === true,
+    );
+    static NOT = new OperatorDefinition(
+        ['not', '!',],
+        [CriteriaRelationship.LEFT,],
+        x => !x,
+    );
 
     /**
      * @param {OperatorDefinition|string} operator
@@ -200,10 +221,11 @@ class CriteriaNode {
         }
     }
 
-    hasParent(nClass=null) { return nClass !== null ? this.parent instanceof nClass : this.parent !== null; }
-    hasLeft(nClass=null)   { return nClass !== null ? this.left   instanceof nClass : this.left   !== null; }
-    hasRight(nClass=null)  { return nClass !== null ? this.right  instanceof nClass : this.right  !== null; }
-    hasChildren()          { return this.left !== null || this.right !== null }
+    has(relation, nClass=null) { return nClass !== null ? this[relation] instanceof nClass : this[relation] !== null; }
+    hasParent(nClass=null)     { return this.has(CriteriaRelationship.PARENT, nClass); }
+    hasLeft(nClass=null)       { return this.has(CriteriaRelationship.LEFT, nClass); }
+    hasRight(nClass=null)      { return this.has(CriteriaRelationship.RIGHT, nClass); }
+    hasChildren()              { return this.has(CriteriaRelationship.LEFT) || this.has(CriteriaRelationship.RIGHT) }
 
     isRoot() { return !this.hasParent() }
 }
@@ -218,9 +240,35 @@ class CriteriaBranch extends CriteriaNode {
         }
     }
 
-    toString() {
-        return `${this.operator} : ${this.left}, ${this.right}`;
+    getCurrentRelationships() {
+        return [CriteriaRelationship.LEFT, CriteriaRelationship.RIGHT,].filter(relationship => this.has(relationship));
     }
+    getNeededRelationships() {
+        return [CriteriaRelationship.LEFT, CriteriaRelationship.RIGHT,].filter(relationship =>
+            this.operator.requiredRelationships.includes(relationship) && !this.has(relationship)
+        );
+    }
+    getExtraneousRelationships() {
+        return [CriteriaRelationship.LEFT, CriteriaRelationship.RIGHT,].filter(relationship =>
+            !this.operator.requiredRelationships.includes(relationship) && this.has(relationship)
+        );
+    }
+    validateRelationships(errorIfInvalid=false) {
+        const relationsValid = (this.getNeededRelationships().length + this.getExtraneousRelationships().length) === 0;
+        if (relationsValid || !errorIfInvalid) {
+            return relationsValid
+        } else {
+            throw new Error(
+                `Invalid ${this.operator} branch state: requires [${
+                    this.getCurrentRelationships().join(', ')
+                }], has [${
+                    this.getNeededRelationships().join(', ')
+                }]`
+            )
+        }
+    }
+
+    toString() { return `${this.operator} : ${this.left}, ${this.right}`; }
 }
 
 class CriteriaLeaf extends CriteriaNode {
@@ -236,6 +284,26 @@ class CriteriaLeaf extends CriteriaNode {
         return (
             `${this.columnId} : ${this.comparator} : [${this.values.join(', ')}]${this.valuesAreText ? ' (text)' : ''}`
         );
+    }
+}
+
+class CriteriaNodeTraversalPath {
+    constructor(initialNode) {
+        this.indexPath = [0];
+        this.nodePath  = [initialNode];
+    }
+
+    addLevel(node)    { this.indexPath.push(0); this.nodePath.push(node); }
+    updateLevel(node) { this.nodePath[this.nodePath.length - 1] = node; }
+    updateRoot(node)  { this.nodePath[0] = node; }
+    removeLevel()     { this.indexPath.pop(); this.nodePath.pop(); }
+
+    incrementLevel() { return this.indexPath.length > 0 ? ++this.indexPath[this.indexPath.length - 1] : null; }
+
+    getLastNode() { return this.nodePath[this.nodePath.length - 1]; }
+
+    get length() {
+        return this.indexPath.length;
     }
 }
 
@@ -604,28 +672,21 @@ define(['N/record',], (record,) => {
      */
     function createCriteriaTree(originalCriteria,) {
         const throwOperatorError = (op, msg) => { throw new Error(`Invalid operator position (${op}: ${msg??'?'})`); }
-        const incrementTraversalPath = path => path.length > 0 && ++path[path.length - 1];
 
-        let rootNode = new CriteriaBranch();
-        let workNode = rootNode;
+        let workNode = new CriteriaBranch();
 
-        const traversalPath  = [0];
-        const traversalNodes = [rootNode];
-        const branchRecord     = [rootNode];
+        const traversalPath = new CriteriaNodeTraversalPath();
+        const branchRecord = [workNode];
         do {
             let cElement;  // criteria element
-
             do {
                 cElement = originalCriteria;
 
-                for (const index of traversalPath) {
-                    cElement = cElement[index];
-                }
+                for (const index of traversalPath.indexPath) cElement = cElement[index];
 
                 if ((typeof cElement) === 'undefined') {
-                    traversalPath.pop();
-                    traversalNodes.pop();
-                    incrementTraversalPath(traversalPath);
+                    traversalPath.removeLevel();
+                    traversalPath.incrementLevel();
                 }
             } while ((typeof cElement) === 'undefined')
 
@@ -655,12 +716,12 @@ define(['N/record',], (record,) => {
                     } else if (!workNode.hasRight(CriteriaNode)) {
                         throwOperatorError(operator, 'no right node');  // throw error for invalid node state
                     } else {
-                        const tNodeIndex = traversalNodes.length - 1;
-                        workNode = traversalNodes[tNodeIndex];
+                        workNode = traversalPath.getLastNode();
 
                         if (workNode.isRoot()) {
                             // new root, traverse outward
-                            traversalNodes[0] = rootNode = workNode = new CriteriaBranch(null, Operator.OR, workNode,);
+                            workNode = new CriteriaBranch(null, Operator.OR, workNode,);
+                            traversalPath.updateRoot(workNode);
                             branchRecord.push(workNode);
                         } else {
                             // insert new branch at current position
@@ -668,9 +729,10 @@ define(['N/record',], (record,) => {
                             const leftChild = workNode;
                             const parentRelationship = workNode.parent.getRelationship(workNode);
 
-                            traversalNodes[tNodeIndex] = leftChild.parent = parent[parentRelationship] = workNode =
+                             leftChild.parent = parent[parentRelationship] = workNode =
                                 new CriteriaBranch(parent, Operator.OR, leftChild,);
-                            branchRecord.push(workNode);
+                             traversalPath.updateLevel(workNode);
+                             branchRecord.push(workNode);
                         }
                     }
                 } else if (operator === Operator.NOT) {
@@ -690,7 +752,7 @@ define(['N/record',], (record,) => {
                     }
                 }
 
-                incrementTraversalPath(traversalPath);
+                traversalPath.incrementLevel();
             } else if (
                 Array.isArray(cElement)
                 && ((typeof cElement[0]) !== 'string' || (typeof cElement[1]) !== 'string')
@@ -700,19 +762,18 @@ define(['N/record',], (record,) => {
                 // occur in a depth level are operators -- two of which must not occur at the beginning of a depth level
 
                 if (!workNode.hasLeft(CriteriaLeaf)) {
-                    // new NO_OP left, traverse inward
+                    // new NO-OP left, traverse inward
                     workNode = workNode.left = new CriteriaBranch(workNode, Operator.NO_OP,);
                     branchRecord.push(workNode);
                 } else if (!workNode.hasRight(CriteriaLeaf)) {
-                    // new NO_OP right, traverse inward
+                    // new NO-OP right, traverse inward
                     workNode = workNode.right = new CriteriaBranch(workNode, Operator.NO_OP,);
                     branchRecord.push(workNode);
                 } else {
                     throw new Error('Invalid node state');
                 }
 
-                traversalNodes.push(workNode);
-                traversalPath.push(0);
+                traversalPath.addLevel(workNode);
             } else {
                 let newLeaf = null;
                 if ((typeof cElement) === 'object' && !Array.isArray(cElement)) {
@@ -760,51 +821,27 @@ define(['N/record',], (record,) => {
                     throw new Error('Invalid criterion position');
                 }
 
-                incrementTraversalPath(traversalPath);
+                traversalPath.incrementLevel();
             }
         } while (traversalPath.length > 0)
 
         // validate and prune tree
+        let rootNode;
         for (const branch of branchRecord) {
-            switch (branch.operator) {
-                case Operator.NO_OP: {
-                    if (branch.hasRight()) {
-                        throw new Error('Invalid criteria tree state: NO-OP branch has right child');
-                    } else if (!branch.hasLeft(CriteriaNode)) {
-                        throw new Error('Invalid criteria tree state: NO-OP branch has no left child');
-                    } else if (branch.isRoot()) {
-                        // branch is root, prune by making left child new root
-                        rootNode = branch.left;
-                        rootNode.parent = null;
-                    } else {
-                        // branch is not root, prune by splice
-                        branch.parent.left = branch.left;
-                        branch.left.parent = branch.parent;
-                    }
+            branch.validateRelationships(true);
 
-                    break;
+            if (branch.operator === Operator.NO_OP) {
+                if (branch.isRoot()) {
+                    // branch is root, prune by slice, left child new root
+                    rootNode = branch.left;
+                    rootNode.parent = null;
+                } else {
+                    // branch is not root, prune by splice
+                    branch.parent.left = branch.left;
+                    branch.left.parent = branch.parent;
                 }
-                case Operator.AND:
-                case Operator.OR: {
-                    if (!branch.hasChildren()) {
-                        throw new Error(`Invalid criteria tree state: ${branch.operator} branch has no children`);
-                    } else if (!branch.hasLeft(CriteriaNode)) {
-                        throw new Error(`Invalid criteria tree state: ${branch.operator} branch has no left child`);
-                    } else if (!branch.hasRight(CriteriaNode)) {
-                        throw new Error(`Invalid criteria tree state: ${branch.operator} branch has no right child`);
-                    }
-
-                    break;
-                }
-                case Operator.NOT: {
-                    if (!branch.hasLeft()) {
-                        throw new Error('Invalid criteria tree state: NOT branch has no left child');
-                    } else if (branch.hasRight(CriteriaNode)) {
-                        throw new Error('Invalid criteria tree state: NOT branch has right child');
-                    }
-
-                    break;
-                }
+            } else {
+                if (branch.isRoot()) rootNode = branch;
             }
         }
 
