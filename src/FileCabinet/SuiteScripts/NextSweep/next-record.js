@@ -263,26 +263,6 @@ define(['N/record',], (record,) => {
         }
     }
 
-    function getSublistValueOrText(recordInst, sublistId, line, fieldId, getText=false,) {
-        return getOrSetSublistValues(
-            recordInst,
-            sublistId,
-            line,
-            fieldId,
-            { text: getText, forceSyncSourcing: true, },
-        );
-    }
-
-    function setSublistValueOrText(recordInst, sublistId, line, fieldId, values, setText=false, options={},) {
-        return getOrSetSublistValues(
-            recordInst,
-            sublistId,
-            line,
-            fieldId,
-            { set: true, values: values, text: setText, ...options, },
-        );
-    }
-
     /**
      * Provides a single-call interface to perform "simple" record modifications
      *
@@ -338,17 +318,6 @@ define(['N/record',], (record,) => {
 
                 const sublistId = step.sublist.toLowerCase();
 
-                const getSublistValue = (line, fieldId) =>
-                    getSublistValueOrText(recordInst, sublistId, line, fieldId, false,);
-                const getSublistText = (line, fieldId) =>
-                    getSublistValueOrText(recordInst, sublistId, line, fieldId, true,);
-                const setSublistValue = (line, fieldId, values, suppress, syncSrc, commit=false,) =>
-                    setSublistValueOrText(recordInst, sublistId, line, fieldId, values, false,
-                        { commit: commit, ignoreFieldChange: suppress, forceSyncSourcing: syncSrc, },);
-                const setSublistText = (line, fieldId, values, suppress, syncSrc, commit=false,) =>
-                    setSublistValueOrText(recordInst, sublistId, line, fieldId, values, true,
-                        { commit: commit, ignoreFieldChange: suppress, forceSyncSourcing: syncSrc, },);
-
                 const initialLineCount = recordInst.getLineCount({ sublistId: sublistId, });  // initial for
                                                                                 // subprocedure, not for execution
                 if (!insertionCountMap.hasOwnProperty(sublistId)) {
@@ -364,8 +333,6 @@ define(['N/record',], (record,) => {
                 const specifiedLineIndices = [].concat(step.lines ?? []);       // unprocessed line indices
                 const matchCriteriaRaw     = [].concat(step.criteria ?? []);    // line match criteria
                 const matchSelections      = [].concat(step.selections ?? []);  // unprocessed line match selections
-
-                const lineIndexOffset = step.offset ?? 0;
 
                 const subprocedureSteps = [].concat(step.steps ?? []);
 
@@ -387,67 +354,13 @@ define(['N/record',], (record,) => {
                 // the allowed range, and are not adjusted for ongoing line insertions
                 const unboundedLineIndices = [];
                 if (matchCriteriaRaw.length > 0) {
-                    const matchCriteriaTree = createCriteriaTree(matchCriteriaRaw);
-
                     if (matchSelections.length === 0) matchSelections.push(null);
 
-                    const matchedIndices = [];
-                    for (let lineIndex = 0; lineIndex < initialLineCount; lineIndex++) {
-                        const evaluateCriteriaNode = node => {
-                            if (!(node instanceof CriteriaNode)) {
-                                return null;
-                            } if (node instanceof CriterionLeaf) {
-                                const recordValues = node.valuesAreText
-                                    ? getSublistText(lineIndex, node.columnId)
-                                    : getSublistValue(lineIndex, node.columnId);
-
-                                switch (node.comparator) {
-                                    case Comparator.ANY:
-                                        return node.values.some(val => recordValues.some(rVal => rVal == val));
-                                    case Comparator.NONE:
-                                        return node.values.every(val => recordValues.every(rVal => rVal != val));
-                                    case Comparator.EQUAL:
-                                        return node.values.length === recordValues.length && node.values.every(
-                                            val => recordValues.some(rVal => rVal == val)
-                                        );
-                                    case Comparator.NOT_EQUAL:
-                                        return node.values.length !== recordValues.length || node.values.every(
-                                            val => recordValues.every(rVal => rVal != val)
-                                        );
-                                    case Comparator.GREATER_THAN:
-                                        return node.values.every(val => recordValues.every(rVal => rVal > val));
-                                    case Comparator.LESS_THAN:
-                                        return node.values.every(val => recordValues.every(rVal => rVal < val));
-                                    case Comparator.GT_OR_EQUAL:
-                                        return node.values.every(val => recordValues.every(rVal => rVal >= val));
-                                    case Comparator.LT_OR_EQUAL:
-                                        return node.values.every(val => recordValues.every(rVal => rVal <= val));
-                                }
-                            } else {
-                                // short-circuit opportunity check
-                                const leftEvaluation  = evaluateCriteriaNode(node.left);
-                                switch (node.operator) {
-                                    case Operator.NO_OP: return leftEvaluation;
-                                    case Operator.AND:   if (!leftEvaluation) return false; break;
-                                    case Operator.OR:    if (leftEvaluation) return true; break;
-                                    case Operator.NOT:   return !leftEvaluation;
-                                }
-
-                                // remaining validation
-                                const rightEvaluation = evaluateCriteriaNode(node.right);
-                                switch (node.operator) {
-                                    case Operator.AND:
-                                    case Operator.OR: return rightEvaluation;
-                                }
-                            }
-
-                            throw new Error('Undefined criteria processing error.');
-                        }
-
-                        if (evaluateCriteriaNode(matchCriteriaTree)) {
-                            matchedIndices.push(lineIndex);
-                        }
-                    }
+                    const matchedIndices = getMatchingLines({
+                        record:    recordInst,
+                        sublistId: sublistId,
+                        criteria:  matchCriteriaRaw,
+                    });
 
                     for (let indexIndex = 0; indexIndex < matchedIndices.length; indexIndex++) {
                         if (matchSelections.includes(null) || matchSelections.includes(indexIndex)) {
@@ -465,7 +378,7 @@ define(['N/record',], (record,) => {
                 // apply index offset
                 for (let indexIndex = 0; indexIndex < unboundedLineIndices.length; indexIndex++) {
                     if ((typeof unboundedLineIndices[indexIndex]) === 'number') {
-                        unboundedLineIndices[indexIndex] += lineIndexOffset;
+                        unboundedLineIndices[indexIndex] += step.offset ?? 0;
                     }
                 }
 
@@ -544,8 +457,8 @@ define(['N/record',], (record,) => {
                         const subStep = subprocedureSteps[subStepIndex];
                         const lastSubStep = subStepIndex === subprocedureSteps.length - 1;
 
-                        const flagSuppress = subStep?.flags?.suppressEvents ?? false;
-                        const flagSyncSrc  = subStep?.flags?.forceSyncSource ?? false;
+                        const flagSuppressEvents  = subStep?.flags?.suppressEvents ?? false;
+                        const flagForceSyncSource = subStep?.flags?.forceSyncSource ?? false;
 
                         if (!checkForValue(subStep.column)) {
                             throw new Error(
@@ -562,13 +475,20 @@ define(['N/record',], (record,) => {
                             );
                         }
 
-                        if (checkForValue(subStep.values)) {
-                            setSublistValue(lineIndex, subStep.column, [].concat(subStep.values),
-                                flagSuppress, flagSyncSrc, lastSubStep,);
-                        } else {
-                            setSublistText(lineIndex, subStep.column, [].concat(subStep.text),
-                                flagSuppress, flagSyncSrc, lastSubStep,);
-                        }
+                        getOrSetSublistValues(
+                            recordInst,
+                            sublistId,
+                            lineIndex,
+                            subStep.column,
+                            {
+                                commit: lastSubStep,
+                                set: true,
+                                values: [].concat(subStep.text),
+                                text: checkForValue(subStep.text),
+                                ignoreFieldChange: flagSuppressEvents,
+                                forceSyncSourcing: flagForceSyncSource,
+                            },
+                        );
                     }
                 }
             } else {
@@ -584,6 +504,84 @@ define(['N/record',], (record,) => {
         } else {
             return recordInst;
         }
+    }
+
+    /**
+     * Gets the indices of sublist lines that match the provided criteria
+     *
+     * @param {object} options
+     * @param {Record} options.record
+     * @param {string} options.sublistId
+     * @param {QuickUpdateSubCriterion|(QuickUpdateSubCriterion|string|string[]|*[])[]} options.criteria
+     * @returns {integer[]}
+     */
+    function getMatchingLines(options) {
+        const matchCriteriaTree = createCriteriaTree(options.criteria);
+
+        const lineCount = options.record.getLineCount({ sublistId: options.sublistId, });
+        const matchedIndices = [];
+        for (let lineIndex = 0; lineIndex < lineCount; lineIndex++) {
+            const evaluateCriteriaNode = node => {
+                if (!(node instanceof CriteriaNode)) {
+                    return null;
+                } if (node instanceof CriterionLeaf) {
+                    const recordValues = getOrSetSublistValues(
+                        options.record,
+                        options.sublistId,
+                        lineIndex,
+                        node.columnId,
+                        { set: false, text: node.valuesAreText, forceSyncSourcing: true, },
+                    );
+
+                    switch (node.comparator) {
+                        case Comparator.ANY:
+                            return node.values.some(val => recordValues.some(rVal => rVal == val));    // ignore warning
+                        case Comparator.NONE:
+                            return node.values.every(val => recordValues.every(rVal => rVal != val));  // ignore warning
+                        case Comparator.EQUAL:
+                            return node.values.length === recordValues.length && node.values.every(
+                                val => recordValues.some(rVal => rVal == val)                          // ignore warning
+                            );
+                        case Comparator.NOT_EQUAL:
+                            return node.values.length !== recordValues.length || node.values.every(
+                                val => recordValues.every(rVal => rVal != val)                         // ignore warning
+                            );
+                        case Comparator.GREATER_THAN:
+                            return node.values.every(val => recordValues.every(rVal => rVal > val));
+                        case Comparator.LESS_THAN:
+                            return node.values.every(val => recordValues.every(rVal => rVal < val));
+                        case Comparator.GT_OR_EQUAL:
+                            return node.values.every(val => recordValues.every(rVal => rVal >= val));
+                        case Comparator.LT_OR_EQUAL:
+                            return node.values.every(val => recordValues.every(rVal => rVal <= val));
+                    }
+                } else {
+                    // short-circuit opportunity check
+                    const leftEvaluation  = evaluateCriteriaNode(node.left);
+                    switch (node.operator) {
+                        case Operator.NO_OP: return leftEvaluation;
+                        case Operator.AND:   if (!leftEvaluation) return false; break;
+                        case Operator.OR:    if (leftEvaluation) return true; break;
+                        case Operator.NOT:   return !leftEvaluation;
+                    }
+
+                    // remaining validation
+                    const rightEvaluation = evaluateCriteriaNode(node.right);
+                    switch (node.operator) {
+                        case Operator.AND:
+                        case Operator.OR: return rightEvaluation;
+                    }
+                }
+
+                throw new Error('Undefined criteria processing error.');
+            }
+
+            if (evaluateCriteriaNode(matchCriteriaTree)) {
+                matchedIndices.push(lineIndex);
+            }
+        }
+
+        return matchedIndices;
     }
 
     /**
@@ -800,5 +798,5 @@ define(['N/record',], (record,) => {
         return rootNode;
     }
 
-    return { Comparator, Operator, quickUpdate, createCriteriaTree, };
+    return { Comparator, Operator, quickUpdate, getMatchingLines, createCriteriaTree, };
 });
