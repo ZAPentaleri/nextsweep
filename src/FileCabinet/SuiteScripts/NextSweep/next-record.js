@@ -342,10 +342,10 @@ define(['N/record',], (record,) => {
                     getSublistValueOrText(recordInst, sublistId, line, fieldId, false,);
                 const getSublistText = (line, fieldId) =>
                     getSublistValueOrText(recordInst, sublistId, line, fieldId, true,);
-                const setSublistValue = (line, fieldId, values, suppress, syncSrc, commit=true,) =>
+                const setSublistValue = (line, fieldId, values, suppress, syncSrc, commit=false,) =>
                     setSublistValueOrText(recordInst, sublistId, line, fieldId, values, false,
                         { commit: commit, ignoreFieldChange: suppress, forceSyncSourcing: syncSrc, },);
-                const setSublistText = (line, fieldId, values, suppress, syncSrc, commit=true,) =>
+                const setSublistText = (line, fieldId, values, suppress, syncSrc, commit=false,) =>
                     setSublistValueOrText(recordInst, sublistId, line, fieldId, values, true,
                         { commit: commit, ignoreFieldChange: suppress, forceSyncSourcing: syncSrc, },);
 
@@ -363,7 +363,7 @@ define(['N/record',], (record,) => {
 
                 const specifiedLineIndices = [].concat(step.lines ?? []);       // unprocessed line indices
                 const matchCriteriaRaw     = [].concat(step.criteria ?? []);    // line match criteria
-                const matchSelections      = [].concat(step.selections ?? [null]);  // unprocessed line match selections
+                const matchSelections      = [].concat(step.selections ?? []);  // unprocessed line match selections
 
                 const lineIndexOffset = step.offset ?? 0;
 
@@ -389,7 +389,7 @@ define(['N/record',], (record,) => {
                 if (matchCriteriaRaw.length > 0) {
                     const matchCriteriaTree = createCriteriaTree(matchCriteriaRaw);
 
-                    if (matchSelections.length === 0) matchSelections.push(0);
+                    if (matchSelections.length === 0) matchSelections.push(null);
 
                     const matchedIndices = [];
                     for (let lineIndex = 0; lineIndex < initialLineCount; lineIndex++) {
@@ -449,9 +449,9 @@ define(['N/record',], (record,) => {
                         }
                     }
 
-                    for (let indexIndex = 0; matchedIndices < matchedIndices.length - 1; indexIndex++) {
+                    for (let indexIndex = 0; indexIndex < matchedIndices.length; indexIndex++) {
                         if (step.selections.includes(null) || step.selections.includes(indexIndex)) {
-                            unboundedLineIndices.push(indexIndex);
+                            unboundedLineIndices.push(matchedIndices[indexIndex]);
                         }
                     }
                 } else {
@@ -564,10 +564,10 @@ define(['N/record',], (record,) => {
 
                         if (checkForValue(subStep.values)) {
                             setSublistValue(lineIndex, subStep.column, [].concat(subStep.values),
-                                flagSuppress, flagSyncSrc, !lastSubStep,);
+                                flagSuppress, flagSyncSrc, lastSubStep,);
                         } else {
                             setSublistText(lineIndex, subStep.column, [].concat(subStep.text),
-                                flagSuppress, flagSyncSrc, !lastSubStep,);
+                                flagSuppress, flagSyncSrc, lastSubStep,);
                         }
                     }
                 }
