@@ -71,19 +71,31 @@
  * @property {boolean} [flags.forceSyncSource=false] Force synchronous field sourcing
  */
 
-class OperatorInstance {
-    constructor() {
+class OperatorDefinition {
+    /**
+     *
+     * @param {string[]} representations
+     * @param {function} leftOperator
+     * @param {function} rightOperator
+     */
+    constructor(representations, leftOperator=(x=>null), rightOperator=(y=>null)) {
         this.name = arguments[0].toUpperCase();
         this.representations = [...arguments].map(op => op.toLowerCase());
+
+        this.leftOperator  = leftOperator;
+        this.rightOperator = rightOperator;
     }
+
+    operateLeft(x)  { return this.leftOperator(x); }
+    operateRight(y) { return this.rightOperator(y); }
+
     toString() { return this.representations[0]; }
 }
-
 class Operator {
-    static NO_OP = new OperatorInstance('nop',);
-    static AND   = new OperatorInstance('and', '&&',);
-    static OR    = new OperatorInstance('or',  '||',);
-    static NOT   = new OperatorInstance('not', '!',);
+    static NO_OP = new OperatorDefinition(['nop',],       x=>x,);
+    static AND   = new OperatorDefinition(['and', '&&',], x=>!x?false:null, y=>y,);
+    static OR    = new OperatorDefinition(['or',  '||',], x=>x||null, y=>y===true,);
+    static NOT   = new OperatorDefinition(['not', '!',],  x=>!x,);
 
     static identify(operator) {
         const candidates = [this.NO_OP, this.AND, this.OR, this.NOT,];
@@ -96,15 +108,51 @@ class Operator {
     }
 }
 
+class ComparatorDefinition {
+    constructor(representations, comparator) {
+        this.name = arguments[0].toUpperCase();
+        this.representations = [...arguments].map(op => op.toLowerCase());
+
+        this.comparator = comparator;
+    }
+
+    compare(x, y) { return this.comparator(x, y,); }
+
+    toString() { return this.representations[0]; }
+}
 class Comparator {
-    static ANY          = new OperatorInstance('any', 'anyof',);
-    static NONE         = new OperatorInstance('none', 'noneof',);
-    static EQUAL        = new OperatorInstance('eq', '==', '=', 'equalto', 'is',);
-    static NOT_EQUAL    = new OperatorInstance('ne', '!=', '<>', 'notequalto', 'isnot',);
-    static GREATER_THAN = new OperatorInstance('gt', '>', 'greaterthan',);
-    static LESS_THAN    = new OperatorInstance('lt', '<', 'lessthan',);
-    static GT_OR_EQUAL  = new OperatorInstance('ge', '>=', 'greaterthanorequalto',);
-    static LT_OR_EQUAL  = new OperatorInstance('le', '<=', 'lessthanorequalto',);
+    static ANY = new ComparatorDefinition(
+        ['any', 'anyof',],
+        (x, y) => y.some(yVal => x.some(xVal => xVal == yVal)),                 // ignore warning
+    );
+    static NONE = new ComparatorDefinition(
+        ['none', 'noneof',],
+        (x, y) => y.every(yVal => x.every(xVal => xVal != yVal)),               // ignore warning
+    );
+    static EQUAL = new ComparatorDefinition(
+        ['eq', '==', '=', 'equalto', 'is',],
+        (x, y) => y.length === x.length && y.every(y => x.some(x => x == y)),   // ignore warning
+    );
+    static NOT_EQUAL = new ComparatorDefinition(
+        ['ne', '!=', '<>', 'notequalto', 'isnot',],
+        (x, y) => y.length !== x.length || y.every(y => x.every(x => x != y)),  // ignore warning,
+    );
+    static GREATER_THAN = new ComparatorDefinition(
+        ['gt', '>', 'greaterthan',],
+        (x, y) => y.every(y => x.every(x => x > y)),
+    );
+    static LESS_THAN = new ComparatorDefinition(
+        ['lt', '<', 'lessthan',],
+        (x, y) => y.every(y => x.every(x => x < y)),
+    );
+    static GT_OR_EQUAL = new ComparatorDefinition(
+        ['ge', '>=', 'greaterthanorequalto',],
+        (x, y) => y.every(y => x.every(x => x >= y)),
+    );
+    static LT_OR_EQUAL = new ComparatorDefinition(
+        ['le', '<=', 'lessthanorequalto',],
+        (x, y) => y.every(y => x.every(x => x <= y)),
+    );
 
     static identify(operator) {
         const candidates = [
@@ -521,64 +569,28 @@ define(['N/record',], (record,) => {
         const lineCount = options.record.getLineCount({ sublistId: options.sublistId, });
         const matchedIndices = [];
         for (let lineIndex = 0; lineIndex < lineCount; lineIndex++) {
-            const evaluateCriteriaNode = node => {
+            const evaluateNode = node => {
                 if (!(node instanceof CriteriaNode)) {
                     return null;
                 } if (node instanceof CriteriaLeaf) {
-                    const recordValues = getOrSetSublistValues(
-                        options.record,
-                        options.sublistId,
-                        lineIndex,
-                        node.columnId,
-                        { set: false, valuesAreText: node.valuesAreText, forceSyncSourcing: true, },
+                    // compute leaf result
+                    return node.comparator.compare(
+                        getOrSetSublistValues(
+                            options.record, options.sublistId, lineIndex, node.columnId,
+                            { set: false, valuesAreText: node.valuesAreText, forceSyncSourcing: true, },
+                        ),
+                        node.values,
                     );
-
-                    switch (node.comparator) {
-                        case Comparator.ANY:
-                            return node.values.some(val => recordValues.some(rVal => rVal == val));    // ignore warning
-                        case Comparator.NONE:
-                            return node.values.every(val => recordValues.every(rVal => rVal != val));  // ignore warning
-                        case Comparator.EQUAL:
-                            return node.values.length === recordValues.length && node.values.every(
-                                val => recordValues.some(rVal => rVal == val)                          // ignore warning
-                            );
-                        case Comparator.NOT_EQUAL:
-                            return node.values.length !== recordValues.length || node.values.every(
-                                val => recordValues.every(rVal => rVal != val)                         // ignore warning
-                            );
-                        case Comparator.GREATER_THAN:
-                            return node.values.every(val => recordValues.every(rVal => rVal > val));
-                        case Comparator.LESS_THAN:
-                            return node.values.every(val => recordValues.every(rVal => rVal < val));
-                        case Comparator.GT_OR_EQUAL:
-                            return node.values.every(val => recordValues.every(rVal => rVal >= val));
-                        case Comparator.LT_OR_EQUAL:
-                            return node.values.every(val => recordValues.every(rVal => rVal <= val));
-                    }
                 } else {
-                    // short-circuit opportunity check
-                    const leftEvaluation  = evaluateCriteriaNode(node.left);
-                    switch (node.operator) {
-                        case Operator.NO_OP: return leftEvaluation;
-                        case Operator.AND:   if (!leftEvaluation) return false; break;
-                        case Operator.OR:    if (leftEvaluation) return true; break;
-                        case Operator.NOT:   return !leftEvaluation;
-                    }
-
-                    // remaining validation
-                    const rightEvaluation = evaluateCriteriaNode(node.right);
-                    switch (node.operator) {
-                        case Operator.AND:
-                        case Operator.OR: return rightEvaluation;
-                    }
+                    // compute branch result, short-circuit if left child offers result
+                    return (
+                        node.operator.operateLeft(evaluateNode(node.left))
+                        ?? node.operator.operateRight(evaluateNode(node.right))
+                    );
                 }
-
-                throw new Error('Undefined criteria processing error.');
             }
 
-            if (evaluateCriteriaNode(matchCriteriaTree)) {
-                matchedIndices.push(lineIndex);
-            }
+            if (evaluateNode(matchCriteriaTree)) matchedIndices.push(lineIndex);
         }
 
         return matchedIndices;
