@@ -291,8 +291,8 @@ define(['N/record',], (record,) => {
      */
     function quickUpdate(options,) {
         const checkForValue = value => (typeof value) !== 'undefined';
-        const stepIsSubprocedure = step => Array.isArray(step);
-        const stepIsSimple = step => !stepIsSubprocedure() && (typeof step) === 'object';
+        const stepIsSubprocedure = step => (typeof step) === 'object' && checkForValue(step.sublist);
+        const stepIsSimple = step => (typeof step) === 'object' && !stepIsSubprocedure(step);
 
         const recordType  = options?.type ?? null;
         const recordId    = options?.id ?? null;
@@ -427,9 +427,10 @@ define(['N/record',], (record,) => {
                                 // short-circuit opportunity check
                                 const leftEvaluation  = evaluateCriteriaNode(node.left);
                                 switch (node.operator) {
-                                    case Operator.AND: if (!leftEvaluation) return false; break;
-                                    case Operator.OR:  if (leftEvaluation) return true; break;
-                                    case Operator.NOT: return !leftEvaluation;
+                                    case Operator.NO_OP: return leftEvaluation;
+                                    case Operator.AND:   if (!leftEvaluation) return false; break;
+                                    case Operator.OR:    if (leftEvaluation) return true; break;
+                                    case Operator.NOT:   return !leftEvaluation;
                                 }
 
                                 // remaining validation
