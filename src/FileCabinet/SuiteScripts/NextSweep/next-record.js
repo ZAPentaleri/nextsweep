@@ -6,7 +6,9 @@
  *   /  //__/ |  ||   __//__/  \__ \/ . \|  _||  _|
  * /_________\|__||__| /__/(R)/____/\___/|_|  \__\
  *
- * NextSweep Record Module
+ * NextSweep Record Module: provides a streamlined interface for modifications
+ * to NetSuite records
+ *
  * ZAPentaleri, 2025
  *
  * @NApiVersion 2.1
@@ -189,6 +191,400 @@ class CriterionLeaf extends CriteriaNode {
 }
 
 define(['N/record',], (record,) => {
+    /**
+     *
+     * @param {Record} recordInst
+     * @param {string} sublistId
+     * @param {integer} line
+     * @param {string} fieldId
+     * @param {object} options
+     * @param {boolean} [options.commit] Commit line (dynamic mode only)
+     * @param {boolean} [options.set] Set value
+     * @param {*[]} [options.values] Values to be set
+     * @param {boolean} [options.text] Set value as text
+     * @param {boolean} [options.ignoreFieldChange]
+     * @param {boolean} [options.forceSyncSourcing]
+     */
+    function getOrSetSublistValues(recordInst, sublistId, line, fieldId, options={},) {
+        const value = options.values?.length === 1 ? options.values[0] : options.values;
+
+        if (recordInst.isDynamic) {
+            if (recordInst.getCurrentSublistIndex({ sublistId: sublistId, }) !== line) {
+                recordInst.selectLine({ sublistId: sublistId, line: line, });
+            }
+
+            if (options.set) {
+                if (options.text) {
+                    recordInst.setCurrentSublistText({
+                        sublistId: sublistId,
+                        fieldId:   fieldId,
+                        text:      value,
+                        ignoreFieldChange: options.ignoreFieldChange ?? false,
+                        forceSyncSourcing: options.forceSyncSourcing ?? false,
+                    });
+                } else {
+                    recordInst.setCurrentSublistValue({
+                        sublistId: sublistId,
+                        fieldId:   fieldId,
+                        value:     value,
+                        ignoreFieldChange: options.ignoreFieldChange ?? false,
+                        forceSyncSourcing: options.forceSyncSourcing ?? false,
+                    });
+                }
+
+                if (options.commit) {
+                    recordInst.commitLine({ sublistId: sublistId, });
+                }
+            } else {
+                if (options.text) {
+                    return [].concat(recordInst.getCurrentSublistText({
+                        sublistId: sublistId,
+                        fieldId:   fieldId,
+                        forceSyncSourcing: options.forceSyncSourcing ?? false,
+                    }));
+                } else {
+                    return [].concat(recordInst.getCurrentSublistValue({ sublistId: sublistId, fieldId: fieldId, }));
+                }
+            }
+        } else {
+            if (options.set) {
+                if (options.text) {
+                    recordInst.setSublistText({ sublistId: sublistId, line: line, fieldId: fieldId, text: value, });
+                } else {
+                    recordInst.setSublistValue({ sublistId: sublistId, line: line, fieldId: fieldId, value: value, });
+                }
+            } else {
+                if (options.text) {
+                    recordInst.getSublistText({ sublistId: sublistId, line: line, fieldId: fieldId, });
+                } else {
+                    recordInst.getSublistValue({ sublistId: sublistId, line: line, fieldId: fieldId, });
+                }
+            }
+        }
+    }
+
+    function getSublistValueOrText(recordInst, sublistId, line, fieldId, getText=false,) {
+        return getOrSetSublistValues(
+            recordInst,
+            sublistId,
+            line,
+            fieldId,
+            { text: getText, forceSyncSourcing: true, },
+        );
+    }
+
+    function setSublistValueOrText(recordInst, sublistId, line, fieldId, values, setText=false, options={},) {
+        return getOrSetSublistValues(
+            recordInst,
+            sublistId,
+            line,
+            fieldId,
+            { set: true, values: values, text: setText, ...options, },
+        );
+    }
+
+    /**
+     * Provides a single-call interface to perform "simple" record modifications
+     *
+     * @param {QuickUpdateOptions} options
+     * @returns {string|Record}
+     */
+    function quickUpdate(options,) {
+        const checkForValue = value => (typeof value) !== 'undefined';
+        const stepIsSubprocedure = step => Array.isArray(step);
+        const stepIsSimple = step => !stepIsSubprocedure() && (typeof step) === 'object';
+
+        const recordType  = options?.type ?? null;
+        const recordId    = options?.id ?? null;
+
+        const flagLoadRecordInDynamicMode     = options?.flags?.dynamic ?? false;
+        const flagSourceDependentFieldsOnSave = options?.flags?.sourceOnSave ?? false;
+        const flagIgnoreMandatoryFieldsOnSave = options?.flags?.ignoreOnSave ?? false;
+        const flagDoNotSaveAfterModifications = options?.flags?.noSave ?? false;
+
+        const procedure = options?.procedure ?? [];
+
+        const recordInst = options?.record ?? record.load({
+            type:      recordType,
+            id:        recordId,
+            isDynamic: flagLoadRecordInDynamicMode,
+        });
+
+        const insertionCountMap = {};
+        for (let stepIndex = 0; stepIndex < procedure.length; stepIndex++) {
+            const step = procedure[stepIndex];
+
+            if (stepIsSimple(step)) {
+                const flagSuppress = step?.flags?.suppressEvents ?? false;
+
+                if (!checkForValue(step.field)) {
+                    throw new Error(`Step #${stepIndex+1}: No field ID was provided`);
+                } else if (checkForValue(step.value) && checkForValue(step.text)) {
+                    throw new Error(
+                        `Step #${stepIndex+1}: Simple field value and text field value must not be provided `
+                        + `together (${step.field})`
+                    );
+                } else if (!checkForValue(step.value) && !checkForValue(step.text)) {
+                    throw new Error(`Step #${stepIndex+1}: No value was specified for "${step.field}"`);
+                }
+
+                if (checkForValue(step.value)) {
+                    recordInst.setValue({ fieldId: step.field, value: step.value, ignoreFieldChange: flagSuppress, });
+                } else {
+                    recordInst.setText({ fieldId: step.field, text: step.text, ignoreFieldChange: flagSuppress, });
+                }
+            } else if (stepIsSubprocedure(step)) {
+                //TODO: validate that all necessary values are present for more descriptive errors
+
+                const sublistId = step.sublist.toLowerCase();
+
+                const getSublistValue = (line, fieldId) =>
+                    getSublistValueOrText(recordInst, sublistId, line, fieldId, false,);
+                const getSublistText = (line, fieldId) =>
+                    getSublistValueOrText(recordInst, sublistId, line, fieldId, true,);
+                const setSublistValue = (line, fieldId, values, suppress, syncSrc, commit=true,) =>
+                    setSublistValueOrText(recordInst, sublistId, line, fieldId, values, false,
+                        { commit: commit, ignoreFieldChange: suppress, forceSyncSourcing: syncSrc, },);
+                const setSublistText = (line, fieldId, values, suppress, syncSrc, commit=true,) =>
+                    setSublistValueOrText(recordInst, sublistId, line, fieldId, values, true,
+                        { commit: commit, ignoreFieldChange: suppress, forceSyncSourcing: syncSrc, },);
+
+                const initialLineCount = recordInst.getLineCount({ sublistId: sublistId, });  // initial for
+                                                                                // subprocedure, not for execution
+                if (!insertionCountMap.hasOwnProperty(sublistId)) {
+                    insertionCountMap[sublistId] = Object.fromEntries(
+                        Array.from({ length: (initialLineCount + 1), }, (_, index) => [index,0,])
+                    );
+                }
+
+                const lineEditMode = step.edit ?? false;
+
+                const flagAllowOutOfBoundsIndices = step?.flags?.permissive ?? false;
+
+                const specifiedLineIndices = [].concat(step.lines ?? []);       // unprocessed line indices
+                const matchCriteriaRaw     = [].concat(step.criteria ?? []);    // line match criteria
+                const matchSelections      = [].concat(step.selections ?? [null]);  // unprocessed line match selections
+
+                const lineIndexOffset = step.offset ?? 0;
+
+                const subprocedureSteps = [].concat(step.steps ?? []);
+
+                if (matchCriteriaRaw.length > 0 && specifiedLineIndices.length > 0) {
+                    throw new Error(
+                        `Step #${stepIndex+1}: Line indices and line match criteria must not be provided together`
+                    );
+                } else if (matchCriteriaRaw.length === 0 && matchSelections.length > 0) {
+                    throw new Error(
+                        `Step #${stepIndex+1}: Line match selections should not be provided without match criteria`
+                    );
+                } else if (subprocedureSteps.length === 0) {
+                    throw new Error(
+                        `Step #${stepIndex+1}: No sub-steps were specified for subprocedure on "${sublistId}"`
+                    );
+                }
+
+                // Get unbounded line indices -- indices which may be positive, negative, zero, or null, may go outside
+                // the allowed range, and are not adjusted for ongoing line insertions
+                const unboundedLineIndices = [];
+                if (matchCriteriaRaw.length > 0) {
+                    const matchCriteriaTree = createCriteriaTree(matchCriteriaRaw);
+
+                    if (matchSelections.length === 0) matchSelections.push(0);
+
+                    const matchedIndices = [];
+                    for (let lineIndex = 0; lineIndex < initialLineCount; lineIndex++) {
+                        const evaluateCriteriaNode = node => {
+                            if (!(node instanceof CriteriaNode)) {
+                                return null;
+                            } if (node instanceof CriterionLeaf) {
+                                const recordValues = node.valuesAreText
+                                    ? getSublistText(lineIndex, node.columnId)
+                                    : getSublistValue(lineIndex, node.columnId);
+
+                                switch (node.comparator) {
+                                    case Comparator.ANY:
+                                        return node.values.some(val => recordValues.some(rVal => rVal == val));
+                                    case Comparator.NONE:
+                                        return node.values.every(val => recordValues.every(rVal => rVal != val));
+                                    case Comparator.EQUAL:
+                                        return node.values.length === recordValues.length && node.values.every(
+                                            val => recordValues.some(rVal => rVal == val)
+                                        );
+                                    case Comparator.NOT_EQUAL:
+                                        return node.values.length !== recordValues.length || node.values.every(
+                                            val => recordValues.every(rVal => rVal != val)
+                                        );
+                                    case Comparator.GREATER_THAN:
+                                        return node.values.every(val => recordValues.every(rVal => rVal > val));
+                                    case Comparator.LESS_THAN:
+                                        return node.values.every(val => recordValues.every(rVal => rVal < val));
+                                    case Comparator.GT_OR_EQUAL:
+                                        return node.values.every(val => recordValues.every(rVal => rVal >= val));
+                                    case Comparator.LT_OR_EQUAL:
+                                        return node.values.every(val => recordValues.every(rVal => rVal <= val));
+                                }
+                            } else {
+                                // short-circuit opportunity check
+                                const leftEvaluation  = evaluateCriteriaNode(node.left);
+                                switch (node.operator) {
+                                    case Operator.AND: if (!leftEvaluation) return false; break;
+                                    case Operator.OR:  if (leftEvaluation) return true; break;
+                                    case Operator.NOT: return !leftEvaluation;
+                                }
+
+                                // remaining validation
+                                const rightEvaluation = evaluateCriteriaNode(node.right);
+                                switch (node.operator) {
+                                    case Operator.AND:
+                                    case Operator.OR: return rightEvaluation;
+                                }
+                            }
+
+                            throw new Error('Undefined criteria processing error.');
+                        }
+
+                        if (evaluateCriteriaNode(matchCriteriaTree)) {
+                            matchedIndices.push(lineIndex);
+                        }
+                    }
+
+                    for (let indexIndex = 0; matchedIndices < matchedIndices.length - 1; indexIndex++) {
+                        if (step.selections.includes(null) || step.selections.includes(indexIndex)) {
+                            unboundedLineIndices.push(indexIndex);
+                        }
+                    }
+                } else {
+                    if (specifiedLineIndices.length > 0) {
+                        unboundedLineIndices.push(...specifiedLineIndices);
+                    } else {
+                        unboundedLineIndices.push(null);
+                    }
+                }
+
+                // apply index offset
+                for (let indexIndex = 0; indexIndex < unboundedLineIndices.length; indexIndex++) {
+                    if ((typeof unboundedLineIndices[indexIndex]) === 'number') {
+                        unboundedLineIndices[indexIndex] += lineIndexOffset;
+                    }
+                }
+
+                // check if indices are in bounds
+                const checkIndexBounds = index => index >= 0
+                    ? index <= (lineEditMode ? (initialLineCount - 1) : initialLineCount)
+                    : index >= (initialLineCount * -1);
+
+                if (!unboundedLineIndices.every(checkIndexBounds)) {
+                    if (flagAllowOutOfBoundsIndices) {
+                        for (let indexIndex = unboundedLineIndices.length - 1; indexIndex >= 0; indexIndex--) {
+                            if (!checkIndexBounds(unboundedLineIndices[indexIndex])) {
+                                unboundedLineIndices.splice(indexIndex, 1,);
+                            }
+                        }
+                    } else {
+                        throw new Error(`Step #${stepIndex+1}: Some indices are out of bounds for "${sublistId}"`);
+                    }
+                }
+
+                // Get adjusted line indices -- indices which are positive or zero and only occupy the allowed
+                // range, adjusted for ongoing line insertions
+                const adjustedLineIndices = [];
+                if (lineEditMode && unboundedLineIndices.includes(null)) {
+                    adjustedLineIndices.push(
+                        ...Array.from({ length: initialLineCount, }, (_, index) => index)
+                    );
+                } else if (unboundedLineIndices.length > 0) {
+                    for (const unboundedIndex of unboundedLineIndices) {
+                        const boundedIndex = unboundedIndex >= 0
+                            ? unboundedIndex  // index is already bounded from 0 to length-1
+                            : unboundedIndex < 0
+                                ? initialLineCount - unboundedIndex  // index is negative, subtract from length
+                                : initialLineCount;  // index is not a number, set at length (insertion past end)
+
+                        if (lineEditMode) {
+                            adjustedLineIndices.push(boundedIndex);
+                        } else {
+                            adjustedLineIndices.push(
+                                boundedIndex
+                                + Array.from({ length: boundedIndex, }, (_, index) => index).reduce(
+                                    (accumulator, previousIndex) =>  // sums adjustments excluding current index
+                                        accumulator + insertionCountMap[sublistId][previousIndex],
+                                    0,
+                                ) + insertionCountMap[sublistId][boundedIndex]++  // current index adjustment, with
+                            );                                                    // postfix increment
+                        }
+                    }
+                }
+
+                // set column values
+                for (const lineIndex of adjustedLineIndices) {
+                    const currentLineCount = recordInst.getLineCount({ sublistId: sublistId, });
+
+                    if (!lineEditMode) {
+                        if (recordInst.isDynamic) {
+                            if (lineIndex < currentLineCount) {
+                                recordInst.insertLine({
+                                    sublistId:    sublistId,
+                                    line:         lineIndex,
+                                    ignoreRecalc: step?.flags?.suppressRecalc ?? false,
+                                });
+                            } else {
+                                recordInst.selectNewLine({ sublistId: sublistId, });
+                            }
+                        } else {
+                            recordInst.insertLine({
+                                sublistId:    sublistId,
+                                line:         lineIndex,
+                                ignoreRecalc: step?.flags?.suppressRecalc ?? false,  //TODO: evaluate if this works here
+                            });
+                        }
+                    }
+
+                    for (let subStepIndex = 0; subStepIndex < subprocedureSteps.length; subStepIndex++) {
+                        const subStep = subprocedureSteps[subStepIndex];
+                        const lastSubStep = subStepIndex === subprocedureSteps.length - 1;
+
+                        const flagSuppress = subStep?.flags?.suppressEvents ?? false;
+                        const flagSyncSrc  = subStep?.flags?.forceSyncSource ?? false;
+
+                        if (!checkForValue(subStep.column)) {
+                            throw new Error(
+                                `Sub-Step #${subStepIndex+1}: No column ID was provided`
+                            );
+                        } else if (checkForValue(subStep.value) && checkForValue(subStep.text)) {
+                            throw new Error(
+                                `Sub-Step #${subStepIndex+1}: Simple column value and text column value must not `
+                                + `be provided together (${subStep.column})`
+                            );
+                        } else if (!checkForValue(subStep.value) && !checkForValue(subStep.text)) {
+                            throw new Error(
+                                `Step #${subStepIndex+1}: No value was specified for "${subStep.field}"`
+                            );
+                        }
+
+                        if (checkForValue(subStep.value)) {
+                            setSublistValue(lineIndex, subStep.column, [].concat(subStep.value),
+                                flagSuppress, flagSyncSrc, !lastSubStep,);
+                        } else {
+                            setSublistText(lineIndex, subStep.column, [].concat(subStep.text),
+                                flagSuppress, flagSyncSrc, !lastSubStep,);
+                        }
+                    }
+                }
+            } else {
+                throw new Error(`Step #${stepIndex+1}: Invalid step definition`);
+            }
+        }
+
+        if (!flagDoNotSaveAfterModifications) {
+            return recordInst.save({
+                enableSourcing:        flagSourceDependentFieldsOnSave,
+                ignoreMandatoryFields: flagIgnoreMandatoryFieldsOnSave,
+            });
+        } else {
+            return recordInst;
+        }
+    }
+
     /**
      * Create criteria tree object from criteria array, for filtering sublist line items on record update.
      *
@@ -403,5 +799,5 @@ define(['N/record',], (record,) => {
         return rootNode;
     }
 
-    return { Comparator, Operator, createCriteriaTree, };
+    return { Comparator, Operator, quickUpdate, createCriteriaTree, };
 });
