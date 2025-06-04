@@ -73,7 +73,6 @@
 
 class OperatorDefinition {
     /**
-     *
      * @param {string[]} representations
      * @param {function} leftOperator
      * @param {function} rightOperator
@@ -91,12 +90,17 @@ class OperatorDefinition {
 
     toString() { return this.representations[0]; }
 }
+
 class Operator {
     static NO_OP = new OperatorDefinition(['nop',],       x=>x,);
     static AND   = new OperatorDefinition(['and', '&&',], x=>!x?false:null, y=>y,);
     static OR    = new OperatorDefinition(['or',  '||',], x=>x||null, y=>y===true,);
     static NOT   = new OperatorDefinition(['not', '!',],  x=>!x,);
 
+    /**
+     * @param {OperatorDefinition|string} operator
+     * @returns {OperatorDefinition}
+     */
     static identify(operator) {
         for (const candidate of Object.values(this)) {
             if (operator === candidate || candidate.representations.includes(operator.toLowerCase())) return candidate;
@@ -107,6 +111,10 @@ class Operator {
 }
 
 class ComparatorDefinition {
+    /**
+     * @param {string[]} representations
+     * @param {function} comparator
+     */
     constructor(representations, comparator) {
         this.name = representations[0].toUpperCase();
         this.representations = representations.map(op => op.toLowerCase());
@@ -118,6 +126,7 @@ class ComparatorDefinition {
 
     toString() { return this.representations[0]; }
 }
+
 class Comparator {
     static ANY = new ComparatorDefinition(
         ['any', 'anyof',],
@@ -152,9 +161,13 @@ class Comparator {
         (x, y) => y.every(y => x.every(x => x <= y)),
     );
 
-    static identify(operator) {
+    /**
+     * @param {ComparatorDefinition|string} comp
+     * @returns {ComparatorDefinition}
+     */
+    static identify(comp) {
         for (const candidate of Object.values(this)) {
-            if (operator === candidate || candidate.representations.includes(operator.toLowerCase())) return candidate;
+            if (comp === candidate || candidate.representations.includes(comp.toLowerCase())) return candidate;
         }
 
         throw new Error('Invalid comparator');
