@@ -337,9 +337,9 @@ define(['N/record',], (record,) => {
             }
         } else {
             if (options.valuesAreText) {
-                recordInst.getSublistText({ sublistId: sublistId, line: line, fieldId: fieldId, });
+                return [].concat(recordInst.getSublistText({ sublistId: sublistId, line: line, fieldId: fieldId, }));
             } else {
-                recordInst.getSublistValue({ sublistId: sublistId, line: line, fieldId: fieldId, });
+                return [].concat(recordInst.getSublistValue({ sublistId: sublistId, line: line, fieldId: fieldId, }));
             }
         }
     }
