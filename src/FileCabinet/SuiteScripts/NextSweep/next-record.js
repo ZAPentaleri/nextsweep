@@ -748,7 +748,7 @@ define(['N/record',], (record,) => {
 
         let workNode = new CriteriaBranch();
         const traversalPath = new CriteriaNodeTraversalPath(workNode);
-        const branchRecord = [workNode];
+        const nodeRecord = [workNode];
         while (traversalPath.length > 0) {
             let cElement = originalCriteriaArray;  // criteria element
             for (const index of traversalPath.indexPath) cElement = cElement[index];
@@ -770,7 +770,7 @@ define(['N/record',], (record,) => {
                         workNode.operator = Operator.AND;  // update working node operator from NO-OP to AND
                     } else if (workNode.hasRight(CriteriaNode)) {
                         workNode = workNode.insertRight(Operator.AND);
-                        branchRecord.push(workNode);
+                        nodeRecord.push(workNode);
                     } else {
                         throwOperatorError(operator, 'no right node');
                     }
@@ -784,7 +784,7 @@ define(['N/record',], (record,) => {
                         // insert new node, traverse outward
                         workNode = workNode.insertParent(Operator.OR);
                         traversalPath.updateLevel(workNode);
-                        branchRecord.push(workNode);
+                        nodeRecord.push(workNode);
                     } else {
                         throwOperatorError(operator, 'no right node');
                     }
@@ -795,11 +795,11 @@ define(['N/record',], (record,) => {
                     } else if (!workNode.hasLeft(CriteriaNode)) {
                         // new NOT left, traverse inward
                         workNode = workNode.insertLeft(Operator.NOT,);
-                        branchRecord.push(workNode);
+                        nodeRecord.push(workNode);
                     } else if (!workNode.hasRight(CriteriaNode)) {
                         // new NOT right, traverse inward
                         workNode = workNode.insertRight(Operator.NOT,);
-                        branchRecord.push(workNode);
+                        nodeRecord.push(workNode);
                     } else {
                         throwOperatorError(operator);  // unspecified error; probably no AND/OR preceding this NOT
                     }
@@ -816,11 +816,11 @@ define(['N/record',], (record,) => {
                 if (!workNode.hasLeft(CriteriaNode)) {
                     // new NO-OP left, traverse inward
                     workNode = workNode.insertLeft(Operator.NO_OP,);
-                    branchRecord.push(workNode);
+                    nodeRecord.push(workNode);
                 } else if (!workNode.hasRight(CriteriaNode)) {
                     // new NO-OP right, traverse inward
                     workNode = workNode.insertRight(Operator.NO_OP,);
-                    branchRecord.push(workNode);
+                    nodeRecord.push(workNode);
                 } else {
                     throw new Error('Invalid node state');
                 }
@@ -840,8 +840,10 @@ define(['N/record',], (record,) => {
                 if (!workNode.hasLeft()) {
                     workNode.insertLeft(newLeaf);
                     if (workNode.operator === Operator.NOT) workNode = workNode.parent;
+                    nodeRecord.push(newLeaf);
                 } else if (!workNode.hasRight() && workNode.operator !== Operator.NOT) {
                     workNode.insertRight(newLeaf);
+                    nodeRecord.push(newLeaf);
                 } else {
                     throw new Error('Invalid criterion position');
                 }
@@ -853,17 +855,18 @@ define(['N/record',], (record,) => {
         }
 
         // validate and prune tree
-        for (let nodeIndex = branchRecord.length - 1; nodeIndex >= 0; nodeIndex--) {
-            const node = branchRecord[nodeIndex];
-
-            node.validateRelationships(true);
-            if (node.operator === Operator.NO_OP) {
-                node.splice();
-                branchRecord.splice(nodeIndex, 1);
+        for (let nodeIndex = nodeRecord.length - 1; nodeIndex >= 0; nodeIndex--) {
+            const node = nodeRecord[nodeIndex];
+            if (node instanceof CriteriaBranch) {
+                node.validateRelationships(true);
+                if (node.operator === Operator.NO_OP) {
+                    node.splice();
+                    nodeRecord.splice(nodeIndex, 1);
+                }
             }
         }
 
-        return branchRecord.filter(node => !node.hasParent())[0];
+        return nodeRecord.filter(node => !node.hasParent())[0];
     }
 
     return { Comparator, Operator, quickCreate, quickUpdate, getMatchingLines, createCriteriaTree, };
