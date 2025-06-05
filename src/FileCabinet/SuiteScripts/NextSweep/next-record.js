@@ -15,6 +15,16 @@
  */
 
 /**
+ * @typedef {object} QuickCreateOptions
+ * @property {string} [type] Record type
+ * @property {(QuickUpdateStep|QuickUpdateSubprocedure|*[])[]} procedure Record modification procedure
+ * @property {boolean} [flags.dynamic=false] Flag to load record in dynamic mode
+ * @property {boolean} [flags.sourceOnSave=false] Flag to source dependent fields on save
+ * @property {boolean} [flags.ignoreOnSave=false] Flag to ignore mandatory fields on save
+ * @property {boolean} [flags.noSave=false] Flag to disable save after procedure is complete
+ */
+
+/**
  * @typedef {object} QuickUpdateOptions
  * @property {Record} [record] Record instance
  * @property {string} [type] Record type
@@ -385,6 +395,21 @@ define(['N/record',], (record,) => {
                 recordInst.setSublistValue({ sublistId: sublistId, line: line, fieldId: fieldId, value: value, });
             }
         }
+    }
+
+    /**
+     * Provides a single-call interface to create a templated record via
+     * quickUpdate
+     *
+     * @param {QuickCreateOptions} options
+     * @returns {string|Record}
+     */
+    function quickCreate(options,) {
+        return quickUpdate({
+            record:    record.create({ type: options?.type ?? null, isDynamic: options?.flags?.dynamic ?? false, }),
+            procedure: options.procedure,
+            flags:     options.flags,
+        });
     }
 
     /**
@@ -853,5 +878,5 @@ define(['N/record',], (record,) => {
         return rootNode;
     }
 
-    return { Comparator, Operator, quickUpdate, getMatchingLines, createCriteriaTree, };
+    return { Comparator, Operator, quickCreate, quickUpdate, getMatchingLines, createCriteriaTree, };
 });
