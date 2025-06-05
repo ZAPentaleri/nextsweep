@@ -780,6 +780,7 @@ define(['N/record',], (record,) => {
                 traversalPath.addLevel(workNode);
             } else {
                 let newLeaf = null;
+                //TODO: simplify object vs array leaf creation logic, relocate errors to constructor
                 if ((typeof cElement) === 'object' && !Array.isArray(cElement)) {
                     if (
                         (typeof cElement.column) === 'string'
