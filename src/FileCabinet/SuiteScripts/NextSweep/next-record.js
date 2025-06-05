@@ -497,9 +497,11 @@ define(['N/record',], (record,) => {
                 }
 
                 // check if indices are in bounds
-                const checkIndexBounds = index => index >= 0
-                    ? index <= (lineEditMode ? (initialLineCount - 1) : initialLineCount)
-                    : index >= (initialLineCount * -1);
+                const checkIndexBounds = index => index === null
+                    ? true
+                    : index => index >= 0
+                        ? index <= (lineEditMode ? (initialLineCount - 1) : initialLineCount)
+                        : index >= (initialLineCount * -1);
 
                 if (!unboundedLineIndices.every(checkIndexBounds)) {
                     if (flagAllowOutOfBoundsIndices) {
@@ -522,11 +524,13 @@ define(['N/record',], (record,) => {
                     );
                 } else if (unboundedLineIndices.length > 0) {
                     for (const unboundedIndex of unboundedLineIndices) {
-                        const boundedIndex = unboundedIndex >= 0
-                            ? unboundedIndex  // index is already bounded from 0 to length-1
-                            : unboundedIndex < 0
-                                ? initialLineCount - unboundedIndex  // index is negative, subtract from length
-                                : initialLineCount;  // index is not a number, set at length (insertion past end)
+                        const boundedIndex = unboundedIndex === null
+                            ? initialLineCount - 1
+                            : unboundedIndex >= 0
+                                ? unboundedIndex  // index is already bounded from 0 to length-1
+                                : unboundedIndex < 0
+                                    ? initialLineCount - unboundedIndex  // index is negative, subtract from length
+                                    : initialLineCount;  // index is not a number, set at length (insertion past end)
 
                         if (lineEditMode) {
                             adjustedLineIndices.push(boundedIndex);
