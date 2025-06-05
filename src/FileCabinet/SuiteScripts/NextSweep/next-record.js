@@ -421,17 +421,12 @@ define(['N/record',], (record,) => {
     function quickUpdate(options,) {
         const checkForValue = value => (typeof value) !== 'undefined';
 
-        const flagLoadRecordInDynamicMode     = options?.flags?.dynamic ?? false;
-        const flagSourceDependentFieldsOnSave = options?.flags?.sourceOnSave ?? false;
-        const flagIgnoreMandatoryFieldsOnSave = options?.flags?.ignoreOnSave ?? false;
-        const flagDoNotSaveAfterModifications = options?.flags?.noSave ?? false;
-
         const procedure = options?.procedure ?? [];
 
         const workRecord = options?.record ?? record.load({
             type:      options?.type ?? null,
             id:        options?.id ?? null,
-            isDynamic: flagLoadRecordInDynamicMode,
+            isDynamic: options?.flags?.dynamic ?? false,
         });
 
         const insertionCountMap = {};
@@ -642,10 +637,10 @@ define(['N/record',], (record,) => {
             }
         }
 
-        if (!flagDoNotSaveAfterModifications) {
+        if (!options?.flags?.noSave) {
             return workRecord.save({
-                enableSourcing:        flagSourceDependentFieldsOnSave,
-                ignoreMandatoryFields: flagIgnoreMandatoryFieldsOnSave,
+                enableSourcing:        options?.flags?.sourceOnSave ?? false,
+                ignoreMandatoryFields: options?.flags?.ignoreOnSave ?? false,
             });
         } else {
             return workRecord;
