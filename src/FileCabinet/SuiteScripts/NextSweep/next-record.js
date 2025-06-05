@@ -330,9 +330,7 @@ define(['N/record',], (record,) => {
 
             if (options.valuesAreText) {
                 return [].concat(recordInst.getCurrentSublistText({
-                    sublistId: sublistId,
-                    fieldId:   fieldId,
-                    forceSyncSourcing: options.forceSyncSourcing ?? false,
+                    sublistId: sublistId, fieldId: fieldId, forceSyncSourcing: options.forceSyncSourcing ?? false,
                 }));
             } else {
                 return [].concat(recordInst.getCurrentSublistValue({ sublistId: sublistId, fieldId: fieldId, }));
@@ -369,17 +367,13 @@ define(['N/record',], (record,) => {
 
             if (options.valuesAreText) {
                 recordInst.setCurrentSublistText({
-                    sublistId: sublistId,
-                    fieldId:   fieldId,
-                    text:      value,
+                    sublistId: sublistId, fieldId: fieldId, text: value,
                     ignoreFieldChange: options.ignoreFieldChange ?? false,
                     forceSyncSourcing: options.forceSyncSourcing ?? false,
                 });
             } else {
                 recordInst.setCurrentSublistValue({
-                    sublistId: sublistId,
-                    fieldId:   fieldId,
-                    value:     value,
+                    sublistId: sublistId, fieldId: fieldId, value: value,
                     ignoreFieldChange: options.ignoreFieldChange ?? false,
                     forceSyncSourcing: options.forceSyncSourcing ?? false,
                 });
