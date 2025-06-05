@@ -310,7 +310,7 @@ class CriteriaBranch extends CriteriaNode {
         // update lower relationships
         if (this.hasRight(CriteriaNode)) {
             newNode.left = this.right;
-            this.left.parent = newNode;
+            this.right.parent = newNode;
         }
 
         // update higher relationships
