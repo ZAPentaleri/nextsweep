@@ -592,7 +592,7 @@ define(['N/record',], (record,) => {
                             workRecord, sublistId, lineIndex, subStep.column,
                             {
                                 commit: lastSubStep,
-                                values: [].concat(subStep.values),
+                                values: [].concat(checkForValue(subStep.values) ? subStep.values : subStep.text),
                                 valuesAreText: checkForValue(subStep.text),
                                 ignoreFieldChange: flagSuppressEvents,
                                 forceSyncSourcing: flagForceSyncSource,
