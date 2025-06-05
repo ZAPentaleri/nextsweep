@@ -235,9 +235,7 @@ class CriteriaBranch extends CriteriaNode {
         super(parent, left,);
         this.operator = operator;
 
-        if (this.hasLeft(CriteriaBranch)) {
-            left.parent = this;
-        }
+        if (this.hasLeft(CriteriaBranch)) left.parent = this;
     }
 
     getCurrentRelationships() {
@@ -280,11 +278,9 @@ class CriteriaLeaf extends CriteriaNode {
         this.valuesAreText = valuesAreText;
     }
 
-    toString() {
-        return (
-            `${this.columnId} : ${this.comparator} : [${this.values.join(', ')}]${this.valuesAreText ? ' (text)' : ''}`
-        );
-    }
+    toString() { return (
+        `${this.columnId} : ${this.comparator} : [${this.values.join(', ')}]${this.valuesAreText ? ' (text)' : ''}`
+    ); }
 }
 
 class CriteriaNodeTraversalPath {
@@ -302,9 +298,7 @@ class CriteriaNodeTraversalPath {
 
     getLastNode() { return this.nodePath[this.nodePath.length - 1]; }
 
-    get length() {
-        return this.indexPath.length;
-    }
+    get length() { return this.indexPath.length; }
 }
 
 define(['N/record',], (record,) => {
@@ -401,11 +395,6 @@ define(['N/record',], (record,) => {
      */
     function quickUpdate(options,) {
         const checkForValue = value => (typeof value) !== 'undefined';
-        const stepIsSubprocedure = step => (typeof step) === 'object' && checkForValue(step.sublist);
-        const stepIsSimple = step => (typeof step) === 'object' && !stepIsSubprocedure(step);
-
-        const recordType  = options?.type ?? null;
-        const recordId    = options?.id ?? null;
 
         const flagLoadRecordInDynamicMode     = options?.flags?.dynamic ?? false;
         const flagSourceDependentFieldsOnSave = options?.flags?.sourceOnSave ?? false;
@@ -414,41 +403,42 @@ define(['N/record',], (record,) => {
 
         const procedure = options?.procedure ?? [];
 
-        const recordInst = options?.record ?? record.load({
-            type:      recordType,
-            id:        recordId,
+        const workRecord = options?.record ?? record.load({
+            type:      options?.type ?? null,
+            id:        options?.id ?? null,
             isDynamic: flagLoadRecordInDynamicMode,
         });
 
         const insertionCountMap = {};
         for (let stepIndex = 0; stepIndex < procedure.length; stepIndex++) {
+            const throwStepError = msg => { throw new Error(`Step ${stepIndex + 1}: ${msg}`); }
+
             const step = procedure[stepIndex];
 
-            if (stepIsSimple(step)) {
+            if ((typeof step) === 'object' && checkForValue(step.field)) {
+                // step is simple, update field
                 const flagSuppress = step?.flags?.suppressEvents ?? false;
 
                 if (!checkForValue(step.field)) {
-                    throw new Error(`Step #${stepIndex+1}: No field ID was provided`);
+                    throwStepError('No field ID was provided');
                 } else if (checkForValue(step.values) && checkForValue(step.text)) {
-                    throw new Error(
-                        `Step #${stepIndex+1}: Simple field value and text field value must not be provided `
-                        + `together (${step.field})`
-                    );
+                    throwStepError(`Simple and text field values must not be provided together (${step.field})`);
                 } else if (!checkForValue(step.values) && !checkForValue(step.text)) {
-                    throw new Error(`Step #${stepIndex+1}: No value was specified for "${step.field}"`);
+                    throwStepError(`No value was specified for "${step.field}"`);
                 }
 
                 if (checkForValue(step.values)) {
-                    recordInst.setValue({ fieldId: step.field, value: step.values, ignoreFieldChange: flagSuppress, });
+                    workRecord.setValue({ fieldId: step.field, value: step.values, ignoreFieldChange: flagSuppress, });
                 } else {
-                    recordInst.setText({ fieldId: step.field, text: step.text, ignoreFieldChange: flagSuppress, });
+                    workRecord.setText({ fieldId: step.field, text: step.text, ignoreFieldChange: flagSuppress, });
                 }
-            } else if (stepIsSubprocedure(step)) {
+            } else if ((typeof step) === 'object' && checkForValue(step.sublist)) {
+                // step is subprocedure, update sublist
                 //TODO: validate that all necessary values are present for more descriptive errors
 
                 const sublistId = step.sublist.toLowerCase();
 
-                const initialLineCount = recordInst.getLineCount({ sublistId: sublistId, });  // initial for
+                const initialLineCount = workRecord.getLineCount({ sublistId: sublistId, });  // initial for
                                                                                 // subprocedure, not for execution
                 if (!insertionCountMap.hasOwnProperty(sublistId)) {
                     insertionCountMap[sublistId] = Object.fromEntries(
@@ -467,17 +457,11 @@ define(['N/record',], (record,) => {
                 const subprocedureSteps = [].concat(step.steps ?? []);
 
                 if (matchCriteriaRaw.length > 0 && specifiedLineIndices.length > 0) {
-                    throw new Error(
-                        `Step #${stepIndex+1}: Line indices and line match criteria must not be provided together`
-                    );
+                    throwStepError('Line indices and line match criteria must not be provided together');
                 } else if (matchCriteriaRaw.length === 0 && matchSelections.length > 0) {
-                    throw new Error(
-                        `Step #${stepIndex+1}: Line match selections should not be provided without match criteria`
-                    );
+                    throwStepError('Line match selections should not be provided without match criteria');
                 } else if (subprocedureSteps.length === 0) {
-                    throw new Error(
-                        `Step #${stepIndex+1}: No sub-steps were specified for subprocedure on "${sublistId}"`
-                    );
+                    throwStepError(`No sub-steps were specified for subprocedure on "${sublistId}"`);
                 }
 
                 // Get unbounded line indices -- indices which may be positive, negative, zero, or null, may go outside
@@ -487,7 +471,7 @@ define(['N/record',], (record,) => {
                     if (matchSelections.length === 0) matchSelections.push(null);
 
                     const matchedIndices = getMatchingLines({
-                        record:    recordInst,
+                        record:    workRecord,
                         sublistId: sublistId,
                         criteria:  matchCriteriaRaw,
                     });
@@ -525,7 +509,7 @@ define(['N/record',], (record,) => {
                             }
                         }
                     } else {
-                        throw new Error(`Step #${stepIndex+1}: Some indices are out of bounds for "${sublistId}"`);
+                        throwStepError(`Some indices are out of bounds for "${sublistId}"`);
                     }
                 }
 
@@ -561,21 +545,21 @@ define(['N/record',], (record,) => {
 
                 // set column values
                 for (const lineIndex of adjustedLineIndices) {
-                    const currentLineCount = recordInst.getLineCount({ sublistId: sublistId, });
+                    const currentLineCount = workRecord.getLineCount({ sublistId: sublistId, });
 
                     if (!lineEditMode) {
-                        if (recordInst.isDynamic) {
+                        if (workRecord.isDynamic) {
                             if (lineIndex < currentLineCount) {
-                                recordInst.insertLine({
+                                workRecord.insertLine({
                                     sublistId:    sublistId,
                                     line:         lineIndex,
                                     ignoreRecalc: step?.flags?.suppressRecalc ?? false,
                                 });
                             } else {
-                                recordInst.selectNewLine({ sublistId: sublistId, });
+                                workRecord.selectNewLine({ sublistId: sublistId, });
                             }
                         } else {
-                            recordInst.insertLine({
+                            workRecord.insertLine({
                                 sublistId:    sublistId,
                                 line:         lineIndex,
                                 ignoreRecalc: step?.flags?.suppressRecalc ?? false,  //TODO: evaluate if this works here
@@ -591,22 +575,17 @@ define(['N/record',], (record,) => {
                         const flagForceSyncSource = subStep?.flags?.forceSyncSource ?? false;
 
                         if (!checkForValue(subStep.column)) {
-                            throw new Error(
-                                `Sub-Step #${subStepIndex+1}: No column ID was provided`
-                            );
+                            throwStepError(`No column ID was provided`);
                         } else if (checkForValue(subStep.values) && checkForValue(subStep.text)) {
-                            throw new Error(
-                                `Sub-Step #${subStepIndex+1}: Simple column value and text column value must not `
-                                + `be provided together (${subStep.column})`
+                            throwStepError(
+                                `Simple and text column values must not be provided together (${subStep.column})`
                             );
                         } else if (!checkForValue(subStep.values) && !checkForValue(subStep.text)) {
-                            throw new Error(
-                                `Step #${subStepIndex+1}: No value was specified for "${subStep.field}"`
-                            );
+                            throwStepError(`No value was specified for "${subStep.column}"`);
                         }
 
                         setSublistValues(
-                            recordInst, sublistId, lineIndex, subStep.column,
+                            workRecord, sublistId, lineIndex, subStep.column,
                             {
                                 commit: lastSubStep,
                                 values: [].concat(subStep.values),
@@ -618,17 +597,17 @@ define(['N/record',], (record,) => {
                     }
                 }
             } else {
-                throw new Error(`Step #${stepIndex+1}: Invalid step definition`);
+                throwStepError('Invalid step definition');
             }
         }
 
         if (!flagDoNotSaveAfterModifications) {
-            return recordInst.save({
+            return workRecord.save({
                 enableSourcing:        flagSourceDependentFieldsOnSave,
                 ignoreMandatoryFields: flagIgnoreMandatoryFieldsOnSave,
             });
         } else {
-            return recordInst;
+            return workRecord;
         }
     }
 
