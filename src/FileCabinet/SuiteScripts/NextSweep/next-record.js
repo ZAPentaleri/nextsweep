@@ -342,15 +342,15 @@ define(['N/record',], (record,) => {
      * @param {string} sublistId
      * @param {integer} line
      * @param {string} fieldId
+     * @param {*|*[]} values Values to be set
      * @param {object} options
-     * @param {boolean} [options.commit] Commit line (dynamic mode only)
-     * @param {*[]} [options.values] Values to be set
      * @param {boolean} [options.valuesAreText] Get/set values as text
+     * @param {boolean} [options.commit] Commit line (dynamic mode only)
      * @param {boolean} [options.ignoreFieldChange]
      * @param {boolean} [options.forceSyncSourcing]
      */
-    function setSublistValues(recordInst, sublistId, line, fieldId, options={},) {
-        const value = options.values?.length === 1 ? options.values[0] : options.values;
+    function setSublistValues(recordInst, sublistId, line, fieldId, values, options={},) {
+        const value = (Array.isArray(values) && values.length === 1) ? values[0] : values;
 
         if (recordInst.isDynamic) {
             if (recordInst.getCurrentSublistIndex({ sublistId: sublistId, }) !== line) {
@@ -590,10 +590,10 @@ define(['N/record',], (record,) => {
 
                         setSublistValues(
                             workRecord, sublistId, lineIndex, subStep.column,
+                            checkForValue(subStep.values) ? subStep.values : subStep.text,
                             {
-                                commit: lastSubStep,
-                                values: [].concat(checkForValue(subStep.values) ? subStep.values : subStep.text),
                                 valuesAreText: checkForValue(subStep.text),
+                                commit: lastSubStep,
                                 ignoreFieldChange: flagSuppressEvents,
                                 forceSyncSourcing: flagForceSyncSource,
                             },
