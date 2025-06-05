@@ -479,9 +479,7 @@ define(['N/record',], (record,) => {
         const procedure = options?.procedure ?? [];
 
         const workRecord = options?.record ?? record.load({
-            type:      options?.type ?? null,
-            id:        options?.id ?? null,
-            isDynamic: options?.flags?.dynamic ?? false,
+            type: options?.type, id: options?.id, isDynamic: options?.flags?.dynamic ?? false,
         });
 
         const insertionCountMap = {};
@@ -530,8 +528,6 @@ define(['N/record',], (record,) => {
                 }
 
                 const lineEditMode = step.edit ?? false;
-
-                const flagAllowOutOfBoundsIndices = step?.flags?.permissive ?? false;
 
                 const specifiedLineIndices = [].concat(step.lines ?? []);       // unprocessed line indices
                 const matchCriteriaRaw     = [].concat(step.criteria ?? []);    // line match criteria
@@ -587,7 +583,7 @@ define(['N/record',], (record,) => {
                         : index >= (initialLineCount * -1);
 
                 if (!unboundedLineIndices.every(checkIndexBounds)) {
-                    if (flagAllowOutOfBoundsIndices) {
+                    if (step?.flags?.permissive ?? false) {
                         for (let indexIndex = unboundedLineIndices.length - 1; indexIndex >= 0; indexIndex--) {
                             if (!checkIndexBounds(unboundedLineIndices[indexIndex])) {
                                 unboundedLineIndices.splice(indexIndex, 1,);
@@ -638,8 +634,7 @@ define(['N/record',], (record,) => {
                         if (workRecord.isDynamic) {
                             if (lineIndex < currentLineCount) {
                                 workRecord.insertLine({
-                                    sublistId:    sublistId,
-                                    line:         lineIndex,
+                                    sublistId: sublistId, line: lineIndex,
                                     ignoreRecalc: step?.flags?.suppressRecalc ?? false,
                                 });
                             } else {
@@ -647,8 +642,7 @@ define(['N/record',], (record,) => {
                             }
                         } else {
                             workRecord.insertLine({
-                                sublistId:    sublistId,
-                                line:         lineIndex,
+                                sublistId: sublistId, line: lineIndex,
                                 ignoreRecalc: step?.flags?.suppressRecalc ?? false,  //TODO: evaluate if this works here
                             });
                         }
@@ -662,8 +656,6 @@ define(['N/record',], (record,) => {
                         const columnId     = subStepIsArray ? subStep[0] : subStep.column;
                         const simpleValues = subStepIsArray ? subStep[1] : subStep.values;
                         const textValues   = subStepIsArray ? (subStep[2] ? subStep[1] : undefined) : subStep.text;
-                        const flagSuppressEvents  = subStep?.flags?.suppressEvents ?? false;
-                        const flagForceSyncSource = subStep?.flags?.forceSyncSource ?? false;
 
                         if (!checkForValue(columnId)) {
                             throwStepError(`No column ID was provided`);
@@ -681,8 +673,8 @@ define(['N/record',], (record,) => {
                             {
                                 valuesAreText: checkForValue(textValues),
                                 commit: lastSubStep,
-                                ignoreFieldChange: flagSuppressEvents,
-                                forceSyncSourcing: flagForceSyncSource,
+                                ignoreFieldChange: subStep?.flags?.suppressEvents ?? false,
+                                forceSyncSourcing: subStep?.flags?.forceSyncSource ?? false,
                             },
                         );
                     }
