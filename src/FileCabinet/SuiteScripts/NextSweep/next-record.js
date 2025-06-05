@@ -19,7 +19,7 @@
  * @property {Record} [record] Record instance
  * @property {string} [type] Record type
  * @property {string} [id] Record ID
- * @property {(QuickUpdateStep|QuickUpdateSubprocedure)[]} procedure Record modification procedure
+ * @property {(QuickUpdateStep|QuickUpdateSubprocedure|*[])[]} procedure Record modification procedure
  * @property {boolean} [flags.dynamic=false] Flag to load record in dynamic mode
  * @property {boolean} [flags.sourceOnSave=false] Flag to source dependent fields on save
  * @property {boolean} [flags.ignoreOnSave=false] Flag to ignore mandatory fields on save
@@ -48,7 +48,7 @@
  * @property {number|number[]} [selections=null] Modify mode line match selection indices (positive, negative, or null
  *     for all matches)
  * @property {number} [offset=0] Specified/matched line index offset
- * @property {QuickUpdateSubStep[]} steps Subprocedure steps
+ * @property {(QuickUpdateSubStep|*[])[]} steps Subprocedure steps
  * @property {boolean} [flags.suppressRecalc=false] Flag to suppress NS scripting recalculation
  * @property {boolean} [flags.permissive=false] Flag to suppress errors related to out-of-bounds line indices (bad
  *     indices will be silently skipped)
@@ -415,22 +415,30 @@ define(['N/record',], (record,) => {
 
             const step = procedure[stepIndex];
 
-            if ((typeof step) === 'object' && checkForValue(step.field)) {
+            if (
+                (typeof step) === 'object'
+                && (checkForValue(step.field) || (Array.isArray(step) && (typeof step[0]) === 'string'))
+            ) {
                 // step is simple, update field
+                const stepIsArray = Array.isArray(step);
+
+                const fieldId      = stepIsArray ? step[0] : step.field;
+                const simpleValues = stepIsArray ? step[1] : step.values;
+                const textValues   = stepIsArray ? (step[2] ? step[1] : undefined) : step.text;
                 const flagSuppress = step?.flags?.suppressEvents ?? false;
 
-                if (!checkForValue(step.field)) {
+                if (!checkForValue(fieldId)) {
                     throwStepError('No field ID was provided');
-                } else if (checkForValue(step.values) && checkForValue(step.text)) {
-                    throwStepError(`Simple and text field values must not be provided together (${step.field})`);
-                } else if (!checkForValue(step.values) && !checkForValue(step.text)) {
-                    throwStepError(`No value was specified for "${step.field}"`);
+                } else if (checkForValue(simpleValues) && checkForValue(textValues)) {
+                    throwStepError(`Simple and text field values must not be provided together (${fieldId})`);
+                } else if (!checkForValue(simpleValues) && !checkForValue(textValues)) {
+                    throwStepError(`No value was specified for "${fieldId}"`);
                 }
 
-                if (checkForValue(step.values)) {
-                    workRecord.setValue({ fieldId: step.field, value: step.values, ignoreFieldChange: flagSuppress, });
+                if (checkForValue(simpleValues)) {
+                    workRecord.setValue({ fieldId: fieldId, value: simpleValues, ignoreFieldChange: flagSuppress, });
                 } else {
-                    workRecord.setText({ fieldId: step.field, text: step.text, ignoreFieldChange: flagSuppress, });
+                    workRecord.setText({ fieldId: fieldId, text: textValues, ignoreFieldChange: flagSuppress, });
                 }
             } else if ((typeof step) === 'object' && checkForValue(step.sublist)) {
                 // step is subprocedure, update sublist
@@ -574,25 +582,29 @@ define(['N/record',], (record,) => {
                     for (let subStepIndex = 0; subStepIndex < subprocedureSteps.length; subStepIndex++) {
                         const subStep = subprocedureSteps[subStepIndex];
                         const lastSubStep = subStepIndex === subprocedureSteps.length - 1;
+                        const subStepIsArray = Array.isArray(subStep);
 
+                        const columnId     = subStepIsArray ? subStep[0] : subStep.column;
+                        const simpleValues = subStepIsArray ? subStep[1] : subStep.values;
+                        const textValues   = subStepIsArray ? (subStep[2] ? subStep[1] : undefined) : subStep.text;
                         const flagSuppressEvents  = subStep?.flags?.suppressEvents ?? false;
                         const flagForceSyncSource = subStep?.flags?.forceSyncSource ?? false;
 
-                        if (!checkForValue(subStep.column)) {
+                        if (!checkForValue(columnId)) {
                             throwStepError(`No column ID was provided`);
-                        } else if (checkForValue(subStep.values) && checkForValue(subStep.text)) {
+                        } else if (checkForValue(simpleValues) && checkForValue(textValues)) {
                             throwStepError(
-                                `Simple and text column values must not be provided together (${subStep.column})`
+                                `Simple and text column values must not be provided together (${columnId})`
                             );
-                        } else if (!checkForValue(subStep.values) && !checkForValue(subStep.text)) {
-                            throwStepError(`No value was specified for "${subStep.column}"`);
+                        } else if (!checkForValue(simpleValues) && !checkForValue(textValues)) {
+                            throwStepError(`No value was specified for column "${columnId}"`);
                         }
 
                         setSublistValues(
-                            workRecord, sublistId, lineIndex, subStep.column,
-                            checkForValue(subStep.values) ? subStep.values : subStep.text,
+                            workRecord, sublistId, lineIndex, columnId,
+                            checkForValue(simpleValues) ? simpleValues : textValues,
                             {
-                                valuesAreText: checkForValue(subStep.text),
+                                valuesAreText: checkForValue(textValues),
                                 commit: lastSubStep,
                                 ignoreFieldChange: flagSuppressEvents,
                                 forceSyncSourcing: flagForceSyncSource,
