@@ -47,7 +47,7 @@
 /**
  * @typedef {object} QuickUpdateSubprocedure
  * @property {string} sublist Sublist ID
- * @property {boolean} [edit=false] Flag to enable line edit mode (defaults to insertion mode)
+ * @property {boolean} [edit=true] Flag to enable line edit mode (defaults to insertion mode)
  * @property {number|number[]|null} [lines=null] Insertion/edit line indices (positive, negative, or null). In insertion
  *     mode, null stands for insertion at the end of the sublist; in edit mode, null stands for all lines. Insertion
  *     line indices represent positions *prior* to any insertions; Case 1: indices 0 (A) and 1 (B) are provided,
@@ -527,7 +527,7 @@ define(['N/record',], (record,) => {
                     );
                 }
 
-                const lineEditMode = step.edit ?? false;
+                const lineEditMode = step.edit ?? true;
 
                 const specifiedLineIndices = [].concat(step.lines ?? []);       // unprocessed line indices
                 const matchCriteriaRaw     = [].concat(step.criteria ?? []);    // line match criteria
