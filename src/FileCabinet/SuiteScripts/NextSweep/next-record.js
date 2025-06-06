@@ -461,9 +461,11 @@ define(['N/record',], (record,) => {
      */
     function quickCreate(options,) {
         return quickUpdate({
-            record:    record.create({ type: options?.type ?? null, isDynamic: options?.flags?.dynamic ?? false, }),
-            procedure: options.procedure,
-            flags:     options.flags,
+            record: record.create({ type: options?.type ?? null, isDynamic: options?.flags?.dynamic ?? false, }),
+            procedure: (options.procedure ?? []).map(step =>
+                (typeof step?.sublist) !== 'undefined' ? { ...step, edit: step.edit ?? false, } : step
+            ),
+            flags: options.flags,
         });
     }
 
