@@ -50,9 +50,7 @@
  * @property {boolean} [edit=true] Flag to enable line edit mode (defaults to insertion mode)
  * @property {number|number[]|null} [lines=null] Insertion/edit line indices (positive, negative, or null). In insertion
  *     mode, null stands for insertion at the end of the sublist; in edit mode, null stands for all lines. Insertion
- *     line indices represent positions *prior* to any insertions; Case 1: indices 0 (A) and 1 (B) are provided,
- *     rendering new line positions of 0 (A) and 2 (B); Case 2: identical indices 3 (A) and 3 (B) are provided,
- *     rendering new line positions of 3 (A) and 4 (B).
+ *     line indices represent positions *prior* to any insertions
  * @property {QuickUpdateSubCriterion|(QuickUpdateSubCriterion|string|string[]|*[])[]} [criteria] Modify mode line match
  *     criteria
  * @property {number|number[]} [selections=null] Modify mode line match selection indices (positive, negative, or null
