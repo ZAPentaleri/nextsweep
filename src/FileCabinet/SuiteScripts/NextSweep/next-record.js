@@ -377,7 +377,7 @@ define(['N/record',], (record,) => {
      *
      * @param {Record} recordInst
      * @param {string} sublistId
-     * @param {integer} line
+     * @param {number} line
      * @param {string} fieldId
      * @param {object} options
      * @param {boolean} [options.valuesAreText] Get/set values as text
@@ -409,7 +409,7 @@ define(['N/record',], (record,) => {
      *
      * @param {Record} recordInst
      * @param {string} sublistId
-     * @param {integer} line
+     * @param {number} line
      * @param {string} fieldId
      * @param {*|*[]} values Values to be set
      * @param {object} options
@@ -703,7 +703,7 @@ define(['N/record',], (record,) => {
      * @param {Record} options.record
      * @param {string} options.sublistId
      * @param {QuickUpdateSubCriterion|(QuickUpdateSubCriterion|string|string[]|*[])[]} options.criteria
-     * @returns {integer[]}
+     * @returns {number[]}
      */
     function getMatchingLines(options) {
         const matchCriteriaTree = createCriteriaTree(options.criteria);
