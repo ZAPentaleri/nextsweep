@@ -374,11 +374,10 @@ class CriteriaNodeTraversalPath {
         this.nodePath  = [initialNode];
     }
 
-    addLevel(node)    { this.indexPath.push(0); this.nodePath.push(node); }
-    updateLevel(node) { this.nodePath[this.nodePath.length - 1] = node; }
-    removeLevel()     { this.indexPath.pop(); this.nodePath.pop(); }
-
-    incrementLevel() { return this.indexPath.length > 0 ? ++this.indexPath[this.indexPath.length - 1] : null; }
+    addLevel(node)    { this.indexPath.push(0); this.nodePath.push(node); return this; }
+    updateLevel(node) { this.nodePath[this.nodePath.length - 1] = node; return this; }
+    removeLevel()     { this.indexPath.pop(); this.nodePath.pop(); return this; }
+    incrementLevel()  { if (this.indexPath.length > 0) ++this.indexPath[this.indexPath.length - 1]; return this; }
 
     getLastNode() { return this.nodePath[this.nodePath.length - 1]; }
 
@@ -764,8 +763,7 @@ define(['N/record',], (record,) => {
             for (const index of traversalPath.indexPath) cElement = cElement[index];
 
             if ((typeof cElement) === 'undefined') {
-                traversalPath.removeLevel();
-                traversalPath.incrementLevel();
+                traversalPath.removeLevel().incrementLevel();
                 continue;
             }
 
