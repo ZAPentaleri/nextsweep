@@ -79,16 +79,16 @@ Criteria are arbitrarily nested conditional arrays, joined by operators `AND`,
 
 **Supported comparators:**
 
-|     Name     | Symbol | Allowed representations (case insensitive) |
-|:------------:|:------:|:-------------------------------------------|
-|     ANY      |  ANY   | "any", "anyOf"                             |
-|     NONE     |  NONE  | "none", "noneOf"                           |
-|    EQUAL     |   ==   | "eq", "==", "=", "equalTo", "is"           |
-|  NOT_EQUAL   |   !=   | "ne", "!=", "<>", "notEqualTo", "isNot"    |
-| GREATER_THAN |   \>   | "gt", ">", "greaterThan"                   |
-|  LESS_THAN   |   <    | "lt", "<", "lessThan"                      |
-| GT_OR_EQUAL  |  \>=   | "ge", ">=", "greaterThanOrEqualTo"         |
-| LT_OR_EQUAL  |   <=   | "le", "<=", "lessThanOrEqualTo"            |
+|     Name     | Symbol | Allowed representations (case insensitive) | Description                                    |
+|:------------:|:------:|:-------------------------------------------|------------------------------------------------|
+|     ANY      |  ANY   | "any", "anyOf"                             | Any of X is equal to any of Y                  |
+|     NONE     |  NONE  | "none", "noneOf"                           | None of X are equal to any of Y                |
+|    EQUAL     |   ==   | "eq", "==", "=", "equalTo", "is"           | All of X are equal to some of Y and vice versa |
+|  NOT_EQUAL   |   !=   | "ne", "!=", "<>", "notEqualTo", "isNot"    | Some of X are equal to none of Y               |
+| GREATER_THAN |   \>   | "gt", ">", "greaterThan"                   | All of X are greater than any of Y             |
+|  LESS_THAN   |   <    | "lt", "<", "lessThan"                      | All of X are less than any of Y                |
+| GT_OR_EQUAL  |  \>=   | "ge", ">=", "greaterThanOrEqualTo"         | All of X are greater than or equal to any of Y |
+| LT_OR_EQUAL  |   <=   | "le", "<=", "lessThanOrEqualTo"            | All of X are less than or equal to any of Y    |
 
 **Simple example:**
 
