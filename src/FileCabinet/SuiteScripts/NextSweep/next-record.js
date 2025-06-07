@@ -611,18 +611,14 @@ define(['N/record',], (record,) => {
                                     ? initialLineCount - unboundedIndex  // index is negative, subtract from length
                                     : initialLineCount;  // index is not a number, set at length (insertion past end)
 
-                        if (lineEditMode) {
-                            adjustedLineIndices.push(boundedIndex);
-                        } else {
-                            adjustedLineIndices.push(
-                                boundedIndex
-                                + Array.from({ length: boundedIndex, }, (_, index) => index).reduce(
-                                    (accumulator, previousIndex) =>  // sums adjustments excluding current index
-                                        accumulator + insertionCountMap[sublistId][previousIndex],
-                                    0,
-                                ) + insertionCountMap[sublistId][boundedIndex]++  // current index adjustment, with
-                            );                                                    // postfix increment
-                        }
+                        adjustedLineIndices.push(lineEditMode
+                            ? boundedIndex  // edit mode so do not adjust indices
+                            : boundedIndex + Array.from({ length: boundedIndex, }, (_, index) => index).reduce(
+                                (accumulator, previousIndex) =>  // sums adjustments excluding current index
+                                    accumulator + insertionCountMap[sublistId][previousIndex],
+                                0,
+                            ) + insertionCountMap[sublistId][boundedIndex]++  // adjust for current index, with
+                        );                                                    // postfix increment
                     }
                 }
 
