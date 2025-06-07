@@ -217,7 +217,7 @@ class CriteriaNode {
         this.right  = right;
     }
 
-    getRelationship(node) {
+    getRelationshipTo(node) {
         if (node === this.parent) {
             return CriteriaRelationship.PARENT;
         } else if (node === this.left) {
@@ -273,7 +273,7 @@ class CriteriaBranch extends CriteriaNode {
 
     insertParent() {
         const newNode = (arguments[0] instanceof CriteriaNode) ? arguments[0] : new CriteriaBranch(...arguments);
-        const parentRelationship = this.parent.getRelationship(this);
+        const parentRelationship = this.parent.getRelationshipTo(this);
 
         // update higher relationships
         if (this.hasParent(CriteriaNode)) {
