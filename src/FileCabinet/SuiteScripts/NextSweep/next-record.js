@@ -771,7 +771,6 @@ define(['N/record',], (record,) => {
 
             if ((typeof cElement) === 'string') {
                 // current element is an operator (e.g. "AND", "NOT", etc)
-
                 const operator = Operator.identify(cElement);
 
                 if (operator === Operator.AND) {
@@ -779,7 +778,7 @@ define(['N/record',], (record,) => {
                     if (workNode.operator === Operator.NO_OP) {
                         workNode.operator = Operator.AND;  // update working node operator from NO-OP to AND
                     } else if (workNode.hasRight(CriteriaNode)) {
-                        workNode = workNode.insertRight(Operator.AND);
+                        workNode = workNode.insertRight(Operator.AND);  // append new node right, traverse inward
                     } else {
                         throwOperatorError(operator, 'no right node');
                     }
@@ -788,11 +787,8 @@ define(['N/record',], (record,) => {
                     if (workNode.operator === Operator.NO_OP) {
                         workNode.operator = Operator.OR;   // update working node operator from NO-OP to OR
                     } else if (workNode.hasRight(CriteriaNode)) {
-                        workNode = traversalPath.getLastNode();
-
-                        // insert new node, traverse outward
-                        workNode = workNode.insertParent(Operator.OR);
-                        traversalPath.updateLevel(workNode);
+                        workNode = traversalPath.getLastNode().insertParent(Operator.OR);  // insert new parent node at
+                        traversalPath.updateLevel(workNode);                               // path end, traverse outward
                     } else {
                         throwOperatorError(operator, 'no right node');
                     }
@@ -801,11 +797,9 @@ define(['N/record',], (record,) => {
                     if (workNode.operator === Operator.NO_OP && !workNode.hasLeft(CriteriaNode)) {
                         workNode.operator = Operator.NOT;  // update working node operator from NO-OP to NOT
                     } else if (!workNode.hasLeft(CriteriaNode)) {
-                        // new NOT left, traverse inward
-                        workNode = workNode.insertLeft(Operator.NOT,);
+                        workNode = workNode.insertLeft(Operator.NOT,);   // append new node left, traverse inward
                     } else if (!workNode.hasRight(CriteriaNode)) {
-                        // new NOT right, traverse inward
-                        workNode = workNode.insertRight(Operator.NOT,);
+                        workNode = workNode.insertRight(Operator.NOT,);  // append new node right, traverse inward
                     } else {
                         throwOperatorError(operator);  // unspecified error; probably no AND/OR preceding this NOT
                     }
@@ -818,13 +812,10 @@ define(['N/record',], (record,) => {
                 // current element is an array, but not a definition array, so it must be an additional depth level; the
                 // first two children of a criterion definition must be strings, and the only "bare" strings that may
                 // occur in a depth level are operators -- two of which must not occur at the beginning of a depth level
-
                 if (!workNode.hasLeft(CriteriaNode)) {
-                    // new NO-OP left, traverse inward
-                    workNode = workNode.insertLeft(Operator.NO_OP,);
+                    workNode = workNode.insertLeft(Operator.NO_OP,);   // append new node left, traverse inward
                 } else if (!workNode.hasRight(CriteriaNode)) {
-                    // new NO-OP right, traverse inward
-                    workNode = workNode.insertRight(Operator.NO_OP,);
+                    workNode = workNode.insertRight(Operator.NO_OP,);  // append new node right, traverse inward
                 } else {
                     throw new Error('Invalid node state');
                 }
