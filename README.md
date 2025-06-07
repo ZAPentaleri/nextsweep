@@ -84,11 +84,14 @@ Criteria are arbitrarily nested conditional arrays, joined by operators `AND`,
 |     ANY      |  ANY   | "any", "anyOf"                             | Any of X is equal to any of Y                  |
 |     NONE     |  NONE  | "none", "noneOf"                           | None of X are equal to any of Y                |
 |    EQUAL     |   ==   | "eq", "==", "=", "equalTo", "is"           | All of X are equal to some of Y and vice versa |
-|  NOT_EQUAL   |   !=   | "ne", "!=", "<>", "notEqualTo", "isNot"    | Some of X are equal to none of Y               |
+|  NOT_EQUAL   |   !=   | "ne", "!=", "<>", "notEqualTo", "isNot"    | Some of X are equal to none of Y or vice versa |
 | GREATER_THAN |   \>   | "gt", ">", "greaterThan"                   | All of X are greater than any of Y             |
 |  LESS_THAN   |   <    | "lt", "<", "lessThan"                      | All of X are less than any of Y                |
 | GT_OR_EQUAL  |  \>=   | "ge", ">=", "greaterThanOrEqualTo"         | All of X are greater than or equal to any of Y |
 | LT_OR_EQUAL  |   <=   | "le", "<=", "lessThanOrEqualTo"            | All of X are less than or equal to any of Y    |
+
+Note that element order is not considered in any comparison. For example,
+`[1,2,3]` is considered equal to `[3,2,1]`.
 
 **Simple example:**
 
