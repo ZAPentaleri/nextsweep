@@ -579,29 +579,22 @@ define(['N/record',], (record,) => {
                     }
                 }
 
-                // apply index offset
-                for (let indexIndex = 0; indexIndex < unboundedLineIndices.length; indexIndex++) {
+                // apply index offset, ensure all are in bounds
+                for (let indexIndex = unboundedLineIndices.length - 1; indexIndex >= 0; indexIndex--) {
                     if ((typeof unboundedLineIndices[indexIndex]) === 'number') {
                         unboundedLineIndices[indexIndex] += step.offset ?? 0;
                     }
-                }
 
-                // check if indices are in bounds
-                const checkIndexBounds = index => index === null
-                    ? true
-                    : index => index >= 0
-                        ? index <= (lineEditMode ? (initialLineCount - 1) : initialLineCount)
-                        : index >= (initialLineCount * -1);
-
-                if (!unboundedLineIndices.every(checkIndexBounds)) {
-                    if (step?.flags?.permissive ?? false) {
-                        for (let indexIndex = unboundedLineIndices.length - 1; indexIndex >= 0; indexIndex--) {
-                            if (!checkIndexBounds(unboundedLineIndices[indexIndex])) {
-                                unboundedLineIndices.splice(indexIndex, 1,);
-                            }
+                    const unboundedIndex = unboundedLineIndices[indexIndex];
+                    if ((unboundedIndex !== null && unboundedIndex >= 0)
+                        ? unboundedIndex > (lineEditMode ? (initialLineCount - 1) : initialLineCount)
+                        : unboundedIndex < (initialLineCount * -1)
+                    ) {
+                        if (step?.flags?.permissive ?? false) {
+                            unboundedLineIndices.splice(indexIndex, 1,);  // out-of-bounds allowed, splice
+                        } else {
+                            throwStepError(`Some indices are out of bounds for "${sublistId}"`);  // not allowed, error
                         }
-                    } else {
-                        throwStepError(`Some indices are out of bounds for "${sublistId}"`);
                     }
                 }
 
