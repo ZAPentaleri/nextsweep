@@ -166,35 +166,35 @@ class ComparatorDefinition {
 class Comparator {
     static ANY = new ComparatorDefinition(
         ['any', 'anyOf',],
-        (x, y) => y.some(yVal => x.some(xVal => xVal == yVal)),                 // ignore warning
+        (x, y) => x.some(X => y.some(Y => X == Y)),                                                    // ignore warning
     );
     static NONE = new ComparatorDefinition(
         ['none', 'noneOf',],
-        (x, y) => y.every(yVal => x.every(xVal => xVal != yVal)),               // ignore warning
+        (x, y) => x.every(X => y.every(Y => X != Y)),                                                  // ignore warning
     );
     static EQUAL = new ComparatorDefinition(
         ['eq', '==', '=', 'equalTo', 'is',],
-        (x, y) => y.length === x.length && y.every(y => x.some(x => x == y)),   // ignore warning
+        (x, y) => new Set(x).size === new Set(y).size && x.every(X => y.some(Y => X == Y)),            // ignore warning
     );
     static NOT_EQUAL = new ComparatorDefinition(
         ['ne', '!=', '<>', 'notEqualTo', 'isNot',],
-        (x, y) => y.length !== x.length || y.every(y => x.every(x => x != y)),  // ignore warning,
+        (x, y) => new Set(x).size !== new Set(y).size || x.every(X => y.every(Y => X != Y)),           // ignore warning
     );
     static GREATER_THAN = new ComparatorDefinition(
         ['gt', '>', 'greaterThan',],
-        (x, y) => y.every(y => x.every(x => x > y)),
+        (x, y) => x.every(X => y.every(Y => X > Y)),
     );
     static LESS_THAN = new ComparatorDefinition(
         ['lt', '<', 'lessThan',],
-        (x, y) => y.every(y => x.every(x => x < y)),
+        (x, y) => x.every(X => y.every(Y => X < Y)),
     );
     static GT_OR_EQUAL = new ComparatorDefinition(
         ['ge', '>=', 'greaterThanOrEqualTo',],
-        (x, y) => y.every(y => x.every(x => x >= y)),
+        (x, y) => x.every(X => y.every(Y => X >= Y)),
     );
     static LT_OR_EQUAL = new ComparatorDefinition(
         ['le', '<=', 'lessThanOrEqualTo',],
-        (x, y) => y.every(y => x.every(x => x <= y)),
+        (x, y) => x.every(X => y.every(Y => X <= Y)),
     );
 
     /**
