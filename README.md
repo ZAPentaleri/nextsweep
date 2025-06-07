@@ -83,12 +83,12 @@ Criteria are arbitrarily nested conditional arrays, joined by operators `AND`,
 |:------------:|:------:|:-------------------------------------------|
 |     ANY      |  ANY   | "any", "anyOf"                             |
 |     NONE     |  NONE  | "none", "noneOf"                           |
-|    EQUAL     |   EQ   | "eq", "==", "=", "equalTo", "is"           |
-|  NOT_EQUAL   |   NE   | "ne", "!=", "<>", "notEqualTo", "isNot"    |
-| GREATER_THAN |   GT   | "gt", ">", "greaterThan"                   |
-|  LESS_THAN   |   LT   | "lt", "<", "lessThan"                      |
-| GT_OR_EQUAL  |   GE   | "ge", ">=", "greaterThanOrEqualTo"         |
-| LT_OR_EQUAL  |   LE   | "le", "<=", "lessThanOrEqualTo"            |
+|    EQUAL     |   ==   | "eq", "==", "=", "equalTo", "is"           |
+|  NOT_EQUAL   |   !=   | "ne", "!=", "<>", "notEqualTo", "isNot"    |
+| GREATER_THAN |   \>   | "gt", ">", "greaterThan"                   |
+|  LESS_THAN   |   <    | "lt", "<", "lessThan"                      |
+| GT_OR_EQUAL  |  \>=   | "ge", ">=", "greaterThanOrEqualTo"         |
+| LT_OR_EQUAL  |   <=   | "le", "<=", "lessThanOrEqualTo"            |
 
 **Simple example:**
 
