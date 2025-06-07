@@ -178,7 +178,7 @@ class Comparator {
     );
     static NOT_EQUAL = new ComparatorDefinition(
         ['ne', '!=', '<>', 'notEqualTo', 'isNot',],
-        (x, y) => new Set(x).size !== new Set(y).size || x.every(X => y.every(Y => X != Y)),           // ignore warning
+        (x, y) => new Set(x).size !== new Set(y).size || x.some(X => y.every(Y => X != Y)),            // ignore warning
     );
     static GREATER_THAN = new ComparatorDefinition(
         ['gt', '>', 'greaterThan',],
