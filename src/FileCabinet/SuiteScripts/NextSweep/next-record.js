@@ -234,7 +234,9 @@ class CriteriaNode {
     hasLeft(nClass=null)       { return this.has(CriteriaRelationship.LEFT, nClass); }
     hasRight(nClass=null)      { return this.has(CriteriaRelationship.RIGHT, nClass); }
 
-    isRoot() { return !this.hasParent() }
+    getRoot() { return this.hasParent(CriteriaNode) ? this.parent.getRoot() : this; }
+
+    prune() { return this; }
 }
 
 class CriteriaBranch extends CriteriaNode {
@@ -319,16 +321,29 @@ class CriteriaBranch extends CriteriaNode {
     }
 
     splice() {
-        if (this.hasRight()) {
+        if (this.hasRight(CriteriaNode)) {
             throw new Error('Node has right child; can not splice');
-        } if (this.isRoot()) {
+        } else if (!this.hasLeft(CriteriaNode)) {
+            throw new Error('Node has no left child; can not splice');
+        } else if (!this.hasParent(CriteriaNode)) {
             this.left.parent = null;
         } else {
             this.parent.left = this.left;
             this.left.parent = this.parent;
         }
 
+        const leftNode = this.left;
         this.parent = this.left = null;
+
+        return leftNode;
+    }
+
+    prune() {
+        if (this.hasLeft(CriteriaBranch)) this.left.prune();
+        if (this.hasRight(CriteriaBranch)) this.right.prune();
+        this.validateRelationships(true);
+
+        return this.operator === Operator.NO_OP ? this.splice() : this;
     }
 
     toString() { return `${this.operator} : ${this.left}, ${this.right}`; }
@@ -744,7 +759,6 @@ define(['N/record',], (record,) => {
 
         let workNode = new CriteriaBranch();
         const traversalPath = new CriteriaNodeTraversalPath(workNode);
-        const nodeRecord = [workNode];
         while (traversalPath.length > 0) {
             let cElement = originalCriteriaArray;  // criteria element
             for (const index of traversalPath.indexPath) cElement = cElement[index];
@@ -766,7 +780,6 @@ define(['N/record',], (record,) => {
                         workNode.operator = Operator.AND;  // update working node operator from NO-OP to AND
                     } else if (workNode.hasRight(CriteriaNode)) {
                         workNode = workNode.insertRight(Operator.AND);
-                        nodeRecord.push(workNode);
                     } else {
                         throwOperatorError(operator, 'no right node');
                     }
@@ -780,7 +793,6 @@ define(['N/record',], (record,) => {
                         // insert new node, traverse outward
                         workNode = workNode.insertParent(Operator.OR);
                         traversalPath.updateLevel(workNode);
-                        nodeRecord.push(workNode);
                     } else {
                         throwOperatorError(operator, 'no right node');
                     }
@@ -791,11 +803,9 @@ define(['N/record',], (record,) => {
                     } else if (!workNode.hasLeft(CriteriaNode)) {
                         // new NOT left, traverse inward
                         workNode = workNode.insertLeft(Operator.NOT,);
-                        nodeRecord.push(workNode);
                     } else if (!workNode.hasRight(CriteriaNode)) {
                         // new NOT right, traverse inward
                         workNode = workNode.insertRight(Operator.NOT,);
-                        nodeRecord.push(workNode);
                     } else {
                         throwOperatorError(operator);  // unspecified error; probably no AND/OR preceding this NOT
                     }
@@ -812,11 +822,9 @@ define(['N/record',], (record,) => {
                 if (!workNode.hasLeft(CriteriaNode)) {
                     // new NO-OP left, traverse inward
                     workNode = workNode.insertLeft(Operator.NO_OP,);
-                    nodeRecord.push(workNode);
                 } else if (!workNode.hasRight(CriteriaNode)) {
                     // new NO-OP right, traverse inward
                     workNode = workNode.insertRight(Operator.NO_OP,);
-                    nodeRecord.push(workNode);
                 } else {
                     throw new Error('Invalid node state');
                 }
@@ -836,10 +844,8 @@ define(['N/record',], (record,) => {
                 if (!workNode.hasLeft()) {
                     workNode.insertLeft(newLeaf);
                     if (workNode.operator === Operator.NOT) workNode = workNode.parent;
-                    nodeRecord.push(newLeaf);
                 } else if (!workNode.hasRight() && workNode.operator !== Operator.NOT) {
                     workNode.insertRight(newLeaf);
-                    nodeRecord.push(newLeaf);
                 } else {
                     throw new Error('Invalid criterion position');
                 }
@@ -850,19 +856,8 @@ define(['N/record',], (record,) => {
             }
         }
 
-        // validate and prune tree
-        for (let nodeIndex = nodeRecord.length - 1; nodeIndex >= 0; nodeIndex--) {
-            const node = nodeRecord[nodeIndex];
-            if (node instanceof CriteriaBranch) {
-                node.validateRelationships(true);
-                if (node.operator === Operator.NO_OP) {
-                    node.splice();
-                    nodeRecord.splice(nodeIndex, 1);
-                }
-            }
-        }
-
-        return nodeRecord.filter(node => !node.hasParent())[0];
+        // validate and prune tree before returning
+        return workNode.getRoot().prune();
     }
 
     return { Comparator, Operator, quickCreate, quickUpdate, getMatchingLines, createCriteriaTree, };
