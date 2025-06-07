@@ -491,17 +491,14 @@ define(['N/record',], (record,) => {
         const checkForValue = value => (typeof value) !== 'undefined';
 
         const procedure = options?.procedure ?? [];
-
-        const workRecord = options?.record ?? record.load({
-            type: options?.type, id: options?.id, isDynamic: options?.flags?.dynamic ?? false,
-        });
+        const workRecord = options?.record
+            ?? record.load({ type: options?.type, id: options?.id, isDynamic: options?.flags?.dynamic ?? false, });
 
         const insertionCountMap = {};
         for (let stepIndex = 0; stepIndex < procedure.length; stepIndex++) {
             const throwStepError = msg => { throw new Error(`Step ${stepIndex + 1}: ${msg}`); }
 
             const step = procedure[stepIndex];
-
             if (
                 (typeof step) === 'object'
                 && (checkForValue(step.field) || (Array.isArray(step) && (typeof step[0]) === 'string'))
@@ -733,10 +730,8 @@ define(['N/record',], (record,) => {
                     );
                 } else {
                     // compute branch result, short-circuit if left child offers result
-                    return (
-                        node.operator.operateLeft(evaluateNode(node.left))
-                        ?? node.operator.operateRight(evaluateNode(node.right))
-                    );
+                    return node.operator.operateLeft(evaluateNode(node.left))
+                        ?? node.operator.operateRight(evaluateNode(node.right));
                 }
             }
 
