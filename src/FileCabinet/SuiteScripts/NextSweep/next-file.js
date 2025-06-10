@@ -57,60 +57,81 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
         return [...arguments].reverse().reduce((path, arg) => `${arg.trim().replace(/\/$/, '')}/${path}`, '',);
     }
 
+    /**
+     *
+     * @param {object} options
+     * @param {string|number} [options.baseFolder=0] Base search folder ID (0 = File Cabinet root)
+     * @param {string|number} [options.id] Search folder ID
+     * @param {string|string[]} [options.path] Search folder path
+     * @param {boolean} [options.directChild=true] Search only direct children of base folder
+     * @returns {SearchResult[]}
+     */
     function getFolderSearchResults(options) {
-        const DEFAULT_FETCH_DEPTH = 32;  //TODO: evaluate this
+        const DEFAULT_FETCH_DEPTH = 64;
         const TAB = '  ';
         const STRING_ESCAPE_SUBSTITUTIONS = [[/</g, '&lt;',], [/>/g, '&gt;',], [/'/g, '\'\'',],];
         const strEsc = name => STRING_ESCAPE_SUBSTITUTIONS.reduce((x, y_z) => x.replace(y_z[0], y_z[1]), name);
-        //TODO: add support for requiredAncestor
 
-        const baseFolder = options.baseFolder ?? null;
-        const baseFolderIsRoot = [0, '0',].includes(baseFolder);
+        const baseFolder = options.baseFolder ?? 0;
         const folderId = options.id ?? null;
         const folderPath = folderId === null ? options.path ?? [] : [];
+        const directChild = options.directChild ?? true;
+
+        if (folderId === null && folderPath.length === 0) throw new Error('No valid search query (ID or path)');
+
+        const baseFolderIsRoot = [0, '0',].includes(baseFolder);
         const pathSegments = Array.isArray(folderPath) ? folderPath : splitPath(folderPath);
-        const pathQueryDepth = baseFolderIsRoot ? options.path.length || 1 : DEFAULT_FETCH_DEPTH;
+        const pathLength = folderPath.length || 1;
+        const pathQueryDepth = directChild ? pathLength : DEFAULT_FETCH_DEPTH;
         const reverseFolderIndices = Array.from({ length: pathQueryDepth, }, (_, i) => i,).reverse()
 
-        const queryString = reverseFolderIndices.reduce((queryString, revIndex, fwdIndex,) => {
-            const baseTabs = TAB.repeat(revIndex);
-            if (fwdIndex === 0) {
+        const queryString = reverseFolderIndices.reduce((queryString, reverseIndex, forwardIndex,) => {
+            const baseTabs = TAB.repeat(reverseIndex);
+            if (forwardIndex === 0) {
                 queryString = [
-                    `${baseTabs}SELECT folder.id AS id_${revIndex}, folder.name AS name_${revIndex},`,
+                    `${baseTabs}SELECT folder.id AS id_${reverseIndex}, folder.name AS name_${reverseIndex},`,
                     `${baseTabs}${TAB}root_folder.id AS root_id, root_folder.name AS root_name`,
                     `${baseTabs}FROM MediaItemFolder folder, MediaItemFolder root_folder`,
                     `${baseTabs}WHERE folder.parent = root_folder.id(+)`
                 ].join('\n');
             } else {
                 queryString = [
-                    `${baseTabs}SELECT folder.id AS id_${revIndex}, folder.name AS name_${revIndex},`,
-                    [...new Array(fwdIndex)].map((_, i) => i + revIndex + 1).map(i =>
+                    `${baseTabs}SELECT folder.id AS id_${reverseIndex}, folder.name AS name_${reverseIndex},`,
+                    [...new Array(forwardIndex)].map((_, i) => i + reverseIndex + 1).map(i =>
                         `${baseTabs}${TAB}parents.id_${i} AS id_${i}, parents.name_${i} AS name_${i},`
                     ).join('\n'),
                     `${baseTabs}${TAB}parents.root_id AS root_id, parents.root_name AS root_name`,
                     `${baseTabs}FROM MediaItemFolder folder, (`,
                     queryString,
                     `${baseTabs}) parents`,
-                    `${baseTabs}WHERE folder.parent = parents.id_${revIndex + 1}(+)`,
+                    `${baseTabs}WHERE folder.parent = parents.id_${reverseIndex + 1}(+)`,
                 ].join('\n');
             }
 
-            if (revIndex === 0) {
+            if (reverseIndex === 0) {
                 if (folderId !== null) {
                     queryString += `\n${TAB}AND folder.id = ${folderId}`;
                 } else {
-                    queryString += '\n' + Array.from(
+                    queryString += Array.from(
                         { length: pathSegments.length, }, (_, i) => i,
                     ).reverse().map(folderIndex =>
                         ({ index: pathSegments.length - folderIndex - 1, name: pathSegments[folderIndex], })
-                    ).map(folder => folder.index === fwdIndex
-                        ? `${TAB}AND folder.name = '${folder.name}'`
-                        : `${TAB}AND parents.name_${folder.index} = '${strEsc(folder.name)}'`
-                    ).join('\n');
+                    ).map(folderMapping => folderMapping.index === forwardIndex
+                        ? `\n${TAB}AND folder.name = '${folderMapping.name}'`
+                        : `\n${TAB}AND parents.name_${folderMapping.index} = '${strEsc(folderMapping.name)}'`
+                    ).join('');
+                }
 
-                    if (baseFolder !== null)
-                        queryString += (`\n${TAB}AND ${pathQueryDepth > 1 ? 'parents.root_id' : 'root_folder.id'} `
+                if (baseFolder !== null && directChild) {
+                    // search only for direct children
+                    queryString += (`\n${TAB}AND ${pathQueryDepth > 1 ? 'parents.root_id' : 'root_folder.id'} `
                         + baseFolderIsRoot ? 'IS NULL' : `= ${baseFolder}`);
+                } else if (baseFolder !== null && !baseFolderIsRoot && reverseFolderIndices.length > pathLength) {
+                    // search for any descendant
+                    queryString += `\n${TAB}AND (\n${TAB+TAB}`
+                        + reverseFolderIndices.filter(i => i >= pathLength).map(reverseIndex =>
+                            `parents.id_${reverseIndex} = ${baseFolder}`
+                        ).join(`\n${TAB+TAB}OR `) + `\n${TAB})`;
                 }
             }
 
