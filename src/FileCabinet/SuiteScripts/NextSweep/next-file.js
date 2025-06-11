@@ -86,8 +86,8 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
         const baseFolderIsRoot = [0, '0',].includes(baseFolder);
         const pathSegments = Array.isArray(folderPath) ? folderPath : splitPath(folderPath);
         const pathLength = pathSegments.length || 1;
-        const pathQueryDepth = (directChild && baseFolderIsRoot) ? pathLength : fetchDepth;
-        const reverseFolderIndices = Array.from({ length: pathQueryDepth, }, (_, i) => i,).reverse()
+        const queryDepth = (directChild && baseFolderIsRoot) ? pathLength : Math.max(fetchDepth, pathLength);
+        const reverseFolderIndices = Array.from({ length: queryDepth, }, (_, i) => i,).reverse()
 
         const queryString = reverseFolderIndices.reduce((queryString, reverseIndex, forwardIndex,) => {
             const baseTabs = TAB.repeat(reverseIndex);
@@ -116,9 +116,7 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
                 if (folderId !== null) {
                     queryString += `\n${TAB}AND folder.id = ${folderId}`;
                 } else {
-                    queryString += Array.from(
-                        { length: pathLength, }, (_, i) => i,
-                    ).reverse().map(folderIndex =>
+                    queryString += Array.from({ length: pathLength, }, (_, i) => i,).map(folderIndex =>
                         ({ index: folderIndex, name: pathSegments[pathLength - folderIndex - 1], })
                     ).map(folderMapping => folderMapping.index === reverseIndex
                         ? `\n${TAB}AND folder.name = '${folderMapping.name}'`
@@ -128,17 +126,17 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
 
                 if (baseFolder !== null && directChild) {
                     // search only for direct children
-                    queryString += (`\n${TAB}AND `
-                        + (pathQueryDepth === pathLength
-                            ? pathQueryDepth > 1 ? 'parents.root_id' : 'root_folder.id'
-                            : `id_${pathLength}`)
-                        + (baseFolderIsRoot ? ' IS NULL' : ` = ${baseFolder}`));
-                } else if (baseFolder !== null && !baseFolderIsRoot && pathQueryDepth > pathLength) {
+                    const valueName = queryDepth === pathLength
+                        ? (queryDepth === 1 ? 'root_folder.id' : 'parents.root_id')
+                        : `id_${pathLength}`;
+
+
+                    queryString += `\n${TAB}AND ${valueName} ${baseFolderIsRoot ? 'IS NULL' : `= ${baseFolder}`}`;
+                } else if (baseFolder !== null && !baseFolderIsRoot && queryDepth > pathLength) {
                     // search for any descendant
-                    queryString += `\n${TAB}AND (\n${TAB+TAB}`
-                        + reverseFolderIndices.filter(i => i >= pathLength).map(reverseIndex =>
-                            `parents.id_${reverseIndex} = ${baseFolder}`
-                        ).join(`\n${TAB+TAB}OR `) + `\n${TAB})`;
+                    queryString += `\n${TAB}AND (\n` + reverseFolderIndices.filter(i => i >= pathLength).map(index =>
+                        `${TAB+TAB}${index < (queryDepth - 1) ? 'OR ' : ''}parents.id_${index} = ${baseFolder}`
+                    ).join(`\n`) + `\n${TAB})`;
                 }
             }
 
