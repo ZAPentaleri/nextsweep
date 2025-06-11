@@ -26,14 +26,14 @@ class ResultType {
 }
 
 class SearchResult {
-    constructor(id_path, path, type, id, name, folder, fileType) {
-        this.id_path  = id_path;
-        this.path     = path;
-        this.type     = type;
-        this.id       = id;
-        this.name     = name;
-        this.folder   = folder;
-        this.fileType = fileType;
+    constructor(idPath, path, type, id, name, folder, subtype) {
+        this.idPath  = idPath;
+        this.path    = path;
+        this.type    = type;
+        this.id      = id;
+        this.name    = name;
+        this.folder  = folder;
+        this.subtype = subtype;
     }
 }
 
@@ -64,7 +64,7 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
      *
      * @param {object} options
      * @param {string|number} [options.baseFolder=0] Base search folder ID (0 = File Cabinet root)
-     * @param {string|number} [options.id] Search folder ID
+     * @param {string|number|string[]|number[]} [options.ids] Search folder ID(s)
      * @param {string|string[]} [options.path] Search folder path
      * @param {number} [options.fetchDepth=24] The number of folders to query (fetchDepth-1 ancestors of target)
      * @param {boolean} [options.directChild=true] Search only direct children of base folder
@@ -77,12 +77,12 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
         const strEsc = name => STRING_ESCAPE_SUBSTITUTIONS.reduce((x, y_z) => x.replace(y_z[0], y_z[1]), name);
 
         const baseFolder = options.baseFolder ?? 0;
-        const folderId = options.id ?? null;
-        const folderPath = folderId === null ? options.path ?? [] : [];
+        const folderIds = (typeof options.ids) !== 'undefined' ? [].concat(options.ids) : [];
+        const folderPath = options.path ?? [];
         const directChild = options.directChild ?? true;
         const fetchDepth = options.fetchDepth ?? DEFAULT_FETCH_DEPTH;
 
-        if (folderId === null && folderPath.length === 0) throw new Error('No valid search query (ID or path)');
+        if (folderIds.length === 0 && folderPath.length === 0) throw new Error('No valid search query (IDs or path)');
 
         const baseFolderIsRoot = [0, '0',].includes(baseFolder);
         const pathSegments = Array.isArray(folderPath) ? folderPath : splitPath(folderPath);
@@ -115,9 +115,15 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
             }
 
             if (reverseIndex === 0) {
-                if (folderId !== null) {
-                    queryString += `\n${TAB}AND folder.id = ${folderId}`;
-                } else {
+                if (folderIds.length === 1) {
+                    queryString += `\n${TAB}AND folder.id = ${folderIds[0]}`;
+                } else if (folderIds.length > 1) {
+                    queryString += `\n${TAB}AND (` + folderIds.map((folderId, index) =>
+                        `\n${TAB+TAB}${index > 0 ? 'OR ' : ''}folder.id = ${folderId}`
+                    ).join('') + `\n${TAB})`;
+                }
+
+                if (pathSegments.length > 0) {
                     queryString += Array.from({ length: pathLength, }, (_, i) => i,).map(folderIndex =>
                         ({ index: folderIndex, name: pathSegments[pathLength - folderIndex - 1], })
                     ).map(folderMapping => folderMapping.index === reverseIndex
@@ -136,9 +142,9 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
                     queryString += `\n${TAB}AND ${valueName} ${baseFolderIsRoot ? 'IS NULL' : `= ${baseFolder}`}`;
                 } else if (baseFolder !== null && !baseFolderIsRoot && queryDepth > pathLength) {
                     // search for any descendant
-                    queryString += `\n${TAB}AND (\n` + folderIndices.filter(i => i >= pathLength).map(index =>
-                        `${TAB+TAB}${index > pathLength ? 'OR ' : ''}parents.id_${index} = ${baseFolder}`
-                    ).join(`\n`) + `\n${TAB})`;
+                    queryString += `\n${TAB}AND (` + folderIndices.filter(i => i >= pathLength).map(index =>
+                        `\n${TAB+TAB}${index > pathLength ? 'OR ' : ''}parents.id_${index} = ${baseFolder}`
+                    ).join('') + `\n${TAB})`;
                 }
             }
 
@@ -174,64 +180,63 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
         const baseFolder = options.baseFolder ?? '0';
         const directChild = options.directChild ?? false;
 
-        const folderResults = [];
-        const fileResults = [];
-
-        let fileName = pathSegments.at(-1);
-        const searchRoots = [];
-        if (pathSegments.length > 0 && searchTypeIsFolder) {
-            if (searchTypeIsFolder) {
-                folderResults.push(...getFolderSearchResults({
-                    path: pathSegments,
-                    baseFolder: baseFolder,
-                    directChild: directChild,
-                }));
-            }
-
-            if (searchTypeIsFile) {
-                if (pathSegments.length > 1) {
-                    searchRoots.push(...getFolderSearchResults({
-                        path: pathSegments.slice(0, -1),
-                        baseFolder: baseFolder,
-                        directChild: directChild,
-                    }));
-                } else if (!baseFolderIsRoot) {
-                    searchRoots.push(...getFolderSearchResults({ id: baseFolder, }));
-                }
-            }
-        }
-
         const baseFolderIsRoot = [0, '0',].includes(baseFolder);
-        if (fileName !== null && (baseFolderIsRoot || searchRoots.length > 0)) {
-            const searchRootMap = Object.fromEntries(searchRoots.map((accumulator, result) => [result.id, result,]));
+        if (directChild && baseFolderIsRoot)
+            throw new Error('Files may not be direct children of the File Cabinet root');
 
+        const fileMap = [];
+        if (searchTypeIsFile) {
             const fileSearchData = search.create({
                 type: 'file',
-                filters: [
-                    ...(!baseFolderIsRoot
-                        ? [['folder', 'anyof', ...Object.keys(searchRootMap),], 'OR',]
-                        : []),  //TODO: add support for null root if necessary
-                    ['name', 'is', fileName,],
-                ],
+                filters: [...(!baseFolderIsRoot ? [['folder', 'is', baseFolder,], 'AND',] : []),
+                    ['name', 'is', pathSegments.at(-1),],],
                 columns: ['name', 'folder', 'filetype',],
             }).runPaged({ pageSize: 1000, });
 
-
-            fileResults.push(...fileSearchData.pageRanges.flatMap(page =>
-                fileSearchData.fetch({ index: page.index, })
-            ).filter(fileResult =>
-                Object.keys(searchRootMap).includes(fileResult.getValue('folder'))
-            ).map(fileResult => new SearchResult(
-                joinPath(searchRootMap[fileResult.getValue('folder')].path, fileResult.getValue('name'),),
-                [...searchRootMap[fileResult.getValue('folder')].path, fileResult.id,],
-                ResultType.FILE,
-                fileResult.id,
-                fileResult.getValue('name'),
-                fileResult.getValue('filetype'),
-            )));
+            fileMap.push(...fileSearchData.pageRanges.flatMap(page =>
+                fileSearchData.fetch({ index: page.index, }).data
+            ).map(fileResult => ({
+                id:          fileResult.id,
+                name:        fileResult.getValue('name'),
+                parent_id:   fileResult.getValue('folder'),
+                parent_name: fileResult.getValue('folder'),
+                subtype:     fileResult.getValue('filetype'),
+            })).filter(fileMapping =>
+                directChild && fileMapping.parent_id === baseFolder
+            ));
         }
 
-        return [...folderResults, ...fileResults,]
+        const parentFolderIDs = [...new Set(fileMap.map(fileMapping => fileMapping.parent_id))];
+        const parentResults = [];
+        if (searchTypeIsFile) {
+            if (pathSegments.length > 1) {
+                parentResults.push(...getFolderSearchResults({
+                    baseFolder: baseFolder,
+                    ids: parentFolderIDs,
+                    path: pathSegments.slice(0, -1),
+                    directChild: directChild,
+                }));
+            } else if (!baseFolderIsRoot) {
+                parentResults.push(...getFolderSearchResults({ ids: parentFolderIDs, }));
+            }
+        }
+
+        const parentMap = Object.fromEntries(parentResults.map((accumulator, result) => [result.id, result,]));
+
+        return [
+            ...(searchTypeIsFolder ? getFolderSearchResults({
+                path: pathSegments,
+                baseFolder: baseFolder,
+                directChild: directChild,
+            }) : []),
+            ...fileMap.filter(fileMapping =>
+                parentMap.hasOwnProperty(fileMapping.parent_id)
+            ).map(fileMapping => new SearchResult(
+                joinPath(parentMap[fileMapping.parent_id].path, fileMapping.name,),
+                [...parentMap[fileMapping.parent_id].path, fileMapping.id,],
+                ResultType.FILE, fileMapping.id, fileMapping.name, fileMapping.parent_id, fileMapping.subtype,
+            )),
+        ]
     }
 
     function getFolderId(path) {
