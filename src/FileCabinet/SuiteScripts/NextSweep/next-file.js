@@ -26,7 +26,8 @@ class ResultType {
 }
 
 class SearchResult {
-    constructor(path, type, id, name, folder, fileType) {
+    constructor(id_path, path, type, id, name, folder, fileType) {
+        this.id_path  = id_path;
         this.path     = path;
         this.type     = type;
         this.id       = id;
@@ -145,6 +146,7 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
         }, null,);
 
         return query.runSuiteQL({ query: queryString, }).asMappedResults().map(folderResult => new SearchResult(
+            reverseFolderIndices.map(i => folderResult[`id_${i}`]).filter(name => name !== null),
             joinPath(...reverseFolderIndices.map(i => folderResult[`name_${i}`]).filter(name => name !== null)),
             ResultType.FOLDER,
             folderResult['id_0'].toString(),
