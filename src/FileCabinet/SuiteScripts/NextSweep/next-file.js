@@ -54,7 +54,9 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
      * @returns {string}
      */
     function joinPath() {
-        return [...arguments].reverse().reduce((path, arg) => `${arg.trim().replace(/\/$/, '')}/${path}`, '',);
+        return [...arguments].reverse().reduce((path, arg) =>
+            `${arg.trim().replace(/\/$/, '')}${path ? '/' : ''}${path}`,
+        '',);
     }
 
     /**
@@ -81,7 +83,7 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
 
         const baseFolderIsRoot = [0, '0',].includes(baseFolder);
         const pathSegments = Array.isArray(folderPath) ? folderPath : splitPath(folderPath);
-        const pathLength = folderPath.length || 1;
+        const pathLength = pathSegments.length || 1;
         const pathQueryDepth = directChild ? pathLength : DEFAULT_FETCH_DEPTH;
         const reverseFolderIndices = Array.from({ length: pathQueryDepth, }, (_, i) => i,).reverse()
 
@@ -113,10 +115,10 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
                     queryString += `\n${TAB}AND folder.id = ${folderId}`;
                 } else {
                     queryString += Array.from(
-                        { length: pathSegments.length, }, (_, i) => i,
+                        { length: pathLength, }, (_, i) => i,
                     ).reverse().map(folderIndex =>
-                        ({ index: pathSegments.length - folderIndex - 1, name: pathSegments[folderIndex], })
-                    ).map(folderMapping => folderMapping.index === forwardIndex
+                        ({ index: folderIndex, name: pathSegments[pathLength - folderIndex - 1], })
+                    ).map(folderMapping => folderMapping.index === reverseIndex
                         ? `\n${TAB}AND folder.name = '${folderMapping.name}'`
                         : `\n${TAB}AND parents.name_${folderMapping.index} = '${strEsc(folderMapping.name)}'`
                     ).join('');
@@ -124,8 +126,9 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
 
                 if (baseFolder !== null && directChild) {
                     // search only for direct children
-                    queryString += (`\n${TAB}AND ${pathQueryDepth > 1 ? 'parents.root_id' : 'root_folder.id'} `
-                        + baseFolderIsRoot ? 'IS NULL' : `= ${baseFolder}`);
+                    queryString += (`\n${TAB}AND `
+                        + (pathQueryDepth > 1 ? 'parents.root_id' : 'root_folder.id')
+                        + (baseFolderIsRoot ? ' IS NULL' : ` = ${baseFolder}`));
                 } else if (baseFolder !== null && !baseFolderIsRoot && reverseFolderIndices.length > pathLength) {
                     // search for any descendant
                     queryString += `\n${TAB}AND (\n${TAB+TAB}`
@@ -139,7 +142,7 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
         }, null,);
 
         return query.runSuiteQL({ query: queryString, }).asMappedResults().map(folderResult => new SearchResult(
-            joinPath(reverseFolderIndices.map(i => folderResult[`name_${i}`]).filter(name => name !== null)),
+            joinPath(...reverseFolderIndices.map(i => folderResult[`name_${i}`]).filter(name => name !== null)),
             ResultType.FOLDER,
             folderResult['id_0'].toString(),
             folderResult['name_0'],
@@ -298,6 +301,16 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
      */
     function moveFile(options) {
         //TODO: implement this
+        if ((typeof options.oldPath) === 'string' || (typeof options.path) === 'string') {
+            const oldPath = options.oldPath ?? options.path;
+        }
+
+        let newFolderId = null;
+        let fileId = null;
+        return file.create({
+            ...options,
+
+        });
     }
 
     return {
