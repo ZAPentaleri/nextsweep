@@ -129,9 +129,11 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
                 if (baseFolder !== null && directChild) {
                     // search only for direct children
                     queryString += (`\n${TAB}AND `
-                        + (pathQueryDepth > 1 ? 'parents.root_id' : 'root_folder.id')
+                        + (pathQueryDepth === pathLength
+                            ? pathQueryDepth > 1 ? 'parents.root_id' : 'root_folder.id'
+                            : `id_${pathLength}`)
                         + (baseFolderIsRoot ? ' IS NULL' : ` = ${baseFolder}`));
-                } else if (baseFolder !== null && !baseFolderIsRoot && reverseFolderIndices.length > pathLength) {
+                } else if (baseFolder !== null && !baseFolderIsRoot && pathQueryDepth > pathLength) {
                     // search for any descendant
                     queryString += `\n${TAB}AND (\n${TAB+TAB}`
                         + reverseFolderIndices.filter(i => i >= pathLength).map(reverseIndex =>
