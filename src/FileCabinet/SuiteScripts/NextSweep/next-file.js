@@ -136,7 +136,7 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
                 } else if (baseFolder !== null && !baseFolderIsRoot && queryDepth > pathLength) {
                     // search for any descendant
                     queryString += `\n${TAB}AND (\n` + folderIndices.filter(i => i >= pathLength).map(index =>
-                        `${TAB+TAB}${index < (queryDepth - 1) ? 'OR ' : ''}parents.id_${index} = ${baseFolder}`
+                        `${TAB+TAB}${index > 0 ? 'OR ' : ''}parents.id_${index} = ${baseFolder}`
                     ).join(`\n`) + `\n${TAB})`;
                 }
             }
