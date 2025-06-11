@@ -146,7 +146,7 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
         }, null,);
 
         return query.runSuiteQL({ query: queryString, }).asMappedResults().map(folderResult => new SearchResult(
-            reverseFolderIndices.map(i => folderResult[`id_${i}`]).filter(name => name !== null),
+            reverseFolderIndices.map(i => folderResult[`id_${i}`]).filter(id => id !== null).map(i => i.toString()),
             joinPath(...reverseFolderIndices.map(i => folderResult[`name_${i}`]).filter(name => name !== null)),
             ResultType.FOLDER,
             folderResult['id_0'].toString(),
