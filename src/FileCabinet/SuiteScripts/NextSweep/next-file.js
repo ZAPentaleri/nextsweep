@@ -65,11 +65,12 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
      * @param {string|number} [options.baseFolder=0] Base search folder ID (0 = File Cabinet root)
      * @param {string|number} [options.id] Search folder ID
      * @param {string|string[]} [options.path] Search folder path
+     * @param {number} [options.fetchDepth] The number of folders to query (fetchDepth-1 ancestors of target)
      * @param {boolean} [options.directChild=true] Search only direct children of base folder
      * @returns {SearchResult[]}
      */
     function getFolderSearchResults(options) {
-        const DEFAULT_FETCH_DEPTH = 64;
+        const DEFAULT_FETCH_DEPTH = 32;
         const TAB = '  ';
         const STRING_ESCAPE_SUBSTITUTIONS = [[/</g, '&lt;',], [/>/g, '&gt;',], [/'/g, '\'\'',],];
         const strEsc = name => STRING_ESCAPE_SUBSTITUTIONS.reduce((x, y_z) => x.replace(y_z[0], y_z[1]), name);
@@ -78,13 +79,14 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
         const folderId = options.id ?? null;
         const folderPath = folderId === null ? options.path ?? [] : [];
         const directChild = options.directChild ?? true;
+        const fetchDepth = options.fetchDepth ?? DEFAULT_FETCH_DEPTH;
 
         if (folderId === null && folderPath.length === 0) throw new Error('No valid search query (ID or path)');
 
         const baseFolderIsRoot = [0, '0',].includes(baseFolder);
         const pathSegments = Array.isArray(folderPath) ? folderPath : splitPath(folderPath);
         const pathLength = pathSegments.length || 1;
-        const pathQueryDepth = directChild ? pathLength : DEFAULT_FETCH_DEPTH;
+        const pathQueryDepth = (directChild && baseFolderIsRoot) ? pathLength : fetchDepth;
         const reverseFolderIndices = Array.from({ length: pathQueryDepth, }, (_, i) => i,).reverse()
 
         const queryString = reverseFolderIndices.reduce((queryString, reverseIndex, forwardIndex,) => {
