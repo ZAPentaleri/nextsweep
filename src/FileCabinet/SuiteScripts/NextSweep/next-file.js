@@ -87,7 +87,8 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
         const pathSegments = Array.isArray(folderPath) ? folderPath : splitPath(folderPath);
         const pathLength = pathSegments.length || 1;
         const queryDepth = (directChild && baseFolderIsRoot) ? pathLength : Math.max(fetchDepth, pathLength);
-        const reverseFolderIndices = Array.from({ length: queryDepth, }, (_, i) => i,).reverse()
+        const folderIndices = Array.from({ length: queryDepth, }, (_, i) => i,);
+        const reverseFolderIndices = [...folderIndices].reverse();
 
         const queryString = reverseFolderIndices.reduce((queryString, reverseIndex, forwardIndex,) => {
             const baseTabs = TAB.repeat(reverseIndex);
@@ -134,7 +135,7 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
                     queryString += `\n${TAB}AND ${valueName} ${baseFolderIsRoot ? 'IS NULL' : `= ${baseFolder}`}`;
                 } else if (baseFolder !== null && !baseFolderIsRoot && queryDepth > pathLength) {
                     // search for any descendant
-                    queryString += `\n${TAB}AND (\n` + reverseFolderIndices.filter(i => i >= pathLength).map(index =>
+                    queryString += `\n${TAB}AND (\n` + folderIndices.filter(i => i >= pathLength).map(index =>
                         `${TAB+TAB}${index < (queryDepth - 1) ? 'OR ' : ''}parents.id_${index} = ${baseFolder}`
                     ).join(`\n`) + `\n${TAB})`;
                 }
