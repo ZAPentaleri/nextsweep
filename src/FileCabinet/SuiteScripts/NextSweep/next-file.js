@@ -271,6 +271,28 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
         ]
     }
 
+    /**
+     * Searches the File Cabinet for files or folders
+     *
+     * @param {object} options
+     * @param {string} [options.type=SearchType.ALL]
+     * @param {string} options.query
+     * @param {string|number} [options.baseFolder]
+     * @param {boolean} [options.directChild=false]
+     * @param {boolean} [options.substring=true]
+     * @param {boolean} [options.caseInsensitive=true]
+     */
+    function searchExternal(options) {
+        return searchInternal({
+            type: options.type ?? SearchType.ALL,
+            path: [options.query],
+            baseFolder: options.baseFolder ?? '0',
+            directChild: options.directChild ?? false,
+            substring: options.substring ?? true,
+            caseInsensitive: options.caseInsensitive ?? true,
+        })
+    }
+
     function getFolderId(path) { return searchInternal({ path: path, type: SearchType.FOLDER, })?.[0]?.id ?? null; }
     function getFileId(path) { return searchInternal({ path: path, type: SearchType.FILE, })?.[0]?.id ?? null; }
     function getFolderPath(id) { return searchInternal({ ids: id, type: SearchType.FOLDER, })?.[0]?.path ?? null; }
@@ -360,5 +382,6 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
         SearchType, ResultType,
         splitPath, joinPath, getFolderId,
         copy: copyFile, create: createFile, load: loadFile, move: moveFile, delete: deleteFile,
+        search: searchExternal,
     };  //TODO: add folder functions
 });
