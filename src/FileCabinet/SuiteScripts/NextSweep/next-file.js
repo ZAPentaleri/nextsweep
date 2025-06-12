@@ -305,83 +305,102 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
     function getFilePath(id) { return searchInternal({ ids: id, type: SearchType.FILE, })?.[0]?.path ?? null; }
 
     /**
-     * Zoe please add details
+     * Copies a file to a different folder in the File Cabinet, optionally with
+     * a new name
      *
      * @param {object} options
+     * @param {string|number} [options.id] Existing file ID
+     * @param {string} [options.path] Existing file path
+     * @param {string|number} [options.folder] ID of folder to which file should be copied (must be different from
+     *     original)
+     * @param {string} [options.folderPath] Path of folder to which file should be copied (must be different from
+     *     original)
+     * @param {string} [options.newPath] New path to which file should be copied (folder must be different from
+     *     original)
+     * @param {string} [options.conflictResolution]
      * @returns {file.File}
      */
     function copyFile(options) {
-        //TODO: implement this
-        return file.copy({
-            ...options,
-        });
+        //TODO: add support for copying into original folder
+        const fileId = options.id ?? getFileId(options.path);
+        const folderId = options.folder
+            ? options.folder
+            : getFolderId(options.folderPath ?? splitPath(options.newPath).slice(0, -1));
+        const newName = options.newPath ? splitPath(options.newPath).at(-1) : null;
+
+        let newFile = file.copy({ id: fileId, folder: folderId, conflictResolution: options.conflictResolution, });
+        if (newName !== null) {
+            newFile.name = newName;
+            newFile = file.load({ id: newFile.save(), });
+        }
+
+        return newFile;
     }
 
     /**
-     * Zoe please add details
+     * Instantiates a new File object
      *
      * @param {object} options
+     * @param {string} options.name
+     * @param {string} options.fileType
+     * @param {string} options.contents
+     * @param {string|number} [options.folder]
+     * @param {string} [options.folderPath]
      * @returns {file.File}
      */
     function createFile(options) {
-        //TODO: implement this
         return file.create({
             ...options,
+            folder: (typeof (options.folder ?? options.folderPath)) !== 'undefined'
+                ? options.folder ?? getFolderId(options.folderPath)
+                : undefined,
         });
     }
 
     /**
-     * Zoe please add details
+     * Deletes a file from the File Cabinet
      *
      * @param {object} options
+     * @param {string|number} [options.id]
+     * @param {string} [options.path]
      */
     function deleteFile(options) {
-        //TODO: implement this
-        return file.delete({
-            ...options,
-        });
+        file.delete({ id: options.id ?? getFileId(options.path), });
     }
 
     /**
-     * Zoe please add details
+     * Loads a file from the File Cabinet
      *
      * @param {object} options
+     * @param {string|number} [options.id]
+     * @param {string} [options.path]
      * @returns {file.File}
      */
     function loadFile(options) {
-        //TODO: implement this
-        return file.load({
-            ...options,
-        });
+        return file.load({ id: options.id ?? options.path, });
     }
 
     /**
-     * Zoe please add details
+     * Moves a file within the File Cabinet
      *
      * @param {object} options
-     * @param {string} [options.oldPath]
-     * @param {string|number} [options.oldFolder]
-     * @param {string} [options.oldName]
-     * @param {string} [options.path]
      * @param {string|number} [options.id]
-     * @param {string} [options.name]
-     * @param {string} [options.newPath]
+     * @param {string} [options.path]
      * @param {string|number} [options.newFolder]
      * @param {string} [options.newName]
-     * @returns {file.File}
+     * @param {string} [options.newPath]
+     * @returns {number}
      */
     function moveFile(options) {
-        //TODO: implement this
-        if ((typeof options.oldPath) === 'string' || (typeof options.path) === 'string') {
-            const oldPath = options.oldPath ?? options.path;
-        }
+        const newFolderId = (options.newFolder || options.newPath)
+            ? options.newFolder || getFolderId(options.newPath.slice(0, -1))
+            : null;
+        const newName = (options.newName || options.newPath) ? options.newName ?? options.newPath.at(-1) : null;
 
-        let newFolderId = null;
-        let fileId = null;
-        return file.create({
-            ...options,
-
-        });
+        const oldFile = file.load({ id: options.id ?? options.path, });
+        if (newFolderId) oldFile.folder = newFolderId;
+        if (newName) oldFile.name = newName;
+        return oldFile.save();
     }
 
     return {
