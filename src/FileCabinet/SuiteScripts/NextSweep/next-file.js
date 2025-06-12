@@ -76,7 +76,7 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
         const STRING_ESCAPE_SUBSTITUTIONS = [[/</g, '&lt;',], [/>/g, '&gt;',], [/'/g, '\'\'',],];
         const strEsc = name => STRING_ESCAPE_SUBSTITUTIONS.reduce((x, y_z) => x.replace(y_z[0], y_z[1]), name);
 
-        const baseFolder = options.baseFolder ?? 0;
+        const baseFolder = options.baseFolder?.toString() ?? '0';
         const folderIds = (typeof options.ids) !== 'undefined' ? [].concat(options.ids) : [];
         const folderPath = options.path ?? [];
         const directChild = options.directChild ?? true;
@@ -84,7 +84,7 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
 
         if (folderIds.length === 0 && folderPath.length === 0) throw new Error('No valid search query (IDs or path)');
 
-        const baseFolderIsRoot = [0, '0',].includes(baseFolder);
+        const baseFolderIsRoot = baseFolder === '0';
         const pathSegments = Array.isArray(folderPath) ? folderPath : splitPath(folderPath);
         const pathLength = pathSegments.length || 1;
         const queryDepth = (directChild && baseFolderIsRoot) ? pathLength : Math.max(fetchDepth, pathLength);
@@ -138,7 +138,6 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
                         ? (queryDepth === 1 ? 'root_folder.id' : 'parents.root_id')
                         : `id_${pathLength}`;
 
-
                     queryString += `\n${TAB}AND ${valueName} ${baseFolderIsRoot ? 'IS NULL' : `= ${baseFolder}`}`;
                 } else if (baseFolder !== null && !baseFolderIsRoot && queryDepth > pathLength) {
                     // search for any descendant
@@ -157,7 +156,7 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
             ResultType.FOLDER,
             folderResult['id_0'].toString(),
             folderResult['name_0'],
-            (folderResult['id_1'] ?? folderResult['root_id']).toString(),
+            (folderResult['id_1'] ?? folderResult['root_id'])?.toString() ?? null,
         ));
     }
 
@@ -165,7 +164,7 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
      * Search File Cabinet items by name
      *
      * @param {object} options
-     * @param {string} [options.searchType=SearchType.FILE]
+     * @param {string} [options.type=SearchType.FILE]
      * @param {string} [options.path]
      * @param {string} [options.name]
      * @param {string|number} [options.baseFolder=0] Base search folder ID (0 = File Cabinet root)
@@ -173,14 +172,14 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
      * @returns {SearchResult[]}
      */
     function searchFileCabinet(options) {
-        const searchType = options.searchType ?? SearchType.FILE;
+        const searchType = options.type ?? SearchType.FILE;
         const searchTypeIsFile = [SearchType.ALL, SearchType.FILE,].includes(searchType);
         const searchTypeIsFolder = [SearchType.ALL, SearchType.FOLDER,].includes(searchType);
         const pathSegments = options.path ? splitPath(options.path) : [options.name];
-        const baseFolder = options.baseFolder ?? '0';
+        const baseFolder = options.baseFolder?.toString() ?? '0';
         const directChild = options.directChild ?? false;
 
-        const baseFolderIsRoot = [0, '0',].includes(baseFolder);
+        const baseFolderIsRoot = baseFolder === '0';
         if (directChild && baseFolderIsRoot)
             throw new Error('Files may not be direct children of the File Cabinet root');
 
@@ -202,7 +201,7 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
                 parent_name: fileResult.getValue('folder'),
                 subtype:     fileResult.getValue('filetype'),
             })).filter(fileMapping =>
-                directChild && fileMapping.parent_id === baseFolder
+                !directChild || fileMapping.parent_id === baseFolder
             ));
         }
 
@@ -221,7 +220,7 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
             }
         }
 
-        const parentMap = Object.fromEntries(parentResults.map((accumulator, result) => [result.id, result,]));
+        const parentMap = Object.fromEntries(parentResults.map(result => [result.id, result,]));
 
         return [
             ...(searchTypeIsFolder ? getFolderSearchResults({
@@ -232,8 +231,8 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
             ...fileMap.filter(fileMapping =>
                 parentMap.hasOwnProperty(fileMapping.parent_id)
             ).map(fileMapping => new SearchResult(
+                [...parentMap[fileMapping.parent_id].idPath, fileMapping.id,],
                 joinPath(parentMap[fileMapping.parent_id].path, fileMapping.name,),
-                [...parentMap[fileMapping.parent_id].path, fileMapping.id,],
                 ResultType.FILE, fileMapping.id, fileMapping.name, fileMapping.parent_id, fileMapping.subtype,
             )),
         ]
