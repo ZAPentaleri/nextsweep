@@ -281,8 +281,8 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
      * @param {string} options.query
      * @param {string|number} [options.baseFolder]
      * @param {boolean} [options.directChild=false]
-     * @param {boolean} [options.substring=true]
-     * @param {boolean} [options.caseInsensitive=true]
+     * @param {boolean} [options.caseSensitive=false]
+     * @param {boolean} [options.exactMatch=false]
      */
     function searchExternal(options) {
         return searchInternal({
@@ -290,8 +290,8 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
             path: [options.query],
             baseFolder: options.baseFolder ?? '0',
             directChild: options.directChild ?? false,
-            substring: options.substring ?? true,
-            caseInsensitive: options.caseInsensitive ?? true,
+            caseInsensitive: (typeof options.caseSensitive) === 'boolean' ? !options.caseSensitive : true,
+            substring: (typeof options.exactMatch) === 'boolean' ? !options.exactMatch : true,
         })
     }
 
