@@ -190,7 +190,6 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
      * @returns {SearchResult[]}
      */
     function searchInternal(options) {
-        //TODO: add support for substring search
         const searchType = options.type ?? SearchType.FILE;
         const searchTypeIsFile = [SearchType.ALL, SearchType.FILE,].includes(searchType);
         const searchTypeIsFolder = [SearchType.ALL, SearchType.FOLDER,].includes(searchType);
