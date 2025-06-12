@@ -296,7 +296,11 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
     }
 
     function getFolderId(path) { return searchInternal({ path: path, type: SearchType.FOLDER, })?.[0]?.id ?? null; }
-    function getFileId(path) { return searchInternal({ path: path, type: SearchType.FILE, })?.[0]?.id ?? null; }
+    function getFileId(path) {
+        if (!/\//.test(path)) return null;
+        try { return file.load({ id: path, }).id; }
+        catch { return null; }
+    }
     function getFolderPath(id) { return searchInternal({ ids: id, type: SearchType.FOLDER, })?.[0]?.path ?? null; }
     function getFilePath(id) { return searchInternal({ ids: id, type: SearchType.FILE, })?.[0]?.path ?? null; }
 
