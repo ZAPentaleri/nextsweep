@@ -201,7 +201,7 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
         const caseInsensitive = options.caseInsensitive ?? false;
 
         const baseFolderIsRoot = baseFolder === '0';
-        if (directChild && baseFolderIsRoot)
+        if (searchTypeIsFile && directChild && baseFolderIsRoot)
             throw new Error('Files may not be direct children of the File Cabinet root');
         if (itemIds.length > 0 && pathSegments.length > 0)
             throw new Error('IDs and path must not be provided together');
@@ -245,6 +245,7 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
                     ids: parentFolderIDs,
                     path: pathSegments.slice(0, -1),
                     directChild: directChild,
+                    caseInsensitive: caseInsensitive,
                 }));
             } else if (parentFolderIDs.length > 0) {
                 parentResults.push(...querySearchFolder({ ids: parentFolderIDs, }));
@@ -259,6 +260,8 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
                 ids: itemIds,
                 path: pathSegments,
                 directChild: directChild,
+                substring: substring,
+                caseInsensitive: caseInsensitive,
             }) : []),
             ...fileMap.filter(fileMapping =>
                 parentMap.hasOwnProperty(fileMapping.parent_id)
