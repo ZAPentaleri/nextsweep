@@ -526,10 +526,98 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
         return oldFile.save().toString();
     }
 
+    /**
+     * Creates a new folder in the File Cabinet
+     *
+     * @param {object} options
+     * @param {string|number} [options.path] New folder path
+     * @param {string} [options.name] New folder name
+     * @param {string|number} [options.folder] Parent folder ID
+     * @param {string} [options.folderPath] Parent folder path
+     * @param {boolean} [options.recursive=false] Create folder recursively
+     * @returns {string}
+     */
+    function createFolder(options) {
+        let [parentFolderId, _, folderName] = reduceItemIds({ ...options, itemIsFolder: true, });
+
+        if (parentFolderId === null && (options.folderPath || /\//.test(options.path ?? ''))) {
+            if (options.recursive ?? false) {
+                parentFolderId =
+                    createFolder({ path: options.folderPath ?? joinPath(splitPath(options.path).slice(0, -1)) });
+            } else {
+                throw new Error('Specified parent folder does not exist, recursive creation not enabled');
+            }
+        }
+
+        const folderRecord = record.create({ type: record.Type.FOLDER, });
+        folderRecord.setValue({ fieldId: 'name', value: folderName, });
+        folderRecord.setValue({ fieldId: 'parent', value: parentFolderId, });
+        return folderRecord.save().toString();
+    }
+
+    /**
+     * Deletes a folder from the File Cabinet
+     *
+     * @param {object} options
+     * @param {string|number} [options.path] Folder path
+     * @param {string|number} [options.id] Folder ID
+     * @param {string} [options.name] Folder name
+     * @param {string|number} [options.folder] Parent folder ID
+     * @param {string} [options.folderPath] Parent folder path
+     */
+    function deleteFolder(options) {
+        record.delete({
+            type: record.Type.FOLDER,
+            id: reduceItemIds({ ...options, itemShouldExist: true, itemIsFolder: true, })[1]
+        });
+    }
+
+    /**
+     * Moves a folder within the File Cabinet
+     *
+     * @param {object} options
+     * @param {string|number} [options.path] Initial path
+     * @param {string|number} [options.id] Folder ID
+     * @param {string} [options.name] Initial name
+     * @param {string|number} [options.folder] Initial parent folder ID
+     * @param {string} [options.folderPath] Initial parent folder path
+     * @param {string} [options.newPath] New path
+     * @param {string} [options.newName] New name
+     * @param {string|number} [options.newFolder] New parent folder ID
+     * @param {string} [options.newFolderPath] New parent folder path
+     * @returns {string}
+     */
+    function moveFolder(options) {
+        const [newParentId, _, newName] = reduceItemIds({
+            path: options.newPath, name: options.newName,
+            folder: options.newFolder, folderPath: options.newFolderPath
+        });
+
+        const folderRecord = record.load({
+            type: record.Type.FOLDER,
+            id: reduceItemIds({ ...options, itemShouldExist: true, itemIsFolder: true, })[1]
+        });
+        const originalParentId = folderRecord.getValue({ fieldId: 'parent' });
+        const originalName = folderRecord.getValue({ fieldId: 'name' });
+
+        if (newParentId === null && (/\//.test(options.newPath ?? '') || options.newFolderPath !== null))
+            throw new Error('Specified destination parent folder does not exist');
+        if ((newParentId === null && newName === null)||(newParentId === originalParentId && newName === originalName))
+            throw new Error('Can not move folder to its original location');
+        if (searchInternal({
+            type: SearchType.FOLDER, baseFolder: newParentId ?? originalParentId, path: newName ?? originalName
+        }).length > 0) throw new Error('A folder already exists at the specified destination');
+
+        folderRecord.setValue({ fieldId: 'parent', value: newParentId, });
+        if (newName) folderRecord.setValue({ fieldId: 'name', value: newName, });
+        return folderRecord.save().toString();
+    }
+
     return {
         SearchType, ResultType,
         splitPath, joinPath, getFolderId, getFileId, getFolderPath, getFilePath,
         copy: copyFile, create: createFile, delete: deleteFile, load: loadFile, move: moveFile,
+        createFolder, deleteFolder, moveFolder,
         search: searchExternal,
     };  //TODO: add folder functions
 });
