@@ -343,10 +343,10 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
     function getFolderId(path) { return searchInternal({ path: path, type: SearchType.FOLDER, })?.[0]?.id ?? null; }
     function getFileId(path) {
         if (!/\//.test(path)) return null;
-        try { return file.load({ id: path, }).id; }
-        catch (loadError) { return loadError.name !== 'RCRD_DSNT_EXIST'
-            ? searchInternal({ path: path, type: SearchType.FILE, })?.[0]?.id ?? null
-            : null;
+        try { return file.load({ id: path, }).id; }  // try to shortcut by loading file (server only)
+        catch (loadError) { return loadError.name !== 'RCRD_DSNT_EXIST'  // check error name for implicit server context
+            ? searchInternal({ path: path, type: SearchType.FILE, })?.[0]?.id ?? null  // not server context, run search
+            : null;  // server context, return null
         }
     }
     function getFolderPath(id) { return searchInternal({ ids: id, type: SearchType.FOLDER, })?.[0]?.path ?? null; }
