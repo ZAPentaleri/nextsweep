@@ -15,14 +15,14 @@
  */
 
 class SearchType {
-    static ALL    = 'all';
-    static FILE   = 'file';
-    static FOLDER = 'folder';
+    static ALL    = 'ALL';
+    static FILE   = 'FILE';
+    static FOLDER = 'FOLDER';
 }
 
 class ResultType {
-    static FILE   = 'file';
-    static FOLDER = 'folder';
+    static FILE   = 'FILE';
+    static FOLDER = 'FOLDER';
 }
 
 class SearchResult {
