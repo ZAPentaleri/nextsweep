@@ -217,7 +217,7 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
      */
     function searchInternal(options) {
         // parameters
-        const searchType = options.type ?? SearchType.FILE;
+        const searchType = options.type?.toUpperCase() ?? SearchType.FILE;
         const searchTypeIsFile = [SearchType.ALL, SearchType.FILE,].includes(searchType);
         const searchTypeIsFolder = [SearchType.ALL, SearchType.FOLDER,].includes(searchType);
         const itemIds = options.ids ? [].concat(options.ids) : [];
