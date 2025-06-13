@@ -320,7 +320,7 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
      * Searches the File Cabinet for files or folders
      *
      * @param {object} options
-     * @param {string} [options.type=SearchType.ALL]
+     * @param {string} [options.type=SearchType.FILE]
      * @param {string} options.query
      * @param {string|number} [options.baseFolder]
      * @param {boolean} [options.directChild=false]
@@ -329,7 +329,7 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
      */
     function searchExternal(options) {
         return searchInternal({
-            type: options.type ?? SearchType.ALL,
+            type: options.type ?? SearchType.FILE,
             path: options.query,
             baseFolder: options.baseFolder ?? '0',
             directChild: options.directChild ?? false,
