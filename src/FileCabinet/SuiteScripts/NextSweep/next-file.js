@@ -619,5 +619,5 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
         copy: copyFile, create: createFile, delete: deleteFile, load: loadFile, move: moveFile,
         createFolder, deleteFolder, moveFolder,
         search: searchExternal,
-    };  //TODO: add folder functions
+    };
 });
