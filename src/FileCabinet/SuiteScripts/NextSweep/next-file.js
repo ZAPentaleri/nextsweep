@@ -231,7 +231,7 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
         const baseFolderIsRoot = baseFolder === '0';
 
         // validation
-        if (searchTypeIsFile && directChild && baseFolderIsRoot)
+        if (searchTypeIsFile && directChild && baseFolderIsRoot && pathSegments.length < 2)
             throw new Error('Files may not be direct children of the File Cabinet root');
         if (itemIds.length > 0 && pathSegments.length > 0)
             throw new Error('IDs and path must not be provided together');
