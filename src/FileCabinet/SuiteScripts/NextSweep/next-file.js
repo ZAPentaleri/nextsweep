@@ -263,10 +263,10 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
                 parent_id:   fileResult.getValue('folder'),
                 parent_name: fileResult.getValue('folder'),
                 subtype:     fileResult.getValue('filetype'),
-            })).filter(fileMapping =>
-                caseInsensitive || pathSegments.length === 0 || fileMapping.name === pathSegments.at(-1)  // case valid.
-            ).filter(fileMapping =>
-                !directChild || fileMapping.parent_id === baseFolder  // direct child valid. (filter alone is indirect)
+            })).filter(fileMapping =>  // case validation
+                caseInsensitive || pathSegments.length === 0 || fileMapping.name === pathSegments.at(-1)
+            ).filter(fileMapping =>  // direct child validation (filter itself is indirect)
+                !directChild || (!baseFolderIsRoot && fileMapping.parent_id === baseFolder)
             ));
         }
 
