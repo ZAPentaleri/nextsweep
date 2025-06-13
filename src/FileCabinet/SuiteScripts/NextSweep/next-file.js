@@ -122,7 +122,12 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
             } else {
                 // other levels of nested query
                 queryString = [
-                    `${baseTabs}SELECT folder.id AS id_${reverseIndex}, folder.name AS name_${reverseIndex},`,
+                    ...(reverseIndex === 0
+                        ? [
+                            `${baseTabs}SELECT folder.foldertype AS type,`
+                            `${baseTabs}${TAB}folder.id AS id_${reverseIndex}, folder.name AS name_${reverseIndex},`
+                        ]
+                        : [`${baseTabs}SELECT folder.id AS id_${reverseIndex}, folder.name AS name_${reverseIndex},`]),
                     [...new Array(forwardIndex)].map((_, i) => i + reverseIndex + 1).map(i =>
                         `${baseTabs}${TAB}parents.id_${i} AS id_${i}, parents.name_${i} AS name_${i},`
                     ).join('\n'),
@@ -193,6 +198,7 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
             folderResult['id_0'].toString(),  // folder ID
             folderResult['name_0'],           // folder name
             (folderResult['id_1'] ?? folderResult['root_id'])?.toString() ?? null,  // folder parent folder
+            folderResult['type'],             // folder type
         ));
     }
 
