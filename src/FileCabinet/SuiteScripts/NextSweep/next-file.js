@@ -124,10 +124,10 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
                 queryString = [
                     ...(reverseIndex === 0
                         ? [
-                            `${baseTabs}SELECT folder.foldertype AS type,`
-                            `${baseTabs}${TAB}folder.id AS id_${reverseIndex}, folder.name AS name_${reverseIndex},`
+                            `${baseTabs}SELECT folder.foldertype AS type,`,
+                            `${baseTabs}${TAB}folder.id AS id_${reverseIndex}, folder.name AS name_${reverseIndex},`,
                         ]
-                        : [`${baseTabs}SELECT folder.id AS id_${reverseIndex}, folder.name AS name_${reverseIndex},`]),
+                        : [`${baseTabs}SELECT folder.id AS id_${reverseIndex}, folder.name AS name_${reverseIndex},`,]),
                     [...new Array(forwardIndex)].map((_, i) => i + reverseIndex + 1).map(i =>
                         `${baseTabs}${TAB}parents.id_${i} AS id_${i}, parents.name_${i} AS name_${i},`
                     ).join('\n'),
