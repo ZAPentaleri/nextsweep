@@ -410,7 +410,7 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
 
     return {
         SearchType, ResultType,
-        splitPath, joinPath, getFolderId,
+        splitPath, joinPath, getFolderId, getFileId, getFolderPath, getFilePath,
         copy: copyFile, create: createFile, load: loadFile, move: moveFile, delete: deleteFile,
         search: searchExternal,
     };  //TODO: add folder functions
