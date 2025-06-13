@@ -330,10 +330,12 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
     function searchExternal(options) {
         return searchInternal({
             type: options.type ?? SearchType.ALL,
-            path: [options.query],
+            path: options.query,
             baseFolder: options.baseFolder ?? '0',
             directChild: options.directChild ?? false,
-            caseInsensitive: (typeof options.caseSensitive) === 'boolean' ? !options.caseSensitive : true,
+            caseInsensitive: (typeof options.caseSensitive) === 'boolean'
+                ? !options.caseSensitive
+                : ((typeof options.exactMatch) === 'boolean' ? !options.exactMatch : true),
             substring: (typeof options.exactMatch) === 'boolean' ? !options.exactMatch : true,
         })
     }
