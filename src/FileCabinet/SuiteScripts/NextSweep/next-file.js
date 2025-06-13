@@ -344,7 +344,10 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
     function getFileId(path) {
         if (!/\//.test(path)) return null;
         try { return file.load({ id: path, }).id; }
-        catch { return null; }
+        catch (loadError) { return loadError.name !== 'RCRD_DSNT_EXIST'
+            ? searchInternal({ path: path, type: SearchType.FILE, })?.[0]?.id ?? null
+            : null;
+        }
     }
     function getFolderPath(id) { return searchInternal({ ids: id, type: SearchType.FOLDER, })?.[0]?.path ?? null; }
     function getFilePath(id) { return searchInternal({ ids: id, type: SearchType.FILE, })?.[0]?.path ?? null; }
