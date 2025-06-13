@@ -266,7 +266,7 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
             })).filter(fileMapping =>  // case validation
                 caseInsensitive || pathSegments.length === 0 || fileMapping.name === pathSegments.at(-1)
             ).filter(fileMapping =>  // direct child validation (filter itself is indirect)
-                !directChild || (!baseFolderIsRoot && fileMapping.parent_id === baseFolder)
+                !directChild || baseFolderIsRoot || fileMapping.parent_id === baseFolder
             ));
         }
 
