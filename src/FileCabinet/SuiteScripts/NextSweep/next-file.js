@@ -438,9 +438,11 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
      */
     function moveFile(options) {
         const newFolderId = (options.newFolder || options.newPath)
-            ? options.newFolder || getFolderId(options.newPath.slice(0, -1))
+            ? options.newFolder ?? getFolderId(splitPath(options.newPath).slice(0, -1))
             : null;
-        const newName = (options.newName || options.newPath) ? options.newName ?? options.newPath.at(-1) : null;
+        const newName = (options.newName || options.newPath)
+            ? options.newName ?? splitPath(options.newPath).at(-1)
+            : null;
 
         const oldFile = file.load({ id: options.id ?? options.path, });
         if (newFolderId) oldFile.folder = newFolderId;
