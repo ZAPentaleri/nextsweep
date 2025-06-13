@@ -343,7 +343,7 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
     function getFolderId(path) { return searchInternal({ path: path, type: SearchType.FOLDER, })?.[0]?.id ?? null; }
     function getFileId(path) {
         if (!/\//.test(path)) return null;
-        try { return file.load({ id: path, }).id; }  // try to shortcut by loading file (server only)
+        try { return file.load({ id: path, }).id.toString(); }  // try to shortcut by loading file (server only)
         catch (loadError) { return loadError.name !== 'RCRD_DSNT_EXIST'  // check error name for implicit server context
             ? searchInternal({ path: path, type: SearchType.FILE, })?.[0]?.id ?? null  // not server context, run search
             : null;  // server context, return null
@@ -353,55 +353,116 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
     function getFilePath(id) { return searchInternal({ ids: id, type: SearchType.FILE, })?.[0]?.path ?? null; }
 
     /**
+     * Reduces parameters to item ID, folder ID, and name
+     *
+     * @param {object} options
+     * @param {string} [options.path]
+     * @param {string|number} [options.id]
+     * @param {string} [options.name]
+     * @param {string|number} [options.folder]
+     * @param {string} [options.folderPath]
+     * @param {boolean} [options.itemShouldExist=false]
+     * @param {boolean} [options.itemIsFolder=false]
+     * @returns {(string|null)[]}
+     */
+    function reduceItemIds(options) {
+        const itemShouldExist = options.itemShouldExist ?? false;
+        const itemIsFolder = options.itemIsFolder ?? false;
+
+        let folderId = null;
+        let itemId = null;
+        let itemName = null;
+
+        if (options.id) itemId = options.id.toString();
+        if (options.folder) folderId = options.folder.toString();
+        if (options.name || options.path) itemName = options.name || splitPath(options.path).at(-1);
+
+        if (!itemId && itemShouldExist && options.path) {
+            const fileResults = searchInternal({
+                type: (itemIsFolder ? SearchType.FOLDER : SearchType.FILE), path: options.path,
+            });
+            itemId = fileResults?.[0]?.id;
+            folderId = fileResults?.[0]?.folder;
+        }
+        if (!folderId && options.folderPath) folderId = getFolderPath({ path: options.folderPath, });
+        if (!folderId && options.path && splitPath(options.path).length > 1)
+            folderId = getFolderPath({ path: splitPath(options.path).splice(0, -1), });
+        if (!itemId && folderId && itemShouldExist && options.name) {
+            const fileResults = searchInternal({
+                type: (itemIsFolder ? SearchType.FOLDER : SearchType.FILE), baseFolder: folderId, path: options.name,
+            });
+            itemId = fileResults?.[0]?.id;
+        }
+
+        return [folderId, itemId, itemName,];
+    }
+
+    /**
      * Copies a file to a different folder in the File Cabinet, optionally with
      * a new name
      *
      * @param {object} options
-     * @param {string|number} [options.id] Existing file ID
-     * @param {string} [options.path] Existing file path
-     * @param {string|number} [options.folder] ID of folder to which file should be copied (must be different from
-     *     original)
-     * @param {string} [options.folderPath] Path of folder to which file should be copied (must be different from
-     *     original)
-     * @param {string} [options.newPath] New path to which file should be copied (folder must be different from
-     *     original)
+     * @param {string} [options.path] Original file path
+     * @param {string|number} [options.id] Original file ID
+     * @param {string} [options.name] Original file name
+     * @param {string|number} [options.folder] Original folder ID
+     * @param {string} [options.folderPath] Original folder path
+     * @param {string} [options.copyPath] Copied file path
+     * @param {string} [options.copyName] Copied file path
+     * @param {string|number} [options.copyFolder] Copied file folder ID
+     * @param {string} [options.copyFolderPath] Copied file folder path
      * @param {string} [options.conflictResolution]
-     * @returns {file.File}
+     * @returns {File}
      */
     function copyFile(options) {
-        //TODO: add support for copying into original folder
-        const fileId = options.id ?? getFileId(options.path);
-        const folderId = options.folder
-            ? options.folder
-            : getFolderId(options.folderPath ?? splitPath(options.newPath).slice(0, -1));
-        const newName = options.newPath ? splitPath(options.newPath).at(-1) : null;
+        const originalFile = loadFile(options);
+        const originalId = originalFile.id.toString();
+        const originalName = originalFile.name;
+        const originalFolderId = originalFile.folder.toString();
 
-        let newFile = file.copy({ id: fileId, folder: folderId, conflictResolution: options.conflictResolution, });
-        if (newName !== null) {
-            newFile.name = newName;
-            newFile = file.load({ id: newFile.save(), });
+        const [copyFolderId, _, copyName] = reduceItemIds({
+            path: options.copyPath, name: options.copyName,
+            folder: options.copyFolder, folderPath: options.copyFolderPath,
+        })
+
+        if (copyName === originalName && originalFolderId === copyFolderId)
+            throw new Error('Can not copy file to its original location');
+
+        const tempFolderName = copyFolderId === originalFolderId ? `TEMP_${new Date().getTime()}` : null;
+        const tempFolderId =
+            tempFolderName !== null ? createFolder({ folder: copyFolderId, name: tempFolderName }) : null;
+
+        let newFile = file.copy({
+            id: originalId, folder: tempFolderId ?? copyFolderId,
+            conflictResolution: options.conflictResolution,
+        });
+
+        if (copyName !== null && copyName !== originalName) newFile.name = copyName;
+        if (tempFolderId !== null) {
+            newFile.folder = copyFolderId;
+            deleteFolder({ id: tempFolderId, })
         }
 
-        return newFile;
+        return (tempFolderId === null && copyName === null) ? newFile : file.load({ id: newFile.save(), });
     }
 
     /**
      * Instantiates a new File object
      *
      * @param {object} options
-     * @param {string} options.name
-     * @param {string} options.fileType
-     * @param {string} options.contents
-     * @param {string|number} [options.folder]
-     * @param {string} [options.folderPath]
-     * @returns {file.File}
+     * @param {string} [options.path] New file path
+     * @param {string} [options.name] New file name
+     * @param {string|number} [options.folder] Folder ID
+     * @param {string} [options.folderPath] Folder path
+     * @param {string} options.fileType New file type
+     * @param {string} options.contents New file contents
+     * @returns {File}
      */
     function createFile(options) {
         return file.create({
             ...options,
-            folder: (typeof (options.folder ?? options.folderPath)) !== 'undefined'
-                ? options.folder ?? getFolderId(options.folderPath)
-                : undefined,
+            folder: reduceItemIds({ folder: options.folder, folderPath: options.folderPath, })[0],
+            name: reduceItemIds({ name: options.name, path: options.path, })[2],
         });
     }
 
@@ -409,54 +470,66 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
      * Deletes a file from the File Cabinet
      *
      * @param {object} options
-     * @param {string|number} [options.id]
-     * @param {string} [options.path]
+     * @param {string|number} [options.path] File path
+     * @param {string|number} [options.id] File ID
+     * @param {string} [options.name] File name
+     * @param {string|number} [options.folder] Folder ID
+     * @param {string} [options.folderPath] Folder path
      */
     function deleteFile(options) {
-        file.delete({ id: options.id ?? getFileId(options.path), });
+        file.delete({ id: reduceItemIds({ ...options, itemShouldExist: true, })[1], });
     }
 
     /**
      * Loads a file from the File Cabinet
      *
      * @param {object} options
-     * @param {string|number} [options.id]
-     * @param {string} [options.path]
-     * @returns {file.File}
+     * @param {string|number} [options.path] File path
+     * @param {string|number} [options.id] File ID
+     * @param {string} [options.name] File name
+     * @param {string|number} [options.folder] Folder ID
+     * @param {string} [options.folderPath] Folder path
+     * @returns {File}
      */
     function loadFile(options) {
-        return file.load({ id: options.id ?? options.path, });
+        return file.load({ id: reduceItemIds({ ...options, itemShouldExist: true, })[1], });
     }
 
     /**
      * Moves a file within the File Cabinet
      *
      * @param {object} options
-     * @param {string|number} [options.id]
-     * @param {string} [options.path]
-     * @param {string|number} [options.newFolder]
-     * @param {string} [options.newName]
-     * @param {string} [options.newPath]
-     * @returns {number}
+     * @param {string|number} [options.path] Initial path
+     * @param {string|number} [options.id] File ID
+     * @param {string} [options.name] Initial name
+     * @param {string|number} [options.folder] Initial folder ID
+     * @param {string} [options.folderPath] Initial folder path
+     * @param {string} [options.newPath] New path
+     * @param {string} [options.newName] New name
+     * @param {string|number} [options.newFolder] New folder ID
+     * @param {string} [options.newFolderPath] New folder path
+     * @returns {string}
      */
     function moveFile(options) {
-        const newFolderId = (options.newFolder || options.newPath)
-            ? options.newFolder ?? getFolderId(splitPath(options.newPath).slice(0, -1))
-            : null;
-        const newName = (options.newName || options.newPath)
-            ? options.newName ?? splitPath(options.newPath).at(-1)
-            : null;
+        const [newFolderId, _, newName] = reduceItemIds({
+            path: options.newPath, name: options.newName,
+            folder: options.newFolder, folderPath: options.newFolderPath
+        });
 
-        const oldFile = file.load({ id: options.id ?? options.path, });
+        const oldFile = loadFile(options);
+        if ((newFolderId === null && newName === null)
+            || (newFolderId === oldFile.id.toString() && newName === oldFile.name))
+            throw new Error('Can not move file to its original location');
+
         if (newFolderId) oldFile.folder = newFolderId;
         if (newName) oldFile.name = newName;
-        return oldFile.save();
+        return oldFile.save().toString();
     }
 
     return {
         SearchType, ResultType,
         splitPath, joinPath, getFolderId, getFileId, getFolderPath, getFilePath,
-        copy: copyFile, create: createFile, load: loadFile, move: moveFile, delete: deleteFile,
+        copy: copyFile, create: createFile, delete: deleteFile, load: loadFile, move: moveFile,
         search: searchExternal,
     };  //TODO: add folder functions
 });
