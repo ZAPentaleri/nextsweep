@@ -77,7 +77,12 @@ define(['N/file', 'N/query', 'N/record', 'N/search',], (file, query, record, sea
         const TAB = '  ';
         const ESCAPE_CHAR = '\\';
         const STRING_ESCAPE_SUBS = [[/</g, `&lt;`,], [/>/g, `&gt;`,], [/'/g, `''`,],];
-        const LIKE_ESCAPE_SUBS = [[/</g, `&lt;`,], [/>/g, `&gt;`,], [/\\/g, `\\\\`,], [/%/g, `\\%`,], [/_/g, `\\_`,],];
+        const LIKE_ESCAPE_SUBS = [
+            [/</g, `&lt;`,], [/>/g, `&gt;`,],
+            [/\\/g, `\\\\`,], [/%/g, `\\%`,], [/_/g, `\\_`,],
+            [/'/g, `''`,],
+        ];
+
         const stringEscape = name => STRING_ESCAPE_SUBS.reduce((x, y_z) => x.replace(y_z[0], y_z[1]), name);
         const likeEscape = name => LIKE_ESCAPE_SUBS.reduce((x, y_z) => x.replace(y_z[0], y_z[1]), name);
 
