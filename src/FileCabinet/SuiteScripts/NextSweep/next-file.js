@@ -400,7 +400,7 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
                 message: 'Folder path did not resolve to an existing folder', name: FILE_ERR_NAME, });
         }
         if (!folderId && options.path && splitPath(options.path).length > 1) {
-            folderId = getFolderId(splitPath(options.path).splice(0, -1));
+            folderId = getFolderId(splitPath(options.path).slice(0, -1));
             if (folderId === null) throw error.create({
                 message: 'Path segment did not resolve to an existing folder', name: FILE_ERR_NAME, });
         }
