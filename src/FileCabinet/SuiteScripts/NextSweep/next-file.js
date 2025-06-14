@@ -359,7 +359,14 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
     function getFilePath(id) { return searchInternal({ ids: id, type: SearchType.FILE, })?.[0]?.path ?? null; }
 
     /**
-     * Reduces parameters to item ID, folder ID, and name
+     * Reduces parameters to item (file or folder) ID, folder (parent) ID, and
+     * name. Only ONE parameter to identify any given value may be passed to
+     * avoid result inconsistency (mismatched name, folder, etc)
+     *
+     * Value derivation options:
+     *     folderId: id, path, folder, folderPath
+     *     itemId:   id, path, name (with folderId)
+     *     itemName: id, path, name
      *
      * @param {object} options
      * @param {string} [options.path]
@@ -375,12 +382,23 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
         const itemExists = options.itemExists ?? false;
         const itemIsFolder = options.itemIsFolder ?? false;
 
+        for (const parameterSet
+            of [
+                ['parent folder ID', options.id, options.path, options.folder, options.folderPath,],
+                [`${itemIsFolder ? 'folder' : 'file'} ID`, options.id, options.path, options.name,],
+                [`${itemIsFolder ? 'folder' : 'file'} name`, options.id, options.path, options.name,],
+        ]) {
+            if (parameterSet.slice(1).filter(x => (x ?? null) !== null).length > 1) throw error.create({
+                message: `Too many parameters for ${parameterSet[0]} derivation: [${parameterSet.slice(1).join(', ')}]`,
+                name: FILE_ERR_NAME, });
+        }
+
         let folderId = null;
         let itemId = null;
         let itemName = null;
 
-        if (options.id) itemId = options.id.toString();
         if (options.folder) folderId = options.folder.toString();
+        if (options.id) itemId = options.id.toString();
         if (options.name || options.path) itemName = options.name || splitPath(options.path).at(-1);
 
         if (!itemId && itemExists && options.path) {
@@ -394,16 +412,17 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
                 message: `Path did not resolve to an existing ${itemIsFolder ? 'folder' : 'file'}`,
                 name: FILE_ERR_NAME, });
         }
-        if (!folderId && options.folderPath) {
-            folderId = getFolderId(options.folderPath);
-            if (folderId === null) throw error.create({
-                message: 'Folder path did not resolve to an existing folder', name: FILE_ERR_NAME, });
-        }
+
         if (!folderId && options.path && splitPath(options.path).length > 1) {
             folderId = getFolderId(splitPath(options.path).slice(0, -1));
             if (folderId === null) throw error.create({
                 message: 'Path segment did not resolve to an existing folder', name: FILE_ERR_NAME, });
+        } else if (!folderId && options.folderPath) {
+            folderId = getFolderId(options.folderPath);
+            if (folderId === null) throw error.create({
+                message: 'Folder path did not resolve to an existing folder', name: FILE_ERR_NAME, });
         }
+
         if (!itemId && folderId && itemExists && options.name) {
             const searchResults = searchInternal({
                 type: (itemIsFolder ? SearchType.FOLDER : SearchType.FILE), baseFolder: folderId, path: options.name,
