@@ -79,6 +79,8 @@
  * @property {boolean} [flags.forceSyncSource=false] Force synchronous field sourcing
  */
 
+const ERROR_NAME = 'NEXT_RECORD_ERROR';
+
 class CriteriaRelationship {
     static PARENT = 'parent';
     static LEFT   = 'left';
@@ -384,7 +386,7 @@ class CriteriaNodeTraversalPath {
     get length() { return this.indexPath.length; }
 }
 
-define(['N/record',], (record,) => {
+define(['N/error', 'N/record',], (error, record,) => {
     /**
      *
      * @param {Record} recordInst
@@ -496,7 +498,8 @@ define(['N/record',], (record,) => {
 
         const insertionCountMap = {};
         for (let stepIndex = 0; stepIndex < procedure.length; stepIndex++) {
-            const throwStepError = msg => { throw new Error(`Step ${stepIndex + 1}: ${msg}`); }
+            const throwStepError = msg =>
+                { throw error.create({ message: `Step ${stepIndex + 1}: ${msg}`, name: ERROR_NAME, }); };
 
             const step = procedure[stepIndex];
             if (
@@ -740,7 +743,8 @@ define(['N/record',], (record,) => {
      * @param {QuickUpdateSubCriterion|(QuickUpdateSubCriterion|string|string[]|*[])[]} originalCriteria
      */
     function createCriteriaTree(originalCriteria,) {
-        const throwOperatorError = (op, msg) => { throw new Error(`Invalid operator position (${op}): ${msg??'?'}`); }
+        const throwOperatorError = (op, msg) =>
+            { throw error.create({ message: `Invalid operator position (${op}): ${msg??'?'}`, name: ERROR_NAME, }); };
 
         const originalCriteriaArray = [].concat(originalCriteria);
 
@@ -803,7 +807,7 @@ define(['N/record',], (record,) => {
                 } else if (!workNode.hasRight(CriteriaNode)) {
                     workNode = workNode.insertRight(Operator.NO_OP,);  // append new node right, traverse inward
                 } else {
-                    throw new Error('Invalid node state');
+                    throw error.create({ message: 'Invalid node state', name: ERROR_NAME, });
                 }
 
                 traversalPath.addLevel(workNode);
@@ -824,12 +828,13 @@ define(['N/record',], (record,) => {
                 } else if (!workNode.hasRight() && workNode.operator !== Operator.NOT) {
                     workNode.insertRight(newLeaf);
                 } else {
-                    throw new Error('Invalid criterion position');
+                    throw error.create({ message: 'Invalid criterion position', name: ERROR_NAME, });
                 }
 
                 traversalPath.incrementLevel();
             } else {
-                new Error(`Could not parse current criteria element: ${JSON.stringify(cElement)}`);
+                error.create({ message: `Could not parse current criteria element: ${JSON.stringify(cElement)}`,
+                    name: ERROR_NAME, });
             }
         }
 
