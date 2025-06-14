@@ -447,7 +447,7 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
         const [copyFolderId, _, copyName] = reduceItemIds({
             path: options.copyPath, name: options.copyName,
             folder: options.copyFolder, folderPath: options.copyFolderPath,
-        })
+        });
 
         if (copyName === originalName && originalFolderId === copyFolderId)
             throw error.create({ message: 'Can not copy file to its original location', name: ERROR_NAME, });
