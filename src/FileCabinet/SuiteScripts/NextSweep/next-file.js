@@ -14,7 +14,7 @@
  * @NApiVersion 2.1
  */
 
-const ERROR_NAME = 'NEXT_FILE_ERROR';
+const FILE_ERR_NAME = 'NEXT_FILE_ERROR';
 
 class SearchType {
     static ALL    = 'ALL';
@@ -101,9 +101,9 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
 
         // validation
         if (folderIds.length === 0 && pathSegments.length === 0)
-            throw error.create({ message: 'No valid search query (IDs or path)', name: ERROR_NAME, });
+            throw error.create({ message: 'No valid search query (IDs or path)', name: FILE_ERR_NAME, });
         if (substring && pathSegments.length !== 1)
-            throw error.create({ message: 'Invalid parameters for substring search', name: ERROR_NAME, });
+            throw error.create({ message: 'Invalid parameters for substring search', name: FILE_ERR_NAME, });
 
         // parameter-derived values
         const baseFolderIsRoot = baseFolder === '0';
@@ -236,13 +236,13 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
 
         // validation
         if (searchTypeIsFile && directChild && baseFolderIsRoot && pathSegments.length < 2) throw error.create({
-            message: 'Files may not be direct children of the File Cabinet root', name: ERROR_NAME, });
+            message: 'Files may not be direct children of the File Cabinet root', name: FILE_ERR_NAME, });
         if (itemIds.length > 0 && pathSegments.length > 0)
-            throw error.create({ message: 'IDs and path must not be provided together', name: ERROR_NAME, });
+            throw error.create({ message: 'IDs and path must not be provided together', name: FILE_ERR_NAME, });
         if (itemIds.length === 0 && pathSegments.length === 0)
-            throw error.create({ message: 'No valid search query (IDs or path)', name: ERROR_NAME, });
+            throw error.create({ message: 'No valid search query (IDs or path)', name: FILE_ERR_NAME, });
         if (substring && pathSegments.length !== 1)
-            throw error.create({ message: 'Invalid parameters for substring search', name: ERROR_NAME, });
+            throw error.create({ message: 'Invalid parameters for substring search', name: FILE_ERR_NAME, });
 
         // file search
         const fileMap = [];
@@ -392,17 +392,17 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
 
             if (itemId === null) throw error.create({
                 message: `Path did not resolve to an existing ${itemIsFolder ? 'folder' : 'file'}`,
-                name: ERROR_NAME, });
+                name: FILE_ERR_NAME, });
         }
         if (!folderId && options.folderPath) {
             folderId = getFolderId(options.folderPath);
-            if (folderId === null)
-                throw error.create({ message: 'Folder path did not resolve to an existing folder', name: ERROR_NAME, });
+            if (folderId === null) throw error.create({
+                message: 'Folder path did not resolve to an existing folder', name: FILE_ERR_NAME, });
         }
         if (!folderId && options.path && splitPath(options.path).length > 1) {
             folderId = getFolderId(splitPath(options.path).splice(0, -1));
             if (folderId === null) throw error.create({
-                message: 'Path segment did not resolve to an existing folder', name: ERROR_NAME, });
+                message: 'Path segment did not resolve to an existing folder', name: FILE_ERR_NAME, });
         }
         if (!itemId && folderId && itemExists && options.name) {
             const searchResults = searchInternal({
@@ -412,11 +412,11 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
 
             if (itemId === null) throw error.create({
                 message: `Name did not resolve to an existing ${itemIsFolder ? 'folder' : 'file'}`,
-                name: ERROR_NAME, });
+                name: FILE_ERR_NAME, });
         }
 
         if (itemExists && itemId === null) throw error.create({
-            message: `${itemIsFolder ? 'Folder' : 'File'} could not be found`, name: ERROR_NAME, });
+            message: `${itemIsFolder ? 'Folder' : 'File'} could not be found`, name: FILE_ERR_NAME, });
 
         return [folderId, itemId, itemName,];
     }
@@ -450,7 +450,7 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
         });
 
         if (copyName === originalName && originalFolderId === copyFolderId)
-            throw error.create({ message: 'Can not copy file to its original location', name: ERROR_NAME, });
+            throw error.create({ message: 'Can not copy file to its original location', name: FILE_ERR_NAME, });
 
         const tempFolderName = copyFolderId === originalFolderId ? `TEMP_${new Date().getTime()}` : null;
         const tempFolderId =
@@ -540,7 +540,7 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
         const oldFile = loadFile(options);
         if ((newFolderId === null && newName === null)
             || (newFolderId === oldFile.id.toString() && newName === oldFile.name))
-            throw error.create({ message: 'Can not move file to its original location', name: ERROR_NAME, });
+            throw error.create({ message: 'Can not move file to its original location', name: FILE_ERR_NAME, });
 
         if (newFolderId) oldFile.folder = newFolderId;
         if (newName) oldFile.name = newName;
@@ -566,7 +566,8 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
                 parentFolderId =
                     createFolder({ path: options.folderPath ?? joinPath(splitPath(options.path).slice(0, -1)) });
             } else throw error.create({
-                message: 'Specified parent folder does not exist, recursive creation not enabled', name: ERROR_NAME, });
+                message: 'Specified parent folder does not exist, recursive creation not enabled',
+                name: FILE_ERR_NAME, });
         }
 
         const folderRecord = record.create({ type: record.Type.FOLDER, });
@@ -621,13 +622,13 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
         const originalName = folderRecord.getValue({ fieldId: 'name' });
 
         if (newParentId === null && (/\//.test(options.newPath ?? '') || options.newFolderPath !== null))
-            throw error.create({ message: 'Specified destination parent folder does not exist', name: ERROR_NAME, });
+            throw error.create({ message: 'Specified destination parent folder does not exist', name: FILE_ERR_NAME, });
         if ((newParentId === null && newName === null)||(newParentId === originalParentId && newName === originalName))
-            throw error.create({ message: 'Can not move folder to its original location', name: ERROR_NAME, });
+            throw error.create({ message: 'Can not move folder to its original location', name: FILE_ERR_NAME, });
         if (searchInternal({
             type: SearchType.FOLDER, baseFolder: newParentId ?? originalParentId, path: newName ?? originalName
-        }).length > 0)
-            throw error.create({ message: 'A folder already exists at the specified destination', name: ERROR_NAME, });
+        }).length > 0) throw error.create({
+            message: 'A folder already exists at the specified destination', name: FILE_ERR_NAME, });
 
         folderRecord.setValue({ fieldId: 'parent', value: newParentId, });
         if (newName) folderRecord.setValue({ fieldId: 'name', value: newName, });
