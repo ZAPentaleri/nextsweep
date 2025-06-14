@@ -47,7 +47,7 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
      * @returns {string[]}
      */
     function splitPath(path) {
-        return path.split('/').filter((seg, index) => index > 0 || seg !== '');
+        return Array.isArray(path) ? path : (path.split('/').filter((seg, index) => index > 0 || seg !== ''));
     }
 
     /**
