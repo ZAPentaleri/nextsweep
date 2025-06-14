@@ -367,12 +367,12 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
      * @param {string} [options.name]
      * @param {string|number} [options.folder]
      * @param {string} [options.folderPath]
-     * @param {boolean} [options.itemShouldExist=false]
+     * @param {boolean} [options.itemExists=false]
      * @param {boolean} [options.itemIsFolder=false]
      * @returns {(string|null)[]}
      */
     function reduceItemIds(options) {
-        const itemShouldExist = options.itemShouldExist ?? false;
+        const itemExists = options.itemExists ?? false;
         const itemIsFolder = options.itemIsFolder ?? false;
 
         let folderId = null;
@@ -383,22 +383,40 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
         if (options.folder) folderId = options.folder.toString();
         if (options.name || options.path) itemName = options.name || splitPath(options.path).at(-1);
 
-        if (!itemId && itemShouldExist && options.path) {
-            const fileResults = searchInternal({
+        if (!itemId && itemExists && options.path) {
+            const searchResults = searchInternal({
                 type: (itemIsFolder ? SearchType.FOLDER : SearchType.FILE), path: options.path,
             });
-            itemId = fileResults?.[0]?.id;
-            folderId = fileResults?.[0]?.folder;
+            itemId = searchResults?.[0]?.id;
+            folderId = searchResults?.[0]?.folder;
+
+            if (itemId === null) throw error.create({
+                message: `Path did not resolve to an existing ${itemIsFolder ? 'folder' : 'file'}`,
+                name: ERROR_NAME, });
         }
-        if (!folderId && options.folderPath) folderId = getFolderId(options.folderPath);
-        if (!folderId && options.path && splitPath(options.path).length > 1)
+        if (!folderId && options.folderPath) {
+            folderId = getFolderId(options.folderPath);
+            if (folderId === null)
+                throw error.create({ message: 'Folder path did not resolve to an existing folder', name: ERROR_NAME, });
+        }
+        if (!folderId && options.path && splitPath(options.path).length > 1) {
             folderId = getFolderId(splitPath(options.path).splice(0, -1));
-        if (!itemId && folderId && itemShouldExist && options.name) {
-            const fileResults = searchInternal({
+            if (folderId === null) throw error.create({
+                message: 'Path segment did not resolve to an existing folder', name: ERROR_NAME, });
+        }
+        if (!itemId && folderId && itemExists && options.name) {
+            const searchResults = searchInternal({
                 type: (itemIsFolder ? SearchType.FOLDER : SearchType.FILE), baseFolder: folderId, path: options.name,
             });
-            itemId = fileResults?.[0]?.id;
+            itemId = searchResults?.[0]?.id;
+
+            if (itemId === null) throw error.create({
+                message: `Name did not resolve to an existing ${itemIsFolder ? 'folder' : 'file'}`,
+                name: ERROR_NAME, });
         }
+
+        if (itemExists && itemId === null) throw error.create({
+            message: `${itemIsFolder ? 'Folder' : 'File'} could not be found`, name: ERROR_NAME, });
 
         return [folderId, itemId, itemName,];
     }
@@ -480,7 +498,7 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
      * @param {string} [options.folderPath] Folder path
      */
     function deleteFile(options) {
-        file.delete({ id: reduceItemIds({ ...options, itemShouldExist: true, })[1], });
+        file.delete({ id: reduceItemIds({ ...options, itemExists: true, })[1], });
     }
 
     /**
@@ -495,7 +513,7 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
      * @returns {File}
      */
     function loadFile(options) {
-        return file.load({ id: reduceItemIds({ ...options, itemShouldExist: true, })[1], });
+        return file.load({ id: reduceItemIds({ ...options, itemExists: true, })[1], });
     }
 
     /**
@@ -570,7 +588,7 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
     function deleteFolder(options) {
         record.delete({
             type: record.Type.FOLDER,
-            id: reduceItemIds({ ...options, itemShouldExist: true, itemIsFolder: true, })[1]
+            id: reduceItemIds({ ...options, itemExists: true, itemIsFolder: true, })[1]
         });
     }
 
@@ -597,7 +615,7 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
 
         const folderRecord = record.load({
             type: record.Type.FOLDER,
-            id: reduceItemIds({ ...options, itemShouldExist: true, itemIsFolder: true, })[1]
+            id: reduceItemIds({ ...options, itemExists: true, itemIsFolder: true, })[1]
         });
         const originalParentId = folderRecord.getValue({ fieldId: 'parent' });
         const originalName = folderRecord.getValue({ fieldId: 'name' });
