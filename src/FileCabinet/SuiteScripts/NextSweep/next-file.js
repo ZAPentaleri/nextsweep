@@ -390,9 +390,9 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
             itemId = fileResults?.[0]?.id;
             folderId = fileResults?.[0]?.folder;
         }
-        if (!folderId && options.folderPath) folderId = getFolderPath({ path: options.folderPath, });
+        if (!folderId && options.folderPath) folderId = getFolderId(options.folderPath);
         if (!folderId && options.path && splitPath(options.path).length > 1)
-            folderId = getFolderPath({ path: splitPath(options.path).splice(0, -1), });
+            folderId = getFolderId(splitPath(options.path).splice(0, -1));
         if (!itemId && folderId && itemShouldExist && options.name) {
             const fileResults = searchInternal({
                 type: (itemIsFolder ? SearchType.FOLDER : SearchType.FILE), baseFolder: folderId, path: options.name,
