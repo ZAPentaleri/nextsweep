@@ -465,11 +465,8 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
      * @returns {File}
      */
     function createFile(options) {
-        return file.create({
-            ...options,
-            folder: reduceItemIds({ folder: options.folder, folderPath: options.folderPath, })[0],
-            name: reduceItemIds({ name: options.name, path: options.path, })[2],
-        });
+        const [folderId, _, name] = reduceItemIds({ ...options, });
+        return file.create({ ...options, folder: folderId, name: name, });
     }
 
     /**
