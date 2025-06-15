@@ -568,7 +568,7 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
 
         const oldFile = loadFile(options);
         if ((newFolderId === null && newName === null)
-            || (newFolderId === oldFile.id.toString() && newName === oldFile.name))
+            || (newFolderId === oldFile.folder.toString() && newName === oldFile.name))
             throw error.create({ message: 'Can not move file to its original location', name: FILE_ERR_NAME, });
 
         if (newFolderId) oldFile.folder = newFolderId;
