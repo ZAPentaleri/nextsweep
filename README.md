@@ -2,6 +2,42 @@
 
 Shorthand and helper functions to reduce SuiteScript boilerplate.
 
+# NextFile (next-file.js)
+
+File management functions.
+
+## Module import
+
+```
+require(['SuiteScripts/NextSweep/next-file'], nextFile => {
+    // your code here
+});
+```
+
+## Classes
+### SearchType
+### ResultType
+
+## search &mdash; Search Files and Folders
+## copy &mdash; Copy Files
+## create &mdash; Create Files
+## delete &mdash; Delete Files
+## load &mdash; Load Files
+## move &mdash; Move Files
+## createFolder &mdash; Create Folders
+## deleteFolder &mdash; Delete Folders
+## moveFolder &mdash; Move Folders
+## splitPath &mdash; Segment File Paths
+## joinPath &mdash; Join File Path Segments
+## getFileId &mdash; Get File IDs by Path
+## getFilePath &mdash; Get File Paths by ID
+## getFileName &mdash; Get File Names by ID
+## getFileParent &mdash; Get File Parent Folders by ID
+## getFolderId &mdash; Get Folder IDs by Path
+## getFolderPath &mdash; Get Folder Paths by ID
+## getFolderName &mdash; Get Folder Names by ID
+## getFolderParent &mdash; Get Folder Parents by ID
+
 # NextRecord (next-record.js)
 
 ## Module import
