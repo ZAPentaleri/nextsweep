@@ -387,6 +387,7 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
         const itemExists = options.itemExists ?? false;
         const itemIsFolder = options.itemIsFolder ?? false;
 
+        // validate that only one parameter has been passed that can identify any return value
         for (const parameterSet
             of [
                 ['parent folder ID', options.id, options.path, options.folder, options.folderPath,],
@@ -402,11 +403,13 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
         let itemId = null;
         let itemName = null;
 
+        // attempt to extract IDs and name from parameters without lookup
         if (options.folder) folderId = options.folder.toString();
         if (options.id) itemId = options.id.toString();
         if (options.name || options.path) itemName = options.name || splitPath(options.path).at(-1);
 
         if (!itemId && itemExists && options.path) {
+            // item exists, derive item ID and folder ID from path
             const searchResults = searchInternal({
                 type: (itemIsFolder ? SearchType.FOLDER : SearchType.FILE), path: options.path,
             });
@@ -419,16 +422,19 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
         }
 
         if (!folderId && options.path && splitPath(options.path).length > 1) {
+            // item does not exist, derive folder ID from path
             folderId = getFolderId(splitPath(options.path).slice(0, -1));
             if (folderId === null) throw error.create({
                 message: 'Path segment did not resolve to an existing folder', name: FILE_ERR_NAME, });
         } else if (!folderId && options.folderPath) {
+            // derive folder ID from folderPath
             folderId = getFolderId(options.folderPath);
             if (folderId === null) throw error.create({
                 message: 'Folder path did not resolve to an existing folder', name: FILE_ERR_NAME, });
         }
 
         if (!itemId && folderId && itemExists && options.name) {
+            // item exists, derive item ID from folder ID and name
             const searchResults = searchInternal({
                 type: (itemIsFolder ? SearchType.FOLDER : SearchType.FILE), baseFolder: folderId, path: options.name,
             });
@@ -439,6 +445,7 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
                 name: FILE_ERR_NAME, });
         }
 
+        // item ID has been found, derive item name
         if (itemId && itemName === null) itemName = itemIsFolder ? getFolderName(itemId) : getFileName(itemId);
 
         if (itemExists && itemId === null) throw error.create({
@@ -468,6 +475,13 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
      */
     function copyFile(options) {
         //TODO: evaluate efficiency of this function, consistency of errors
+
+        // NetSuite only natively gives provisions to copy files to a different folder, NOT to copy with a different
+        // name or within the same folder. Most of the complication in this function is to work around that limitation.
+        // I initially considered writing an entirely original copy method, but there were too many edge cases to
+        // consider in its design (e.g. handling files larger than 10MB, ensuring consistency of binary data in various
+        // formats, etc)
+
         const [originalFolderId, originalId, originalName] = reduceItemIds({ ...options, itemExists: true, });
         const [copyFolderId, _, copyName] = reduceItemIds({
             path: options.copyPath, name: options.copyName,
@@ -476,15 +490,16 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
 
         if (copyName === originalName && originalFolderId === copyFolderId)
             throw error.create({ message: 'Can not copy file to its original location', name: FILE_ERR_NAME, });
-
-        if (copyName !== originalName
+        if (copyName !== originalName  // dest name same as origin, validate dest to avoid abort after partial process
             && searchInternal({ type: SearchType.FILE, baseFolder: copyFolderId, path: copyName, }).length > 0)
             throw error.create({ message: 'A file already exists at the specified destination', name: FILE_ERR_NAME, });
 
+        // dest folder same as origin OR dest name different from origin, copy to temporary folder to avoid collision
         const tempFolderId = copyFolderId === originalFolderId || copyName !== originalName
             ? createFolder({ folder: copyFolderId, name: `TEMP_${new Date().getTime()}` })
             : null;
 
+        // native copy
         let newFile = file.copy({
             id: Number(originalId), folder: Number(tempFolderId ?? copyFolderId),
             conflictResolution: options.conflictResolution,
@@ -592,6 +607,7 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
         try {
             [parentFolderId, _, folderName] = reduceItemIds({ ...options, itemIsFolder: true, });
         } catch {
+            // parent folder does not exist, recursively create or error depending on arguments
             if (options.recursive ?? false) {
                 parentFolderId = createFolder({
                     path: options.folderPath ?? joinPath(splitPath(options.path).slice(0, -1)), recursive: true, });
@@ -658,7 +674,7 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
         if ((newParentId === null && newName === null)||(newParentId === originalParentId && newName === originalName))
             throw error.create({ message: 'Can not move folder to its original location', name: FILE_ERR_NAME, });
 
-        folderRecord.setValue({ fieldId: 'parent', value: newParentId, });
+        folderRecord.setValue({ fieldId: 'parent', value: newParentId, });  // parent ID may be null, making root folder
         if (newName) folderRecord.setValue({ fieldId: 'name', value: newName, });
         return folderRecord.save().toString();
     }
