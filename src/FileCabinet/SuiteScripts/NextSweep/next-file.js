@@ -584,14 +584,14 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
             folder: options.newFolder, folderPath: options.newFolderPath
         });
 
-        const oldFile = loadFile(options);
+        const moveFile = loadFile(options);
         if ((newFolderId === null && newName === null)
-            || (newFolderId === oldFile.folder.toString() && newName === oldFile.name))
+            || (newFolderId === moveFile.folder.toString() && newName === moveFile.name))
             throw error.create({ message: 'Can not move file to its original location', name: FILE_ERR_NAME, });
 
-        if (newFolderId) oldFile.folder = newFolderId;
-        if (newName) oldFile.name = newName;
-        return oldFile.save().toString();
+        if (newFolderId) moveFile.folder = newFolderId;
+        if (newName) moveFile.name = newName;
+        return moveFile.save().toString();
     }
 
     /**
