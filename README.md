@@ -40,6 +40,8 @@ require(['SuiteScripts/NextSweep/next-file'], nextFile => {
 
 # NextRecord (next-record.js)
 
+Record management functions.
+
 ## Module import
 
 ```
