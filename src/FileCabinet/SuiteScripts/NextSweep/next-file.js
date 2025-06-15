@@ -587,7 +587,7 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
      * @returns {string}
      */
     function createFolder(options) {
-        let [parentFolderId, folderName] = null;
+        let [parentFolderId, folderName] = [null, null];
         try {
             [parentFolderId, _, folderName] = reduceItemIds({ ...options, itemIsFolder: true, });
         } catch {
