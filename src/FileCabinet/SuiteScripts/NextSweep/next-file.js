@@ -358,21 +358,10 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
     function getFolderPath(id) { return searchInternal({ ids: id, type: SearchType.FOLDER, })?.[0]?.path ?? null; }
     function getFilePath(id) { return searchInternal({ ids: id, type: SearchType.FILE, })?.[0]?.path ?? null; }
     function getFolderName(id) {
-        try {  // try to shortcut by loading folder record
-            const folderRecord = record.load({ type: record.Type.FOLDER, id: id, });
-            return folderRecord.getValue({ fieldId: 'name' });
-        } catch (loadError) {  // check error name for implicit permission/other error
-            return loadError.name !== 'RCRD_DSNT_EXIST'
-                ? searchInternal({ ids: id, type: SearchType.FOLDER, })?.[0]?.name ?? null
-                : null;
-        }
+        return search.lookupFields({ type: search.Type.FOLDER, id: id, columns: ['name'], })?.['name'] ?? null;
     }
     function getFileName(id) {
-        try { return file.load({ id: id, }).name; }  // try to shortcut by loading file (server only)
-        catch (loadError) { return loadError.name !== 'RCRD_DSNT_EXIST'  // check error name for implicit server context
-            ? searchInternal({ ids: id, type: SearchType.FILE, })?.[0]?.name ?? null  // not server context, run search
-            : null;  // server context, return null
-        }
+        return search.lookupFields({ type: 'file', id: id, columns: ['name'], })?.['name'] ?? null;
     }
 
     /**
