@@ -38,6 +38,8 @@ require(['SuiteScripts/NextSweep/next-file'], nextFile => {
 ## getFolderName &mdash; Get Folder Names by ID
 ## getFolderParent &mdash; Get Folder Parents by ID
 
+***
+
 # NextRecord (next-record.js)
 
 Record management functions.
@@ -49,6 +51,10 @@ require(['SuiteScripts/NextSweep/next-record'], nextRecord => {
     // your code here
 });
 ```
+
+## Classes
+### Comparator
+### Operator
 
 ## quickCreate &mdash; Create Records
 
