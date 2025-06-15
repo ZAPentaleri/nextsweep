@@ -12,7 +12,7 @@ require(['SuiteScripts/NextSweep/next-record'], nextRecord => {
 });
 ```
 
-## Record Creation (quickCreate)
+## quickCreate &mdash; Create Records
 
 ### Parameters
 
@@ -198,7 +198,7 @@ nextRecord.quickCreate({
 nextRecord.quickCreate({ type: 'examplerecordtype', });
 ```
 
-## Record creation (quickCreate)
+## quickUpdate &mdash; Update Records
 
 ### Parameters
 
