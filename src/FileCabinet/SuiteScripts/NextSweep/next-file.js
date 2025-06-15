@@ -318,7 +318,7 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
                 fileMapping.parent_id,  // file parent folder
                 fileMapping.subtype,    // file subtype
             )),
-        ]
+        ];
     }
 
     /**
@@ -342,7 +342,7 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
                 ? !options.caseSensitive
                 : ((typeof options.exactMatch) === 'boolean' ? !options.exactMatch : true),
             substring: (typeof options.exactMatch) === 'boolean' ? !options.exactMatch : true,
-        })
+        });
     }
 
     function getFolderId(path) { return searchInternal({ path: path, type: SearchType.FOLDER, })?.[0]?.id ?? null; }
@@ -639,7 +639,7 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
     function deleteFolder(options) {
         record.delete({
             type: record.Type.FOLDER,
-            id: reduceItemIds({ ...options, itemExists: true, itemIsFolder: true, })[1]
+            id: reduceItemIds({ ...options, itemExists: true, itemIsFolder: true, })[1],
         });
     }
 
@@ -661,12 +661,12 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
     function moveFolder(options) {
         const [newParentId, _, newName] = reduceItemIds({
             path: options.newPath, name: options.newName,
-            folder: options.newFolder, folderPath: options.newFolderPath
+            folder: options.newFolder, folderPath: options.newFolderPath,
         });
 
         const folderRecord = record.load({
             type: record.Type.FOLDER,
-            id: reduceItemIds({ ...options, itemExists: true, itemIsFolder: true, })[1]
+            id: reduceItemIds({ ...options, itemExists: true, itemIsFolder: true, })[1],
         });
         const originalParentId = folderRecord.getValue({ fieldId: 'parent' });
         const originalName = folderRecord.getValue({ fieldId: 'name' });
