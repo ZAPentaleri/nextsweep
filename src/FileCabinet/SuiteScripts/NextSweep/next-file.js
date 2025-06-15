@@ -57,8 +57,8 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
      * @returns {string}
      */
     function joinPath() {
-        return [...arguments].reverse().reduce((path, arg) =>
-            `${arg.trim().replace(/\/$/, '')}${path ? '/' : ''}${path}`,
+        return [...(arguments.length === 1 && Array.isArray(arguments[0]) ? arguments[0] : arguments)].reverse().reduce(
+            (path, arg) => `${arg.trim().replace(/\/$/, '')}${path ? '/' : ''}${path}`,
         '',);
     }
 
@@ -196,7 +196,7 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
             // ^^^ ID sequence path ^^^
             reverseFolderIndices.map(i => folderResult[`id_${i}`]).filter(id => id !== null).map(i => i.toString()),
             // ^^^ human-readable path ^^^
-            joinPath(...reverseFolderIndices.map(i => folderResult[`name_${i}`]).filter(name => name !== null)),
+            joinPath(reverseFolderIndices.map(i => folderResult[`name_${i}`]).filter(name => name !== null)),
             ResultType.FOLDER,                // result type
             folderResult['id_0'].toString(),  // folder ID
             folderResult['name_0'],           // folder name
