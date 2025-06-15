@@ -79,312 +79,316 @@
  * @property {boolean} [flags.forceSyncSource=false] Force synchronous field sourcing
  */
 
-class CriteriaRelationship {
-    static PARENT = 'parent';
-    static LEFT   = 'left';
-    static RIGHT  = 'right';
-    static NONE   = 'none';
-}
+const RECORD_ERR_NAME = 'NEXT_RECORD_ERROR';
 
-class OperatorDefinition {
-    /**
-     * @param {string[]} representations
-     * @param {string[]} requiredRelationships
-     * @param {function} leftOperator
-     * @param {function} rightOperator
-     */
-    constructor(representations, requiredRelationships, leftOperator=(()=>null), rightOperator=(()=>null)) {
-        this.name = representations[0].toUpperCase();
-        this.representations = representations.map(op => op.toLowerCase());
-
-        this.requiredRelationships = requiredRelationships;
-
-        this.leftOperator  = leftOperator;
-        this.rightOperator = rightOperator;
+define(['N/error', 'N/record',], (error, record,) => {
+    class CriteriaRelationship {
+        static PARENT = 'parent';
+        static LEFT   = 'left';
+        static RIGHT  = 'right';
+        static NONE   = 'none';
     }
 
-    operateLeft(x)  { return this.leftOperator(x); }
-    operateRight(y) { return this.rightOperator(y); }
+    class OperatorDefinition {
+        /**
+         * @param {string[]} representations
+         * @param {string[]} requiredRelationships
+         * @param {function} leftOperator
+         * @param {function} rightOperator
+         */
+        constructor(representations, requiredRelationships, leftOperator=(()=>null), rightOperator=(()=>null)) {
+            this.name = representations[0].toUpperCase();
+            this.representations = representations.map(op => op.toLowerCase());
 
-    toString() { return this.representations[0]; }
-}
+            this.requiredRelationships = requiredRelationships;
 
-class Operator {
-    static NO_OP = new OperatorDefinition(
-        ['nop',],
-        [CriteriaRelationship.LEFT,],
-        x => x,
-    );
-    static AND = new OperatorDefinition(
-        ['and', '&&',],
-        [CriteriaRelationship.LEFT, CriteriaRelationship.RIGHT,],
-        x => !x ? false : null,
-        y => y,
-    );
-    static OR = new OperatorDefinition(
-        ['or',  '||',],
-        [CriteriaRelationship.LEFT, CriteriaRelationship.RIGHT,],
-        x => x || null,
-        y => y === true,
-    );
-    static NOT = new OperatorDefinition(
-        ['not', '!',],
-        [CriteriaRelationship.LEFT,],
-        x => !x,
-    );
-
-    /**
-     * @param {OperatorDefinition|string} operator
-     * @returns {OperatorDefinition}
-     */
-    static identify(operator) {
-        for (const candidate of Object.values(this)) {
-            if (operator === candidate || candidate.representations.includes(operator.toLowerCase())) return candidate;
+            this.leftOperator  = leftOperator;
+            this.rightOperator = rightOperator;
         }
 
-        throw new Error('Invalid operator');
-    }
-}
+        operateLeft(x)  { return this.leftOperator(x); }
+        operateRight(y) { return this.rightOperator(y); }
 
-class ComparatorDefinition {
-    /**
-     * @param {string[]} representations
-     * @param {function} comparator
-     */
-    constructor(representations, comparator) {
-        this.name = representations[0].toUpperCase();
-        this.representations = representations.map(op => op.toLowerCase());
-
-        this.comparator = comparator;
+        toString() { return this.representations[0]; }
     }
 
-    compare(x, y) { return this.comparator(x, y,); }
-
-    toString() { return this.representations[0]; }
-}
-
-class Comparator {
-    static ANY = new ComparatorDefinition(
-        ['any', 'anyOf',],
-        (x, y) => x.some(X => y.some(Y => X == Y)),                                                    // ignore warning
-    );
-    static NONE = new ComparatorDefinition(
-        ['none', 'noneOf',],
-        (x, y) => x.every(X => y.every(Y => X != Y)),                                                  // ignore warning
-    );
-    static EQUAL = new ComparatorDefinition(
-        ['eq', '==', '=', 'equalTo', 'is',],
-        (x, y) => new Set(x).size === new Set(y).size && x.every(X => y.some(Y => X == Y)),            // ignore warning
-    );
-    static NOT_EQUAL = new ComparatorDefinition(
-        ['ne', '!=', '<>', 'notEqualTo', 'isNot',],
-        (x, y) => new Set(x).size !== new Set(y).size || x.some(X => y.every(Y => X != Y)),            // ignore warning
-    );
-    static GREATER_THAN = new ComparatorDefinition(
-        ['gt', '>', 'greaterThan',],
-        (x, y) => x.every(X => y.every(Y => X > Y)),
-    );
-    static LESS_THAN = new ComparatorDefinition(
-        ['lt', '<', 'lessThan',],
-        (x, y) => x.every(X => y.every(Y => X < Y)),
-    );
-    static GT_OR_EQUAL = new ComparatorDefinition(
-        ['ge', '>=', 'greaterThanOrEqualTo',],
-        (x, y) => x.every(X => y.every(Y => X >= Y)),
-    );
-    static LT_OR_EQUAL = new ComparatorDefinition(
-        ['le', '<=', 'lessThanOrEqualTo',],
-        (x, y) => x.every(X => y.every(Y => X <= Y)),
-    );
-
-    /**
-     * @param {ComparatorDefinition|string} comp
-     * @returns {ComparatorDefinition}
-     */
-    static identify(comp) {
-        for (const candidate of Object.values(this)) {
-            if (comp === candidate || candidate.representations.includes(comp.toLowerCase())) return candidate;
-        }
-
-        throw new Error('Invalid comparator');
-    }
-}
-
-class CriteriaNode {
-    constructor(parent=null, left=null, right=null,) {
-        this.parent = parent;
-        this.left   = left;
-        this.right  = right;
-    }
-
-    getRelationshipTo(node) {
-        if (node === this.parent) {
-            return CriteriaRelationship.PARENT;
-        } else if (node === this.left) {
-            return CriteriaRelationship.LEFT;
-        } else if (node === this.right) {
-            return CriteriaRelationship.RIGHT;
-        } else {
-            return CriteriaRelationship.NONE;
-        }
-    }
-
-    has(relation, nClass=null) { return nClass !== null ? this[relation] instanceof nClass : this[relation] !== null; }
-    hasParent(nClass=null)     { return this.has(CriteriaRelationship.PARENT, nClass); }
-    hasLeft(nClass=null)       { return this.has(CriteriaRelationship.LEFT, nClass); }
-    hasRight(nClass=null)      { return this.has(CriteriaRelationship.RIGHT, nClass); }
-
-    getRoot() { return this.hasParent(CriteriaNode) ? this.parent.getRoot() : this; }
-
-    prune() { return this; }
-}
-
-class CriteriaBranch extends CriteriaNode {
-    constructor(operator=Operator.NO_OP,) {
-        super();
-        this.operator = operator;
-    }
-
-    getCurrentRelationships() {
-        return [CriteriaRelationship.LEFT, CriteriaRelationship.RIGHT,].filter(relationship => this.has(relationship));
-    }
-    getNeededRelationships() {
-        return [CriteriaRelationship.LEFT, CriteriaRelationship.RIGHT,].filter(relationship =>
-            this.operator.requiredRelationships.includes(relationship) && !this.has(relationship)
+    class Operator {
+        static NO_OP = new OperatorDefinition(
+            ['nop',],
+            [CriteriaRelationship.LEFT,],
+            x => x,
         );
-    }
-    getExtraneousRelationships() {
-        return [CriteriaRelationship.LEFT, CriteriaRelationship.RIGHT,].filter(relationship =>
-            !this.operator.requiredRelationships.includes(relationship) && this.has(relationship)
+        static AND = new OperatorDefinition(
+            ['and', '&&',],
+            [CriteriaRelationship.LEFT, CriteriaRelationship.RIGHT,],
+            x => !x ? false : null,
+            y => y,
         );
-    }
-    validateRelationships(errorIfInvalid=false) {
-        const relationsValid = (this.getNeededRelationships().length + this.getExtraneousRelationships().length) === 0;
-        if (relationsValid || !errorIfInvalid) {
-            return relationsValid
-        } else {
-            throw new Error(
-                `Invalid ${this.operator} branch state: requires [${
-                    this.getCurrentRelationships().join(', ')
-                }], has [${
-                    this.getNeededRelationships().join(', ')
-                }]`
-            )
+        static OR = new OperatorDefinition(
+            ['or',  '||',],
+            [CriteriaRelationship.LEFT, CriteriaRelationship.RIGHT,],
+            x => x || null,
+            y => y === true,
+        );
+        static NOT = new OperatorDefinition(
+            ['not', '!',],
+            [CriteriaRelationship.LEFT,],
+            x => !x,
+        );
+
+        /**
+         * @param {OperatorDefinition|string} operator
+         * @returns {OperatorDefinition}
+         */
+        static identify(operator) {
+            for (const candidate of Object.values(this)) {
+                if (operator === candidate || candidate.representations.includes(operator.toLowerCase()))
+                    return candidate;
+            }
+
+            throw error.create({ message: 'Invalid operator', name: RECORD_ERR_NAME, });
         }
     }
 
-    insertParent() {
-        const newNode = (arguments[0] instanceof CriteriaNode) ? arguments[0] : new CriteriaBranch(...arguments);
-        const parentRelationship = this.parent.getRelationshipTo(this);
+    class ComparatorDefinition {
+        /**
+         * @param {string[]} representations
+         * @param {function} comparator
+         */
+        constructor(representations, comparator) {
+            this.name = representations[0].toUpperCase();
+            this.representations = representations.map(op => op.toLowerCase());
 
-        // update higher relationships
-        if (this.hasParent(CriteriaNode)) {
-            newNode.parent = this.parent;
-            this.parent[parentRelationship] = newNode;
+            this.comparator = comparator;
         }
 
-        // update lower relationships
-        newNode[parentRelationship] = this;
-        this.parent = newNode;
+        compare(x, y) { return this.comparator(x, y,); }
 
-        return newNode;
+        toString() { return this.representations[0]; }
     }
-    insertLeft() {
-        const newNode = (arguments[0] instanceof CriteriaNode) ? arguments[0] : new CriteriaBranch(...arguments);
 
-        // update lower relationships
-        if (this.hasLeft(CriteriaNode)) {
-            newNode.left = this.left;
-            this.left.parent = newNode;
+    class Comparator {
+        static ANY = new ComparatorDefinition(
+            ['any', 'anyOf',],
+            (x, y) => x.some(X => y.some(Y => X == Y)),                                                // ignore warning
+        );
+        static NONE = new ComparatorDefinition(
+            ['none', 'noneOf',],
+            (x, y) => x.every(X => y.every(Y => X != Y)),                                              // ignore warning
+        );
+        static EQUAL = new ComparatorDefinition(
+            ['eq', '==', '=', 'equalTo', 'is',],
+            (x, y) => new Set(x).size === new Set(y).size && x.every(X => y.some(Y => X == Y)),        // ignore warning
+        );
+        static NOT_EQUAL = new ComparatorDefinition(
+            ['ne', '!=', '<>', 'notEqualTo', 'isNot',],
+            (x, y) => new Set(x).size !== new Set(y).size || x.some(X => y.every(Y => X != Y)),        // ignore warning
+        );
+        static GREATER_THAN = new ComparatorDefinition(
+            ['gt', '>', 'greaterThan',],
+            (x, y) => x.every(X => y.every(Y => X > Y)),
+        );
+        static LESS_THAN = new ComparatorDefinition(
+            ['lt', '<', 'lessThan',],
+            (x, y) => x.every(X => y.every(Y => X < Y)),
+        );
+        static GT_OR_EQUAL = new ComparatorDefinition(
+            ['ge', '>=', 'greaterThanOrEqualTo',],
+            (x, y) => x.every(X => y.every(Y => X >= Y)),
+        );
+        static LT_OR_EQUAL = new ComparatorDefinition(
+            ['le', '<=', 'lessThanOrEqualTo',],
+            (x, y) => x.every(X => y.every(Y => X <= Y)),
+        );
+
+        /**
+         * @param {ComparatorDefinition|string} comp
+         * @returns {ComparatorDefinition}
+         */
+        static identify(comp) {
+            for (const candidate of Object.values(this)) {
+                if (comp === candidate || candidate.representations.includes(comp.toLowerCase())) return candidate;
+            }
+
+            throw error.create({ message: 'Invalid comparator', name: RECORD_ERR_NAME, });
+        }
+    }
+
+    class CriteriaNode {
+        constructor(parent=null, left=null, right=null,) {
+            this.parent = parent;
+            this.left   = left;
+            this.right  = right;
         }
 
-        // update higher relationships
-        newNode.parent = this;
-        this.left = newNode;
-
-        return newNode;
-    }
-    insertRight() {
-        const newNode = (arguments[0] instanceof CriteriaNode) ? arguments[0] : new CriteriaBranch(...arguments);
-
-        // update lower relationships
-        if (this.hasRight(CriteriaNode)) {
-            newNode.left = this.right;
-            this.right.parent = newNode;
+        getRelationshipTo(node) {
+            if (node === this.parent) {
+                return CriteriaRelationship.PARENT;
+            } else if (node === this.left) {
+                return CriteriaRelationship.LEFT;
+            } else if (node === this.right) {
+                return CriteriaRelationship.RIGHT;
+            } else {
+                return CriteriaRelationship.NONE;
+            }
         }
 
-        // update higher relationships
-        newNode.parent = this;
-        this.right = newNode;
+        has(relation, nClass=null) {
+            return nClass !== null ? this[relation] instanceof nClass : this[relation] !== null;
+        }
+        hasParent(nClass=null) { return this.has(CriteriaRelationship.PARENT, nClass); }
+        hasLeft(nClass=null)   { return this.has(CriteriaRelationship.LEFT, nClass); }
+        hasRight(nClass=null)  { return this.has(CriteriaRelationship.RIGHT, nClass); }
 
-        return newNode;
+        getRoot() { return this.hasParent(CriteriaNode) ? this.parent.getRoot() : this; }
+
+        prune() { return this; }
     }
 
-    splice() {
-        if (this.hasRight(CriteriaNode)) {
-            throw new Error('Node has right child; can not splice');
-        } else if (!this.hasLeft(CriteriaNode)) {
-            throw new Error('Node has no left child; can not splice');
-        } else if (!this.hasParent(CriteriaNode)) {
-            this.left.parent = null;
-        } else {
-            this.parent.left = this.left;
-            this.left.parent = this.parent;
+    class CriteriaBranch extends CriteriaNode {
+        constructor(operator=Operator.NO_OP,) {
+            super();
+            this.operator = operator;
         }
 
-        const leftNode = this.left;
-        this.parent = this.left = null;
-
-        return leftNode;
-    }
-
-    prune() {
-        if (this.hasLeft(CriteriaBranch)) this.left.prune();
-        if (this.hasRight(CriteriaBranch)) this.right.prune();
-        this.validateRelationships(true);
-
-        return this.operator === Operator.NO_OP ? this.splice() : this;
-    }
-
-    toString() { return `${this.operator} : ${this.left}, ${this.right}`; }
-}
-
-class CriteriaLeaf extends CriteriaNode {
-    constructor(columnId, comparator, values=null, valuesAreText=false,) {
-        super();
-
-        if ((typeof columnId) !== 'string' || !(comparator instanceof ComparatorDefinition)) {
-            throw new Error('Could not create CriteriaLeaf: invalid parameters');
+        getCurrentRelationships() {
+            return [CriteriaRelationship.LEFT, CriteriaRelationship.RIGHT,].filter(relationship =>
+                this.has(relationship));
+        }
+        getNeededRelationships() {
+            return [CriteriaRelationship.LEFT, CriteriaRelationship.RIGHT,].filter(relationship =>
+                this.operator.requiredRelationships.includes(relationship) && !this.has(relationship));
+        }
+        getExtraneousRelationships() {
+            return [CriteriaRelationship.LEFT, CriteriaRelationship.RIGHT,].filter(relationship =>
+                !this.operator.requiredRelationships.includes(relationship) && this.has(relationship));
+        }
+        validateRelationships(errorIfInvalid=false) {
+            const relationsValid =
+                (this.getNeededRelationships().length + this.getExtraneousRelationships().length) === 0;
+            if (relationsValid || !errorIfInvalid) {
+                return relationsValid;
+            } else {
+                throw new Error(
+                    `Invalid ${this.operator} branch state: requires [${
+                        this.getCurrentRelationships().join(', ')
+                    }], has [${
+                        this.getNeededRelationships().join(', ')
+                    }]`
+                )
+            }
         }
 
-        this.columnId      = columnId;
-        this.comparator    = comparator;
-        this.values        = values;
-        this.valuesAreText = valuesAreText;
+        insertParent() {
+            const newNode = (arguments[0] instanceof CriteriaNode) ? arguments[0] : new CriteriaBranch(...arguments);
+            const parentRelationship = this.parent.getRelationshipTo(this);
+
+            // update higher relationships
+            if (this.hasParent(CriteriaNode)) {
+                newNode.parent = this.parent;
+                this.parent[parentRelationship] = newNode;
+            }
+
+            // update lower relationships
+            newNode[parentRelationship] = this;
+            this.parent = newNode;
+
+            return newNode;
+        }
+        insertLeft() {
+            const newNode = (arguments[0] instanceof CriteriaNode) ? arguments[0] : new CriteriaBranch(...arguments);
+
+            // update lower relationships
+            if (this.hasLeft(CriteriaNode)) {
+                newNode.left = this.left;
+                this.left.parent = newNode;
+            }
+
+            // update higher relationships
+            newNode.parent = this;
+            this.left = newNode;
+
+            return newNode;
+        }
+        insertRight() {
+            const newNode = (arguments[0] instanceof CriteriaNode) ? arguments[0] : new CriteriaBranch(...arguments);
+
+            // update lower relationships
+            if (this.hasRight(CriteriaNode)) {
+                newNode.left = this.right;
+                this.right.parent = newNode;
+            }
+
+            // update higher relationships
+            newNode.parent = this;
+            this.right = newNode;
+
+            return newNode;
+        }
+
+        splice() {
+            if (this.hasRight(CriteriaNode)) {
+                throw error.create({ message: 'Node has right child; can not splice', name: RECORD_ERR_NAME, });
+            } else if (!this.hasLeft(CriteriaNode)) {
+                throw error.create({ message: 'Node has no left child; can not splice', name: RECORD_ERR_NAME, });
+            } else if (!this.hasParent(CriteriaNode)) {
+                this.left.parent = null;
+            } else {
+                this.parent.left = this.left;
+                this.left.parent = this.parent;
+            }
+
+            const leftNode = this.left;
+            this.parent = this.left = null;
+
+            return leftNode;
+        }
+
+        prune() {
+            if (this.hasLeft(CriteriaBranch)) this.left.prune();
+            if (this.hasRight(CriteriaBranch)) this.right.prune();
+            this.validateRelationships(true);
+
+            return this.operator === Operator.NO_OP ? this.splice() : this;
+        }
+
+        toString() { return `${this.operator} : ${this.left}, ${this.right}`; }
     }
 
-    toString() { return (
-        `${this.columnId} : ${this.comparator} : [${this.values.join(', ')}]${this.valuesAreText ? ' (text)' : ''}`
-    ); }
-}
+    class CriteriaLeaf extends CriteriaNode {
+        constructor(columnId, comparator, values=null, valuesAreText=false,) {
+            super();
 
-class CriteriaNodeTraversalPath {
-    constructor(initialNode) {
-        this.indexPath = [0];
-        this.nodePath  = [initialNode];
+            if ((typeof columnId) !== 'string' || !(comparator instanceof ComparatorDefinition)) throw error.create({
+                message: 'Could not create CriteriaLeaf: invalid parameters', name: RECORD_ERR_NAME, });
+
+            this.columnId      = columnId;
+            this.comparator    = comparator;
+            this.values        = values;
+            this.valuesAreText = valuesAreText;
+        }
+
+        toString() { return (
+            `${this.columnId} : ${this.comparator} : [${this.values.join(', ')}]${this.valuesAreText ? ' (text)' : ''}`
+        ); }
     }
 
-    addLevel(node)    { this.indexPath.push(0); this.nodePath.push(node); return this; }
-    updateLevel(node) { this.nodePath[this.nodePath.length - 1] = node; return this; }
-    removeLevel()     { this.indexPath.pop(); this.nodePath.pop(); return this; }
-    incrementLevel()  { if (this.indexPath.length > 0) ++this.indexPath[this.indexPath.length - 1]; return this; }
+    class CriteriaNodeTraversalPath {
+        constructor(initialNode) {
+            this.indexPath = [0];
+            this.nodePath  = [initialNode];
+        }
 
-    getLastNode() { return this.nodePath[this.nodePath.length - 1]; }
+        addLevel(node)    { this.indexPath.push(0); this.nodePath.push(node); return this; }
+        updateLevel(node) { this.nodePath[this.nodePath.length - 1] = node; return this; }
+        removeLevel()     { this.indexPath.pop(); this.nodePath.pop(); return this; }
+        incrementLevel()  { if (this.indexPath.length > 0) ++this.indexPath[this.indexPath.length - 1]; return this; }
 
-    get length() { return this.indexPath.length; }
-}
+        getLastNode() { return this.nodePath[this.nodePath.length - 1]; }
 
-define(['N/record',], (record,) => {
+        get length() { return this.indexPath.length; }
+    }
+
     /**
      *
      * @param {Record} recordInst
@@ -496,7 +500,8 @@ define(['N/record',], (record,) => {
 
         const insertionCountMap = {};
         for (let stepIndex = 0; stepIndex < procedure.length; stepIndex++) {
-            const throwStepError = msg => { throw new Error(`Step ${stepIndex + 1}: ${msg}`); }
+            const throwStepError = msg =>
+                { throw error.create({ message: `Step ${stepIndex + 1}: ${msg}`, name: RECORD_ERR_NAME, }); };
 
             const step = procedure[stepIndex];
             if (
@@ -740,7 +745,8 @@ define(['N/record',], (record,) => {
      * @param {QuickUpdateSubCriterion|(QuickUpdateSubCriterion|string|string[]|*[])[]} originalCriteria
      */
     function createCriteriaTree(originalCriteria,) {
-        const throwOperatorError = (op, msg) => { throw new Error(`Invalid operator position (${op}): ${msg??'?'}`); }
+        const throwOperatorError = (op, msg) => { throw error.create({
+            message: `Invalid operator position (${op}): ${msg??'?'}`, name: RECORD_ERR_NAME, }); };
 
         const originalCriteriaArray = [].concat(originalCriteria);
 
@@ -803,7 +809,7 @@ define(['N/record',], (record,) => {
                 } else if (!workNode.hasRight(CriteriaNode)) {
                     workNode = workNode.insertRight(Operator.NO_OP,);  // append new node right, traverse inward
                 } else {
-                    throw new Error('Invalid node state');
+                    throw error.create({ message: 'Invalid node state', name: RECORD_ERR_NAME, });
                 }
 
                 traversalPath.addLevel(workNode);
@@ -824,12 +830,13 @@ define(['N/record',], (record,) => {
                 } else if (!workNode.hasRight() && workNode.operator !== Operator.NOT) {
                     workNode.insertRight(newLeaf);
                 } else {
-                    throw new Error('Invalid criterion position');
+                    throw error.create({ message: 'Invalid criterion position', name: RECORD_ERR_NAME, });
                 }
 
                 traversalPath.incrementLevel();
             } else {
-                new Error(`Could not parse current criteria element: ${JSON.stringify(cElement)}`);
+                error.create({ message: `Could not parse current criteria element: ${JSON.stringify(cElement)}`,
+                    name: RECORD_ERR_NAME, });
             }
         }
 
