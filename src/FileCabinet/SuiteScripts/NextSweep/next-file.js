@@ -592,8 +592,8 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
             [parentFolderId, _, folderName] = reduceItemIds({ ...options, itemIsFolder: true, });
         } catch {
             if (options.recursive ?? false) {
-                parentFolderId =
-                    createFolder({ path: options.folderPath ?? joinPath(splitPath(options.path).slice(0, -1)), });
+                parentFolderId = createFolder({
+                    path: options.folderPath ?? joinPath(splitPath(options.path).slice(0, -1)), recursive: true, });
                 folderName = options.name || splitPath(options.path).at(-1);
             } else {
                 throw error.create({
