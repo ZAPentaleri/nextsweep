@@ -118,7 +118,8 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
             if (forwardIndex === 0) {
                 // deepest level of nested query
                 queryString = [
-                    `${baseTabs}SELECT folder.id AS id_${reverseIndex}, folder.name AS name_${reverseIndex},`,
+                    `${baseTabs}SELECT folder.foldertype AS type,`,
+                    `${baseTabs}${TAB}folder.id AS id_${reverseIndex}, folder.name AS name_${reverseIndex},`,
                     `${baseTabs}${TAB}root_folder.id AS root_id, root_folder.name AS root_name`,
                     `${baseTabs}FROM MediaItemFolder folder, MediaItemFolder root_folder`,
                     `${baseTabs}WHERE folder.parent = root_folder.id(+)`
@@ -127,10 +128,8 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
                 // other levels of nested query
                 queryString = [
                     ...(reverseIndex === 0
-                        ? [
-                            `${baseTabs}SELECT folder.foldertype AS type,`,
-                            `${baseTabs}${TAB}folder.id AS id_${reverseIndex}, folder.name AS name_${reverseIndex},`,
-                        ]
+                        ? [ `${baseTabs}SELECT folder.foldertype AS type,`,
+                            `${baseTabs}${TAB}folder.id AS id_${reverseIndex}, folder.name AS name_${reverseIndex},`,]
                         : [`${baseTabs}SELECT folder.id AS id_${reverseIndex}, folder.name AS name_${reverseIndex},`,]),
                     [...new Array(forwardIndex)].map((_, i) => i + reverseIndex + 1).map(i =>
                         `${baseTabs}${TAB}parents.id_${i} AS id_${i}, parents.name_${i} AS name_${i},`
