@@ -362,6 +362,12 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
     function getFileName(id) {
         return search.lookupFields({ type: 'file', id: id, columns: ['name'], })?.['name'] ?? null;
     }
+    function getFolderParent(id) {
+        return search.lookupFields({ type: search.Type.FOLDER, id: id, columns: ['parent'], })?.['parent'] ?? null;
+    }
+    function getFileParent(id) {
+        return search.lookupFields({ type: 'file', id: id, columns: ['folder'], })?.['folder'] ?? null;
+    }
 
     /**
      * Reduces parameters to item (file or folder) ID, folder (parent) ID, and
@@ -684,8 +690,10 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
 
     return {
         SearchType, ResultType,
-        splitPath, joinPath, getFolderId, getFileId, getFolderPath, getFilePath,
+        splitPath, joinPath,
+        getFileId, getFilePath, getFileName, getFileParent,
         copy: copyFile, create: createFile, delete: deleteFile, load: loadFile, move: moveFile,
+        getFolderId, getFolderPath, getFolderName, getFolderParent,
         createFolder, deleteFolder, moveFolder,
         search: searchExternal,
     };
