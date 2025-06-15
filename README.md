@@ -1,8 +1,10 @@
 # NextSweep &mdash; SuiteScript Shorthand
 
-## NextRecord (next-record.js)
+Shorthand and helper functions to reduce SuiteScript boilerplate.
 
-### Module import
+# NextRecord (next-record.js)
+
+## Module import
 
 ```
 require(['SuiteScripts/NextSweep/next-record'], nextRecord => {
@@ -10,9 +12,9 @@ require(['SuiteScripts/NextSweep/next-record'], nextRecord => {
 });
 ```
 
-### Record Creation (quickCreate)
+## Record Creation (quickCreate)
 
-#### Parameters
+### Parameters
 
 |         Key          |     Type     | Required | Description                                                                         |
 |:--------------------:|:------------:|:--------:|:------------------------------------------------------------------------------------|
@@ -24,9 +26,7 @@ require(['SuiteScripts/NextSweep/next-record'], nextRecord => {
 |    `flags.noSave`    |   boolean    | &#x2715; | Disables record save record after processing                                        |
 |     `procedure`      | object array | &#x2715; | Record modification procedure &mdash; may comprise a mix of Steps and Subprocedures |
 
----
-
-**Procedure Step explicit object definition:**
+#### Procedure Step explicit object definition
 
 |          Key           |     Type     | Required | Description                                              | Additional notes                                     |
 |:----------------------:|:------------:|:--------:|:---------------------------------------------------------|------------------------------------------------------|
@@ -36,7 +36,7 @@ require(['SuiteScripts/NextSweep/next-record'], nextRecord => {
 |        `flags`         |    object    | &#x2715; | Step option flags (all flags default disabled)           |                                                      |
 | `flags.suppressEvents` |   boolean    | &#x2715; | Suppress field change events                             |                                                      |
 
-**Procedure Step implicit array definition (no flag support):**
+#### Procedure Step implicit array definition (no flag support)
 
 | Key |  Type   | Required | Description                                                                  |
 |:---:|:-------:|:--------:|:-----------------------------------------------------------------------------|
@@ -44,9 +44,7 @@ require(['SuiteScripts/NextSweep/next-record'], nextRecord => {
 |  1  |  array  | &#x3007; | The value or values to be assigned &mdash; assigned by value unless flag set |
 |  2  | boolean | &#x2715; | By-text field assignment flag                                                |
 
----
-
-**Subprocedure definition:**
+#### Subprocedure definition
 
 |          Key           |     Type      | Required | Description                                                        | Additional notes                                                                                    |
 |:----------------------:|:-------------:|:--------:|:-------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------|
@@ -70,14 +68,12 @@ any insertions. Example 1: indices 0 (A) and 1 (B) are provided, rendering new
 line positions of 0 (A) and 2 (B). Example 2: identical indices 3 (A) and 3 (B)
 are provided, rendering new line positions of 3 (A) and 4 (B)._
 
----
-
-**Subprocedure Criteria definition:**
+#### Subprocedure Criteria definition
 
 Criteria are arbitrarily nested conditional arrays, joined by operators `AND`,
 `OR`, and `NOT`. There is no limit to nesting depth.
 
-**Supported comparators:**
+#### Supported comparators
 
 |     Name     | Symbol | Allowed representations (case insensitive) | Description                                    |
 |:------------:|:------:|:-------------------------------------------|------------------------------------------------|
@@ -93,13 +89,13 @@ Criteria are arbitrarily nested conditional arrays, joined by operators `AND`,
 Note that element order is not considered in any comparison. For example,
 `[1,2,3]` is considered equal to `[3,2,1]`.
 
-**Simple example:**
+#### Simple example
 
 ```
 [["examplelineid", "is", "12345"]]
 ```
 
-**Complex example:**
+#### Complex example
 
 ```
 [
@@ -118,9 +114,7 @@ Note that element order is not considered in any comparison. For example,
 ]
 ```
 
----
-
-**Subprocedure Step explicit object definition:**
+#### Subprocedure Step explicit object definition
 
 |           Key           |     Type     | Required | Description                                              | Additional notes                                     |
 |:-----------------------:|:------------:|:--------:|:---------------------------------------------------------|------------------------------------------------------|
@@ -131,7 +125,7 @@ Note that element order is not considered in any comparison. For example,
 | `flags.suppressEvents`  |   boolean    | &#x2715; | Suppress field change events                             |                                                      |
 | `flags.forceSyncSource` |   boolean    | &#x2715; | Force synchronous field sourcing                         |                                                      |
 
-**Subprocedure Step implicit array definition (no flag support):**
+#### Subprocedure Step implicit array definition (no flag support)
 
 | Key |  Type   | Required | Description                                                                  |
 |:---:|:-------:|:--------:|:-----------------------------------------------------------------------------|
@@ -139,18 +133,16 @@ Note that element order is not considered in any comparison. For example,
 |  1  |  array  | &#x3007; | The value or values to be assigned &mdash; assigned by value unless flag set |
 |  2  | boolean | &#x2715; | By-text field assignment flag                                                |
 
-#### Returns
+### Returns
 
 Record ID or Record instance (if `flags.noSave` is set)
 
-#### Examples
+### Examples
 
 *NOTE: Examples mix and match syntax options for greater coverage. For example,
 procedure steps may be passed as explicit objects or arrays.* 
 
----
-
-**Create record in dynamic mode, set field values, and get the modified record instance:**
+#### Create record in dynamic mode, set field values, and get the modified record instance
 
 (explicit step definition)
 
@@ -200,17 +192,15 @@ nextRecord.quickCreate({
 });
 ```
 
----
-
-**Create blank record, save, and get its ID:**
+#### Create blank record, save, and get its ID
 
 ```
 nextRecord.quickCreate({ type: 'examplerecordtype', });
 ```
 
-### Record creation (quickCreate)
+## Record creation (quickCreate)
 
-#### Parameters
+### Parameters
 
 |         Key          |     Type     | Required | Description                                                                         | Additional Notes                                                                                 |
 |:--------------------:|:------------:|:--------:|:------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|
@@ -224,15 +214,11 @@ nextRecord.quickCreate({ type: 'examplerecordtype', });
 |    `flags.noSave`    |   boolean    | &#x2715; | Disables record save record after processing                                        |                                                                                                  |
 |     `procedure`      | object array | &#x2715; | Record modification procedure &mdash; may comprise a mix of Steps and Subprocedures |                                                                                                  |
 
----
-
-**Procedure Step:**
+#### Procedure Step
 
 _Same as quickCreate._
 
----
-
-**Subprocedure definition:**
+#### Subprocedure definition
 
 _Same as quickCreate, with one important change (in bold):_
 
@@ -240,18 +226,14 @@ _Same as quickCreate, with one important change (in bold):_
 |:------:|:-------:|:--------:|:----------------------------------------------------------------------|
 | `edit` | boolean | &#x2715; | Edit sublist lines rather than inserting new ones **(defaults true)** |
 
----
-
-**Subprocedure Criteria definition:**
+#### Subprocedure Criteria definition
 
 _Same as quickCreate._
 
----
-
-**Subprocedure Step:**
+#### Subprocedure Step
 
 _Same as quickCreate._
 
-#### Returns
+### Returns
 
 Record ID or Record instance (if `flags.noSave` is set)
