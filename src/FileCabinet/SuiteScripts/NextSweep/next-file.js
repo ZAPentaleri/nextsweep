@@ -655,14 +655,8 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
         const originalParentId = folderRecord.getValue({ fieldId: 'parent' });
         const originalName = folderRecord.getValue({ fieldId: 'name' });
 
-        if (newParentId === null && (/\//.test(options.newPath ?? '') || options.newFolderPath !== null))
-            throw error.create({ message: 'Specified destination parent folder does not exist', name: FILE_ERR_NAME, });
         if ((newParentId === null && newName === null)||(newParentId === originalParentId && newName === originalName))
             throw error.create({ message: 'Can not move folder to its original location', name: FILE_ERR_NAME, });
-        if (searchInternal({
-            type: SearchType.FOLDER, baseFolder: newParentId ?? originalParentId, path: newName ?? originalName
-        }).length > 0) throw error.create({
-            message: 'A folder already exists at the specified destination', name: FILE_ERR_NAME, });
 
         folderRecord.setValue({ fieldId: 'parent', value: newParentId, });
         if (newName) folderRecord.setValue({ fieldId: 'name', value: newName, });
