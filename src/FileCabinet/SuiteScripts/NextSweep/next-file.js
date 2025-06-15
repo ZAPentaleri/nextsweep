@@ -443,6 +443,8 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
 
         if (itemExists && itemId === null) throw error.create({
             message: `${itemIsFolder ? 'Folder' : 'File'} could not be found`, name: FILE_ERR_NAME, });
+        if (!itemExists && itemId !== null) throw error.create({
+            message: `Nominally nonexistent ${itemIsFolder ? 'folder' : 'file'} was found`, name: FILE_ERR_NAME, });
 
         return [folderId, itemId, itemName,];
     }
