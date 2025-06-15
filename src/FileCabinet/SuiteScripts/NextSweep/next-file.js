@@ -440,9 +440,7 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
                 name: FILE_ERR_NAME, });
         }
 
-        if (itemId && itemName === null) {
-            itemName = itemIsFolder ? getFolderName(itemId) : getFileName(itemId);
-        }
+        if (itemId && itemName === null) itemName = itemIsFolder ? getFolderName(itemId) : getFileName(itemId);
 
         if (itemExists && itemId === null) throw error.create({
             message: `${itemIsFolder ? 'Folder' : 'File'} could not be found`, name: FILE_ERR_NAME, });
