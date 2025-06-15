@@ -587,15 +587,20 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
      * @returns {string}
      */
     function createFolder(options) {
-        let [parentFolderId, _, folderName] = reduceItemIds({ ...options, itemIsFolder: true, });
-
-        if (parentFolderId === null && (options.folderPath || /\//.test(options.path ?? ''))) {
+        let [parentFolderId, folderName] = null;
+        try {
+            [parentFolderId, _, folderName] = reduceItemIds({ ...options, itemIsFolder: true, });
+        } catch {
             if (options.recursive ?? false) {
                 parentFolderId =
-                    createFolder({ path: options.folderPath ?? joinPath(splitPath(options.path).slice(0, -1)) });
-            } else throw error.create({
-                message: 'Specified parent folder does not exist, recursive creation not enabled',
-                name: FILE_ERR_NAME, });
+                    createFolder({ path: options.folderPath ?? joinPath(splitPath(options.path).slice(0, -1)), });
+                folderName = options.name || splitPath(options.path).at(-1);
+            } else {
+                throw error.create({
+                    message: 'Specified parent folder does not exist, recursive creation not enabled',
+                    name: FILE_ERR_NAME,
+                });
+            }
         }
 
         const folderRecord = record.create({ type: record.Type.FOLDER, });
