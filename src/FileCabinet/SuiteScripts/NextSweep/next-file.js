@@ -410,8 +410,8 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
             const searchResults = searchInternal({
                 type: (itemIsFolder ? SearchType.FOLDER : SearchType.FILE), path: options.path,
             });
-            itemId = searchResults?.[0]?.id;
-            folderId = searchResults?.[0]?.folder;
+            itemId = searchResults?.[0]?.id ?? null;
+            folderId = searchResults?.[0]?.folder ?? null;
 
             if (itemId === null) throw error.create({
                 message: `Path did not resolve to an existing ${itemIsFolder ? 'folder' : 'file'}`,
@@ -432,7 +432,7 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
             const searchResults = searchInternal({
                 type: (itemIsFolder ? SearchType.FOLDER : SearchType.FILE), baseFolder: folderId, path: options.name,
             });
-            itemId = searchResults?.[0]?.id;
+            itemId = searchResults?.[0]?.id ?? null;
 
             if (itemId === null) throw error.create({
                 message: `Name did not resolve to an existing ${itemIsFolder ? 'folder' : 'file'}`,
