@@ -481,7 +481,7 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
             && searchInternal({ type: SearchType.FILE, baseFolder: copyFolderId, path: copyName, }).length > 0)
             throw error.create({ message: 'A file already exists at the specified destination', name: FILE_ERR_NAME, });
 
-        const tempFolderId = copyFolderId === originalFolderId
+        const tempFolderId = copyFolderId === originalFolderId || copyName !== originalName
             ? createFolder({ folder: copyFolderId, name: `TEMP_${new Date().getTime()}` })
             : null;
 
