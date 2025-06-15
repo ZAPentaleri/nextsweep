@@ -467,11 +467,8 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
      * @returns {File}
      */
     function copyFile(options) {
-        const originalFile = loadFile(options);
-        const originalId = originalFile.id.toString();
-        const originalName = originalFile.name;
-        const originalFolderId = originalFile.folder.toString();
-
+        //TODO: evaluate efficiency of this function, consistency of errors
+        const [originalFolderId, originalId, originalName] = reduceItemIds({ ...options, itemExists: true, });
         const [copyFolderId, _, copyName] = reduceItemIds({
             path: options.copyPath, name: options.copyName,
             folder: options.copyFolder, folderPath: options.copyFolderPath,
@@ -480,22 +477,26 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
         if (copyName === originalName && originalFolderId === copyFolderId)
             throw error.create({ message: 'Can not copy file to its original location', name: FILE_ERR_NAME, });
 
-        const tempFolderName = copyFolderId === originalFolderId ? `TEMP_${new Date().getTime()}` : null;
-        const tempFolderId =
-            tempFolderName !== null ? createFolder({ folder: copyFolderId, name: tempFolderName }) : null;
+        if (copyName !== originalName
+            && searchInternal({ type: SearchType.FILE, baseFolder: copyFolderId, path: copyName, }).length > 0)
+            throw error.create({ message: 'A file already exists at the specified destination', name: FILE_ERR_NAME, });
+
+        const tempFolderId = copyFolderId === originalFolderId
+            ? createFolder({ folder: copyFolderId, name: `TEMP_${new Date().getTime()}` })
+            : null;
 
         let newFile = file.copy({
-            id: originalId, folder: tempFolderId ?? copyFolderId,
+            id: Number(originalId), folder: Number(tempFolderId ?? copyFolderId),
             conflictResolution: options.conflictResolution,
         });
 
         if (copyName !== null && copyName !== originalName) newFile.name = copyName;
-        if (tempFolderId !== null) {
-            newFile.folder = copyFolderId;
-            deleteFolder({ id: tempFolderId, })
-        }
+        if (tempFolderId !== null) newFile.folder = copyFolderId;
+        if ((copyName !== null && copyName !== originalName) || tempFolderId !== null)
+            newFile = file.load({ id: newFile.save(), });
+        if (tempFolderId !== null)deleteFolder({ id: tempFolderId, });
 
-        return (tempFolderId === null && copyName === null) ? newFile : file.load({ id: newFile.save(), });
+        return newFile;
     }
 
     /**
