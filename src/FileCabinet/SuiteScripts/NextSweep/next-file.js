@@ -398,6 +398,9 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
                 message: `Too many parameters for ${parameterSet[0]} derivation: [${parameterSet.slice(1).join(', ')}]`,
                 name: FILE_ERR_NAME, });
         }
+        if (!itemExists && options.id) throw error.create({
+            message: `ID passed for nominally nonexistent ${itemIsFolder ? 'folder' : 'file'}: ${options.id}`,
+            name: FILE_ERR_NAME, });
 
         let folderId = null;
         let itemId = null;
