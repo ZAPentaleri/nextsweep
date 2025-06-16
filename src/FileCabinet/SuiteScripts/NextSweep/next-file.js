@@ -327,21 +327,22 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
      * @param {object} options
      * @param {string} [options.type=SearchType.FILE]
      * @param {string} options.query
-     * @param {string|number} [options.baseFolder]
-     * @param {boolean} [options.directChild=false]
-     * @param {boolean} [options.caseSensitive=false]
-     * @param {boolean} [options.exactMatch=false]
+     * @param {string|number} [options.baseFolder=0]
+     * @param {object} [options.flags={}]
+     * @param {boolean} [options.flags.directChild=false]
+     * @param {boolean} [options.flags.caseSensitive=false]
+     * @param {boolean} [options.flags.exactMatch=false]
      */
     function searchExternal(options) {
         return searchInternal({
             type: options.type ?? SearchType.FILE,
             path: options.query,
             baseFolder: options.baseFolder ?? '0',
-            directChild: options.directChild ?? false,
-            caseInsensitive: (typeof options.caseSensitive) === 'boolean'
-                ? !options.caseSensitive
-                : ((typeof options.exactMatch) === 'boolean' ? !options.exactMatch : true),
-            substring: (typeof options.exactMatch) === 'boolean' ? !options.exactMatch : true,
+            directChild: options?.flags?.directChild ?? false,
+            caseInsensitive: (typeof options?.flags?.caseSensitive) === 'boolean'
+                ? !options?.flags?.caseSensitive
+                : ((typeof options?.flags?.exactMatch) === 'boolean' ? !options?.flags?.exactMatch : true),
+            substring: (typeof options?.flags?.exactMatch) === 'boolean' ? !options?.flags?.exactMatch : true,
         });
     }
 
