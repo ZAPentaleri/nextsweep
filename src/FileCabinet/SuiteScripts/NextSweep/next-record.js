@@ -531,8 +531,6 @@ define(['N/error', 'N/record',], (error, record,) => {
                 }
             } else if ((typeof step) === 'object' && checkForValue(step.sublist)) {
                 // step is subprocedure, update sublist
-                //TODO: validate that all necessary values are present for more descriptive errors
-
                 const sublistId = step.sublist.toLowerCase();
 
                 const initialLineCount = workRecord.getLineCount({ sublistId: sublistId, });  // initial for
