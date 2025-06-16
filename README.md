@@ -1,8 +1,387 @@
 # NextSweep &mdash; SuiteScript Shorthand
 
-## NextRecord (next-record.js)
+Shorthand and helper functions to reduce SuiteScript boilerplate.
 
-### Module import
+# NextFile (next-file.js)
+
+File management functions.
+
+## An important note on file and folder functions
+
+For functions that accepts parameters similar to the following:
+
+- `path`: File/folder path
+- `id`: File/folder ID
+- `name`: File/folder name
+- `folder`: File/folder parent folder ID
+- `folderPath`: File/folder parent folder path
+
+_**Only exactly enough information to identify the target file or folder must
+be provided to the function.**_
+
+For example, `path` **must not** be passed alongside `id`, because then a
+determination would need to be made in which File Cabinet item is intended to be
+operated on if the ID refers to a different item than the path.
+
+All legal parameter combinations are listed below:
+
+- `path`
+- `id`
+- `name` + `folder`
+- `name` + `folderPath`
+
+## Module import
+
+```
+require(['SuiteScripts/NextSweep/next-file'], nextFile => {
+    // your code here
+});
+```
+
+## Classes
+
+### SearchType
+
+An enum representing search types.
+
+#### Values
+
+|   Key    | Value  | Description                                      |
+|:--------:|:------:|:-------------------------------------------------|
+|  `ALL`   |  ALL   | Return search results for both files and records |
+|  `FILE`  |  FILE  | Return search results for files only             |
+| `FOLDER` | FOLDER | Return search results for folders only           |
+
+### ResultType
+
+An enum representing search result types.
+
+|   Key    | Value  | Description                                  |
+|:--------:|:------:|:---------------------------------------------|
+|  `FILE`  |  FILE  | A search result representing a File record   |
+| `FOLDER` | FOLDER | A search result representing a Folder record |
+
+### SearchResult
+
+Encapsulates a search result representing a single file or folder
+
+|    Key    |     Type     | Description                                                                                                  |
+|:---------:|:------------:|:-------------------------------------------------------------------------------------------------------------|
+| `idPath`  | string array | A file or folder's path within the File Cabinet, as folder and file IDs                                      |
+|  `path`   |    string    | A file or folder's path within the File Cabinet, as a slash-delimited string                                 |
+|  `type`   |    string    | Search result type (file or folder)                                                                          |
+|   `id`    |    string    | A file or folder's internal ID                                                                               |
+|  `name`   |    string    | A file or folder's internal name, including file extension for file results                                  |
+| `folder`  |    string    | A file or folder's parent folder (nullable only for folders)                                                 |
+| `subtype` |    string    | A file or folder's subtype (e.g. "PDF" or "PLAINTEXT" for files, or "DEFAULT" or "SUITESCRIPTS" for folders) |
+
+## search &mdash; Search Files and Folders
+
+### Parameters
+
+|          Key          |  Type   | Required | Default Value | Description                                                                                                                  |
+|:---------------------:|:-------:|:--------:|:-------------:|:-----------------------------------------------------------------------------------------------------------------------------|
+|        `type`         | string  | &#x2715; |    `FILE`     | Search type (all, file-only, folder-only)                                                                                    |
+|        `query`        | string  | &#x3007; |    &mdash;    | Search query &mdash; a name, path, or partial path                                                                           |
+|     `baseFolder`      | boolean | &#x2715; |      `0`      | The base folder under which to search (defaults to `0`, representing the File Cabinet root)                                  |
+|        `flags`        | object  | &#x2715; |     `{}`      | Search flags (all flags default disabled)                                                                                    |
+|  `flags.directChild`  | boolean | &#x2715; |    `false`    | Search only direct children of the base folder                                                                               |
+| `flags.caseSensitive` | boolean | &#x2715; |    `false`    | Search only case-matched results (if enabled, "A" does not return results for "a"). If unset, defaults to `exactMatch` value |
+|  `flags.exactMatch`   | boolean | &#x2715; |    `false`    | Search only whole-name matches (if enabled, "A" does not return "ABC")                                                       |
+
+### Returns
+
+An array of SearchResult instances
+
+## copy &mdash; Copy Files
+
+### Parameters
+
+_See note on file and folder functions above._
+
+|       Key        |  Type  | Required | Description                      |
+|:----------------:|:------:|:--------:|:---------------------------------|
+|      `path`      | string | &#x25B3; | Original file path               |
+|       `id`       | string | &#x25B3; | Original file ID                 |
+|      `name`      | string | &#x25B3; | Original file name               |
+|     `folder`     | string | &#x25B3; | Original file parent folder ID   |
+|   `folderPath`   | string | &#x25B3; | Original file parent folder path |
+|    `copyPath`    | string | &#x25B3; | Copied file path                 |
+|    `copyName`    | string | &#x25B3; | Copied file name                 |
+|   `copyFolder`   | string | &#x25B3; | Copied file parent folder ID     |
+| `copyFolderPath` | string | &#x25B3; | Copied file parent folder path   |
+
+### Returns
+
+A File instance
+
+## create &mdash; Create Files
+
+### Parameters
+
+_See note on file and folder functions above._
+
+|      Key      |  Type  | Required | Description                                                                                           |
+|:-------------:|:------:|:--------:|:------------------------------------------------------------------------------------------------------|
+|  `fileType`   | string | &#x3007; | File type (derived from `N/file` > `Type`)                                                            |
+|    `path`     | string | &#x25B3; | New file path                                                                                         |
+|    `name`     | string | &#x25B3; | New file name                                                                                         |
+|   `folder`    | string | &#x25B3; | New file parent folder ID                                                                             |
+| `folderPath`  | string | &#x25B3; | New file parent folder path                                                                           |
+|  `contents`   | string | &#x2715; | Initial file contents; if the file type is binary (e.g. PDF), the file content must be base64 encoded |
+| `description` | string | &#x2715; | File description                                                                                      |
+|  `encoding`   | string | &#x2715; | File character encoding (derived from `N/file` > `Encoding`)                                          |
+| `isInactive`  | string | &#x2715; | Inactive status                                                                                       |
+|  `isOnline`   | string | &#x2715; | Available Without Login status                                                                        |
+
+### Returns
+
+A File instance
+
+## delete &mdash; Delete Files
+
+### Parameters
+
+_See note on file and folder functions above._
+
+|     Key      |  Type  | Required | Description             |
+|:------------:|:------:|:--------:|:------------------------|
+|    `path`    | string | &#x25B3; | File path               |
+|     `id`     | string | &#x25B3; | File ID                 |
+|    `name`    | string | &#x25B3; | File name               |
+|   `folder`   | string | &#x25B3; | File parent folder ID   |
+| `folderPath` | string | &#x25B3; | File parent folder path |
+
+### Returns
+
+Nothing
+
+## load &mdash; Load Files
+
+### Parameters
+
+_See note on file and folder functions above._
+
+|     Key      |  Type  | Required | Description             |
+|:------------:|:------:|:--------:|:------------------------|
+|    `path`    | string | &#x25B3; | File path               |
+|     `id`     | string | &#x25B3; | File ID                 |
+|    `name`    | string | &#x25B3; | File name               |
+|   `folder`   | string | &#x25B3; | File parent folder ID   |
+| `folderPath` | string | &#x25B3; | File parent folder path |
+
+### Returns
+
+A File instance
+
+## move &mdash; Move Files
+
+### Parameters
+
+_See note on file and folder functions above._
+
+|       Key       |  Type  | Required | Description                     |
+|:---------------:|:------:|:--------:|:--------------------------------|
+|     `path`      | string | &#x25B3; | Initial file path               |
+|      `id`       | string | &#x25B3; | File ID                         |
+|     `name`      | string | &#x25B3; | Initial file name               |
+|    `folder`     | string | &#x25B3; | Initial file parent folder ID   |
+|  `folderPath`   | string | &#x25B3; | Initial file parent folder path |
+|    `newPath`    | string | &#x25B3; | New file path                   |
+|    `newName`    | string | &#x25B3; | New file name                   |
+|   `newFolder`   | string | &#x25B3; | New file parent folder ID       |
+| `newFolderPath` | string | &#x25B3; | New file parent folder path     |
+
+### Returns
+
+The moved file's ID as a string
+
+## createFolder &mdash; Create Folders
+
+### Parameters
+
+_See note on file and folder functions above._
+
+|     Key      |  Type   | Required | Description                                                            |
+|:------------:|:-------:|:--------:|:-----------------------------------------------------------------------|
+|    `path`    | string  | &#x25B3; | New folder path                                                        |
+|    `name`    | string  | &#x25B3; | New folder name                                                        |
+|   `folder`   | string  | &#x25B3; | New folder parent folder ID                                            |
+| `folderPath` | string  | &#x25B3; | New folder parent folder path                                          |
+| `recursive`  | boolean | &#x25B3; | Enable recursive mode: if parents don't exist, create them recursively |
+
+### Returns
+
+The new folder's ID as a string
+
+## deleteFolder &mdash; Delete Folders
+
+### Parameters
+
+_See note on file and folder functions above._
+
+|     Key      |  Type   | Required | Description               |
+|:------------:|:-------:|:--------:|:--------------------------|
+|    `path`    | string  | &#x25B3; | Folder path               |
+|     `id`     | string  | &#x25B3; | Folder ID                 |
+|    `name`    | string  | &#x25B3; | Folder name               |
+|   `folder`   | string  | &#x25B3; | Folder parent folder ID   |
+| `folderPath` | string  | &#x25B3; | Folder parent folder path |
+
+### Returns
+
+The new folder's ID as a string
+
+## moveFolder &mdash; Move Folders
+
+### Parameters
+
+_See note on file and folder functions above._
+
+|       Key       |  Type  | Required | Description                       |
+|:---------------:|:------:|:--------:|:----------------------------------|
+|     `path`      | string | &#x25B3; | Initial folder path               |
+|      `id`       | string | &#x25B3; | Folder ID                         |
+|     `name`      | string | &#x25B3; | Initial folder name               |
+|    `folder`     | string | &#x25B3; | Initial folder parent folder ID   |
+|  `folderPath`   | string | &#x25B3; | Initial folder parent folder path |
+|    `newPath`    | string | &#x25B3; | New folder path                   |
+|    `newName`    | string | &#x25B3; | New folder name                   |
+|   `newFolder`   | string | &#x25B3; | New folder parent folder ID       |
+| `newFolderPath` | string | &#x25B3; | New folder parent folder path     |
+
+### Returns
+
+The moved folder's ID as a string
+
+## splitPath &mdash; Segment File Paths
+
+### Parameters
+
+|  Key   |  Type  | Required | Description           |
+|:------:|:------:|:--------:|:----------------------|
+| `path` | string | &#x3007; | A file or folder path |
+
+### Returns
+
+The input path split by forward slash (`/`)
+
+## joinPath &mdash; Join File Path Segments
+
+### Parameters
+
+|     Key     |                Type                 | Required | Description                 |
+|:-----------:|:-----------------------------------:|:--------:|:----------------------------|
+| (arguments) | string arguments \|<br>string array | &#x3007; | A split file or folder path |
+
+### Returns
+
+The input path joined by forward slashes (`/`)
+
+## getFileId &mdash; Get File IDs by Path
+
+### Parameters
+
+|  Key   |  Type  | Required | Description |
+|:------:|:------:|:--------:|:------------|
+| `path` | string | &#x3007; | A file path |
+
+### Returns
+
+A file's ID as a string, or null if it doesn't exist
+
+## getFilePath &mdash; Get File Paths by ID
+
+### Parameters
+
+| Key  |  Type  | Required | Description |
+|:----:|:------:|:--------:|:------------|
+| `id` | string | &#x3007; | A file ID   |
+
+### Returns
+
+A file's path, or null if it doesn't exist
+
+## getFileName &mdash; Get File Names by ID
+
+### Parameters
+
+| Key  |  Type  | Required | Description |
+|:----:|:------:|:--------:|:------------|
+| `id` | string | &#x3007; | A file ID   |
+
+### Returns
+
+A file's name, or null if it doesn't exist
+
+## getFileParent &mdash; Get File Parent Folders by ID
+
+### Parameters
+
+| Key  |  Type  | Required | Description |
+|:----:|:------:|:--------:|:------------|
+| `id` | string | &#x3007; | A file ID   |
+
+### Returns
+
+A file's parent folder ID as a string, or null if the file doesn't exist
+
+## getFolderId &mdash; Get Folder IDs by Path
+
+### Parameters
+
+|  Key   |  Type  | Required | Description   |
+|:------:|:------:|:--------:|:--------------|
+| `path` | string | &#x3007; | A folder path |
+
+### Returns
+
+A folder's ID as a string, or null if it doesn't exist
+
+## getFolderPath &mdash; Get Folder Paths by ID
+
+### Parameters
+
+| Key  |  Type  | Required | Description |
+|:----:|:------:|:--------:|:------------|
+| `id` | string | &#x3007; | A folder ID |
+
+### Returns
+
+A folder's path, or null if it doesn't exist
+
+## getFolderName &mdash; Get Folder Names by ID
+
+### Parameters
+
+| Key  |  Type  | Required | Description |
+|:----:|:------:|:--------:|:------------|
+| `id` | string | &#x3007; | A folder ID |
+
+### Returns
+
+A folder's name, or null if it doesn't exist
+
+## getFolderParent &mdash; Get Folder Parents by ID
+
+### Parameters
+
+| Key  |  Type  | Required | Description |
+|:----:|:------:|:--------:|:------------|
+| `id` | string | &#x3007; | A folder ID |
+
+### Returns
+
+A folder's parent folder ID as a string, or null if the target is a root folder
+or it doesn't exist
+
+***
+
+# NextRecord (next-record.js)
+
+Record management functions.
+
+## Module import
 
 ```
 require(['SuiteScripts/NextSweep/next-record'], nextRecord => {
@@ -10,9 +389,13 @@ require(['SuiteScripts/NextSweep/next-record'], nextRecord => {
 });
 ```
 
-### Record Creation (quickCreate)
+## Classes
+### Comparator
+### Operator
 
-#### Parameters
+## quickCreate &mdash; Create Records
+
+### Parameters
 
 |         Key          |     Type     | Required | Description                                                                         |
 |:--------------------:|:------------:|:--------:|:------------------------------------------------------------------------------------|
@@ -24,9 +407,7 @@ require(['SuiteScripts/NextSweep/next-record'], nextRecord => {
 |    `flags.noSave`    |   boolean    | &#x2715; | Disables record save record after processing                                        |
 |     `procedure`      | object array | &#x2715; | Record modification procedure &mdash; may comprise a mix of Steps and Subprocedures |
 
----
-
-**Procedure Step explicit object definition:**
+#### Procedure Step explicit object definition
 
 |          Key           |     Type     | Required | Description                                              | Additional notes                                     |
 |:----------------------:|:------------:|:--------:|:---------------------------------------------------------|------------------------------------------------------|
@@ -36,7 +417,7 @@ require(['SuiteScripts/NextSweep/next-record'], nextRecord => {
 |        `flags`         |    object    | &#x2715; | Step option flags (all flags default disabled)           |                                                      |
 | `flags.suppressEvents` |   boolean    | &#x2715; | Suppress field change events                             |                                                      |
 
-**Procedure Step implicit array definition (no flag support):**
+#### Procedure Step implicit array definition (no flag support)
 
 | Key |  Type   | Required | Description                                                                  |
 |:---:|:-------:|:--------:|:-----------------------------------------------------------------------------|
@@ -44,9 +425,7 @@ require(['SuiteScripts/NextSweep/next-record'], nextRecord => {
 |  1  |  array  | &#x3007; | The value or values to be assigned &mdash; assigned by value unless flag set |
 |  2  | boolean | &#x2715; | By-text field assignment flag                                                |
 
----
-
-**Subprocedure definition:**
+#### Subprocedure definition
 
 |          Key           |     Type      | Required | Description                                                        | Additional notes                                                                                    |
 |:----------------------:|:-------------:|:--------:|:-------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------|
@@ -70,14 +449,12 @@ any insertions. Example 1: indices 0 (A) and 1 (B) are provided, rendering new
 line positions of 0 (A) and 2 (B). Example 2: identical indices 3 (A) and 3 (B)
 are provided, rendering new line positions of 3 (A) and 4 (B)._
 
----
-
-**Subprocedure Criteria definition:**
+#### Subprocedure Criteria definition
 
 Criteria are arbitrarily nested conditional arrays, joined by operators `AND`,
 `OR`, and `NOT`. There is no limit to nesting depth.
 
-**Supported comparators:**
+#### Supported comparators
 
 |     Name     | Symbol | Allowed representations (case insensitive) | Description                                    |
 |:------------:|:------:|:-------------------------------------------|------------------------------------------------|
@@ -93,13 +470,13 @@ Criteria are arbitrarily nested conditional arrays, joined by operators `AND`,
 Note that element order is not considered in any comparison. For example,
 `[1,2,3]` is considered equal to `[3,2,1]`.
 
-**Simple example:**
+#### Simple example
 
 ```
 [["examplelineid", "is", "12345"]]
 ```
 
-**Complex example:**
+#### Complex example
 
 ```
 [
@@ -118,9 +495,7 @@ Note that element order is not considered in any comparison. For example,
 ]
 ```
 
----
-
-**Subprocedure Step explicit object definition:**
+#### Subprocedure Step explicit object definition
 
 |           Key           |     Type     | Required | Description                                              | Additional notes                                     |
 |:-----------------------:|:------------:|:--------:|:---------------------------------------------------------|------------------------------------------------------|
@@ -131,7 +506,7 @@ Note that element order is not considered in any comparison. For example,
 | `flags.suppressEvents`  |   boolean    | &#x2715; | Suppress field change events                             |                                                      |
 | `flags.forceSyncSource` |   boolean    | &#x2715; | Force synchronous field sourcing                         |                                                      |
 
-**Subprocedure Step implicit array definition (no flag support):**
+#### Subprocedure Step implicit array definition (no flag support)
 
 | Key |  Type   | Required | Description                                                                  |
 |:---:|:-------:|:--------:|:-----------------------------------------------------------------------------|
@@ -139,18 +514,16 @@ Note that element order is not considered in any comparison. For example,
 |  1  |  array  | &#x3007; | The value or values to be assigned &mdash; assigned by value unless flag set |
 |  2  | boolean | &#x2715; | By-text field assignment flag                                                |
 
-#### Returns
+### Returns
 
 Record ID or Record instance (if `flags.noSave` is set)
 
-#### Examples
+### Examples
 
-*NOTE: Examples mix and match syntax options for greater coverage. For example,
-procedure steps may be passed as explicit objects or arrays.* 
+_Note: Examples mix and match syntax options for greater coverage. For example,
+procedure steps may be passed as explicit objects or arrays._
 
----
-
-**Create record in dynamic mode, set field values, and get the modified record instance:**
+#### Create record in dynamic mode, set field values, and get the modified record instance
 
 (explicit step definition)
 
@@ -200,17 +573,15 @@ nextRecord.quickCreate({
 });
 ```
 
----
-
-**Create blank record, save, and get its ID:**
+#### Create blank record, save, and get its ID
 
 ```
 nextRecord.quickCreate({ type: 'examplerecordtype', });
 ```
 
-### Record creation (quickCreate)
+## quickUpdate &mdash; Update Records
 
-#### Parameters
+### Parameters
 
 |         Key          |     Type     | Required | Description                                                                         | Additional Notes                                                                                 |
 |:--------------------:|:------------:|:--------:|:------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|
@@ -224,15 +595,11 @@ nextRecord.quickCreate({ type: 'examplerecordtype', });
 |    `flags.noSave`    |   boolean    | &#x2715; | Disables record save record after processing                                        |                                                                                                  |
 |     `procedure`      | object array | &#x2715; | Record modification procedure &mdash; may comprise a mix of Steps and Subprocedures |                                                                                                  |
 
----
-
-**Procedure Step:**
+#### Procedure Step
 
 _Same as quickCreate._
 
----
-
-**Subprocedure definition:**
+#### Subprocedure definition
 
 _Same as quickCreate, with one important change (in bold):_
 
@@ -240,18 +607,26 @@ _Same as quickCreate, with one important change (in bold):_
 |:------:|:-------:|:--------:|:----------------------------------------------------------------------|
 | `edit` | boolean | &#x2715; | Edit sublist lines rather than inserting new ones **(defaults true)** |
 
----
-
-**Subprocedure Criteria definition:**
+#### Subprocedure Criteria definition
 
 _Same as quickCreate._
 
----
-
-**Subprocedure Step:**
+#### Subprocedure Step
 
 _Same as quickCreate._
 
-#### Returns
+### Returns
 
 Record ID or Record instance (if `flags.noSave` is set)
+
+***
+
+```
+      __________ _ _____    ___
+      \____   // ||   _  \  \  \
+         /  //   ||  | \  \ |  |____       ___ __
+       /  //  /  ||  |_/  //  // ___\___  / __\ |_
+     /  //__/ |  ||   __//__/  \__ \/ . \|  _||  _|
+   /_________\|__||__| /__/   /____/\___/|_|  \__\ 2025++
+
+```
