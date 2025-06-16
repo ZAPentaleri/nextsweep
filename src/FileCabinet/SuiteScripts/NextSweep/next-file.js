@@ -480,11 +480,11 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
      * @param {string} [options.copyName] Copied file path
      * @param {string|number} [options.copyFolder] Copied file folder ID
      * @param {string} [options.copyFolderPath] Copied file folder path
-     * @param {string} [options.conflictResolution]
      * @returns {File}
      */
     function copyFile(options) {
         //TODO: evaluate efficiency of this function, consistency of errors
+        //TODO: implement conflict resolution methods
 
         // NetSuite only natively gives provisions to copy files to a different folder, NOT to copy with a different
         // name or within the same folder. Most of the complication in this function is to work around that limitation.
@@ -512,7 +512,7 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
         // native copy
         let newFile = file.copy({
             id: Number(originalId), folder: Number(tempFolderId ?? copyFolderId),
-            conflictResolution: options.conflictResolution,
+            // conflictResolution: options.conflictResolution,
         });
 
         if (copyName !== null && copyName !== originalName) newFile.name = copyName;
