@@ -47,7 +47,9 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
      * @returns {string[]}
      */
     function splitPath(path) {
-        return Array.isArray(path) ? path : (path.split('/').filter((seg, index) => index > 0 || seg !== ''));
+        return Array.isArray(path)
+            ? path
+            : (path.split('/').filter((seg, index, sArr) => (index > 0 && index < (sArr.length - 1)) || seg !== ''));
     }
 
     /**
@@ -327,21 +329,22 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
      * @param {object} options
      * @param {string} [options.type=SearchType.FILE]
      * @param {string} options.query
-     * @param {string|number} [options.baseFolder]
-     * @param {boolean} [options.directChild=false]
-     * @param {boolean} [options.caseSensitive=false]
-     * @param {boolean} [options.exactMatch=false]
+     * @param {string|number} [options.baseFolder=0]
+     * @param {object} [options.flags={}]
+     * @param {boolean} [options.flags.directChild=false]
+     * @param {boolean} [options.flags.caseSensitive=false]
+     * @param {boolean} [options.flags.exactMatch=false]
      */
     function searchExternal(options) {
         return searchInternal({
             type: options.type ?? SearchType.FILE,
             path: options.query,
             baseFolder: options.baseFolder ?? '0',
-            directChild: options.directChild ?? false,
-            caseInsensitive: (typeof options.caseSensitive) === 'boolean'
-                ? !options.caseSensitive
-                : ((typeof options.exactMatch) === 'boolean' ? !options.exactMatch : true),
-            substring: (typeof options.exactMatch) === 'boolean' ? !options.exactMatch : true,
+            directChild: options?.flags?.directChild ?? false,
+            caseInsensitive: (typeof options?.flags?.caseSensitive) === 'boolean'
+                ? !options?.flags?.caseSensitive
+                : ((typeof options?.flags?.exactMatch) === 'boolean' ? !options?.flags?.exactMatch : true),
+            substring: (typeof options?.flags?.exactMatch) === 'boolean' ? !options?.flags?.exactMatch : true,
         });
     }
 
@@ -361,6 +364,13 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
     }
     function getFileName(id) {
         return search.lookupFields({ type: 'file', id: id, columns: ['name'], })?.['name'] ?? null;
+    }
+    function getFolderParent(id) {
+        return search.lookupFields({ type: search.Type.FOLDER, id: id, columns: ['parent'], })?.['parent']?.[0]?.value
+            ?? null;
+    }
+    function getFileParent(id) {
+        return search.lookupFields({ type: 'file', id: id, columns: ['folder'], })?.['folder']?.[0]?.value ?? null;
     }
 
     /**
@@ -473,11 +483,11 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
      * @param {string} [options.copyName] Copied file path
      * @param {string|number} [options.copyFolder] Copied file folder ID
      * @param {string} [options.copyFolderPath] Copied file folder path
-     * @param {string} [options.conflictResolution]
      * @returns {File}
      */
     function copyFile(options) {
         //TODO: evaluate efficiency of this function, consistency of errors
+        //TODO: implement conflict resolution methods
 
         // NetSuite only natively gives provisions to copy files to a different folder, NOT to copy with a different
         // name or within the same folder. Most of the complication in this function is to work around that limitation.
@@ -505,7 +515,7 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
         // native copy
         let newFile = file.copy({
             id: Number(originalId), folder: Number(tempFolderId ?? copyFolderId),
-            conflictResolution: options.conflictResolution,
+            // conflictResolution: options.conflictResolution,
         });
 
         if (copyName !== null && copyName !== originalName) newFile.name = copyName;
@@ -521,12 +531,16 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
      * Instantiates a new File object
      *
      * @param {object} options
+     * @param {string} options.fileType New file type
      * @param {string} [options.path] New file path
      * @param {string} [options.name] New file name
      * @param {string|number} [options.folder] Folder ID
      * @param {string} [options.folderPath] Folder path
-     * @param {string} options.fileType New file type
-     * @param {string} options.contents New file contents
+     * @param {string} [options.contents] New file contents
+     * @param {string} [options.description] New file description
+     * @param {string} [options.encoding] New file encoding
+     * @param {boolean} [options.isInactive] New file inactive status
+     * @param {boolean} [options.isOnline] New file Available Without Login status
      * @returns {File}
      */
     function createFile(options) {
@@ -684,8 +698,10 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
 
     return {
         SearchType, ResultType,
-        splitPath, joinPath, getFolderId, getFileId, getFolderPath, getFilePath,
+        splitPath, joinPath,
+        getFileId, getFilePath, getFileName, getFileParent,
         copy: copyFile, create: createFile, delete: deleteFile, load: loadFile, move: moveFile,
+        getFolderId, getFolderPath, getFolderName, getFolderParent,
         createFolder, deleteFolder, moveFolder,
         search: searchExternal,
     };
