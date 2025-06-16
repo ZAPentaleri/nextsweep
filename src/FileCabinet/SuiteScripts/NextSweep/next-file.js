@@ -531,12 +531,16 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
      * Instantiates a new File object
      *
      * @param {object} options
+     * @param {string} options.fileType New file type
      * @param {string} [options.path] New file path
      * @param {string} [options.name] New file name
      * @param {string|number} [options.folder] Folder ID
      * @param {string} [options.folderPath] Folder path
-     * @param {string} options.fileType New file type
-     * @param {string} options.contents New file contents
+     * @param {string} [options.contents] New file contents
+     * @param {string} [options.description] New file description
+     * @param {string} [options.encoding] New file encoding
+     * @param {string} [options.isInactive] New file inactive status
+     * @param {string} [options.isOnline] New file Available Without Login status
      * @returns {File}
      */
     function createFile(options) {
