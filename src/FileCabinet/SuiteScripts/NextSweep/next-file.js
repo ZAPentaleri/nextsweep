@@ -366,10 +366,11 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
         return search.lookupFields({ type: 'file', id: id, columns: ['name'], })?.['name'] ?? null;
     }
     function getFolderParent(id) {
-        return search.lookupFields({ type: search.Type.FOLDER, id: id, columns: ['parent'], })?.['parent'] ?? null;
+        return search.lookupFields({ type: search.Type.FOLDER, id: id, columns: ['parent'], })?.['parent']?.[0]?.value
+            ?? null;
     }
     function getFileParent(id) {
-        return search.lookupFields({ type: 'file', id: id, columns: ['folder'], })?.['folder'] ?? null;
+        return search.lookupFields({ type: 'file', id: id, columns: ['folder'], })?.['folder']?.[0]?.value ?? null;
     }
 
     /**
