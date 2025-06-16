@@ -539,8 +539,8 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
      * @param {string} [options.contents] New file contents
      * @param {string} [options.description] New file description
      * @param {string} [options.encoding] New file encoding
-     * @param {string} [options.isInactive] New file inactive status
-     * @param {string} [options.isOnline] New file Available Without Login status
+     * @param {boolean} [options.isInactive] New file inactive status
+     * @param {boolean} [options.isOnline] New file Available Without Login status
      * @returns {File}
      */
     function createFile(options) {
