@@ -43,6 +43,16 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
             });
         }
 
+
+        /**
+         * Get a list entry by index -- adjusted for inactive entries; i.e. the
+         * second entry will correspond to index=0 if the first entry is flagged
+         * inactive
+         *
+         * @param {number} index List entry index (adjusted for inactive entries)
+         * @param {boolean} [includeInactive] Include inactive-flagged entries
+         * @returns {CustomListEntry|undefined}
+         */
         get(index, includeInactive=false) {
             if (index >= this.entries.length || index < -this.entries.length) return undefined;
             let adjustedIndex = index >= 0 ? 0 : -1;
@@ -60,6 +70,14 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
             }
             return undefined;
         }
+
+        /**
+         * Get a list entry by Script ID (labeled "ID" in the UI)
+         *
+         * @param {string} scriptId List entry Script ID
+         * @param {boolean} [includeInactive] Include inactive-flagged entries
+         * @returns {CustomListEntry|undefined}
+         */
         getById(scriptId, includeInactive=false) {
             for (const entry of this.entries) {
                 if (entry.id === scriptId.toLowerCase())
@@ -67,6 +85,17 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
             }
             return undefined;
         }
+
+        /**
+         * Get a list entry by Internal ID -- should not be relied on, as the
+         * value is not guaranteed to be consistent across accounts for deployed
+         * lists
+         *
+         * @param {string} internalId List entry internal ID (not guaranteed to be consistent across accounts for
+         *     deployed lists)
+         * @param {boolean} [includeInactive] Include inactive-flagged entries
+         * @returns {CustomListEntry|undefined}
+         */
         getByInternalId(internalId, includeInactive=false) {
             for (const entry of this.entries) {
                 if (entry.internalId === internalId.toString())
@@ -74,16 +103,24 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
             }
             return undefined;
         }
+
+        /**
+         * Get all list entries
+         *
+         * @param {boolean} [includeInactive] Include inactive-flagged entries
+         * @returns {CustomListEntry|undefined}
+         */
         getAll(includeInactive=false) {
             return includeInactive ? [...this.entries] : this.entries.filter(entry => !entry.inactive);
         }
     }
 
     /**
+     * Load a Custom List by Script ID ("id") or Internal ID ("internalId")
      *
      * @param {object} options
-     * @param {string} [options.id]
-     * @param {string} [options.internalId]
+     * @param {string} [options.id] List Script ID
+     * @param {string} [options.internalId] List Internal ID
      * @returns {CustomList}
      */
     function load(options) {
