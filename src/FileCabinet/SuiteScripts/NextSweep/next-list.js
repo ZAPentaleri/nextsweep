@@ -129,11 +129,10 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
         if ((typeof options.id) !== 'undefined' && (typeof options.internalId) !== 'undefined')
             throw error.create({ message: 'ID and Script ID should not both be provided', name: LIST_ERR_NAME, });
 
-        const listId = search.create({
+        // list records can't be loaded by script ID, so fetch internal ID if required
+        const listId = options.internalId ?? search.create({
             type: 'customlist',
-            filters: options.id
-                ? [['scriptid', 'is', options.id,]]
-                : [['internalid', 'is', options.internalId,]],
+            filters: [['scriptid', 'is', options.id,]],
             columns: [],
         }).run().getRange({ start: 0, end: 1, })?.[0]?.id ?? null;
 
