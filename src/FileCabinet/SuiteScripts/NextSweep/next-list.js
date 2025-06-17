@@ -21,7 +21,7 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
         static ALPHABETICAL_ORDER = 'ALPHABETICAL_ORDER';
     }
     class CustomListEntry {
-        constructor(id, internalId, value, inactive) {
+        constructor(value, id, internalId, inactive) {
             Object.defineProperty(this, 'value',      { value: value,                 writable: false, });
             Object.defineProperty(this, 'id',         { value: id.toLowerCase(),      writable: false, });
             Object.defineProperty(this, 'internalId', { value: internalId.toString(), writable: false, });
