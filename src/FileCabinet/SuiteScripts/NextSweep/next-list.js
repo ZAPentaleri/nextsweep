@@ -107,12 +107,23 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
         /**
          * Get all list entries
          *
-         * @param {boolean} [includeInactive] Include inactive-flagged entries
-         * @returns {CustomListEntry|undefined}
+         * @returns {CustomListEntry[]}
          */
-        getAll(includeInactive=false) {
-            return includeInactive ? [...this.entries] : this.entries.filter(entry => !entry.inactive);
-        }
+        getAll() { return [...this.entries]; }
+
+        /**
+         * Get all active list entries
+         *
+         * @returns {CustomListEntry[]}
+         */
+        getActive() { return this.entries.filter(entry => !entry.inactive); }
+
+        /**
+         * Get all inactive list entries
+         *
+         * @returns {CustomListEntry[]}
+         */
+        getInactive() { return this.entries.filter(entry => entry.inactive); }
     }
 
     /**
