@@ -45,10 +45,18 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
 
         get(index, includeInactive=false) {
             if (index >= this.entries.length || index < -this.entries.length) return undefined;
-            let adjustedIndex = 0;
-            for (const entry of this.entries) {
-                if ((!this.inactive || includeInactive) && adjustedIndex === index) return entry;
-                else if (!this.inactive || includeInactive) ++adjustedIndex;
+            let adjustedIndex = index >= 0 ? 0 : -1;
+            for (
+                let i = index >= 0 ? 0 : -1;
+                index >= 0 ? i < this.entries.length : i >= -this.entries.length;
+                index >= 0 ? i++ : i--
+            ) {
+                if ((!this.inactive || includeInactive) && adjustedIndex === i) {
+                    return this.entries[i];
+                } else if (!this.inactive || includeInactive) {
+                    if (i >= 0) adjustedIndex++;
+                    else adjustedIndex--;
+                }
             }
             return undefined;
         }
