@@ -99,7 +99,7 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
         return new CustomList(
             listRecord.getValue({ fieldId: 'name' }),
             listRecord.getValue({ fieldId: 'scriptid' }),
-            listRecord.getValue({ fieldId: 'internalid' }),
+            listRecord.getValue({ fieldId: 'id' }),
             listRecord.getValue({ fieldId: 'owner' }),
             listRecord.getValue({ fieldId: 'description' }),
             listRecord.getValue({ fieldId: 'isordered' }) === 'T'
@@ -110,7 +110,7 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
                 listRecord.getSublistValue({ sublistId: 'customvalue', line: lineIndex, fieldId: 'valueid', }),
                 listRecord.getSublistValue({ sublistId: 'customvalue', line: lineIndex, fieldId: 'scriptid', }),
                 listRecord.getSublistValue({ sublistId: 'customvalue', line: lineIndex, fieldId: 'value', }),
-                listRecord.getSublistValue({ sublistId: 'customvalue', line: lineIndex, fieldId: 'inactive', }),
+                listRecord.getSublistValue({ sublistId: 'customvalue', line: lineIndex, fieldId: 'isinactive', }),
             ]),
         );
     }
