@@ -44,22 +44,20 @@ require(['SuiteScripts/NextSweep/next-file'], nextFile => {
 
 An enum representing search types.
 
-#### Values
-
-|   Key    | Value  | Description                                      |
-|:--------:|:------:|:-------------------------------------------------|
-|  `ALL`   |  ALL   | Return search results for both files and records |
-|  `FILE`  |  FILE  | Return search results for files only             |
-| `FOLDER` | FOLDER | Return search results for folders only           |
+|   Key    |  Value   | Description                                      |
+|:--------:|:--------:|:-------------------------------------------------|
+|  `ALL`   |  "ALL"   | Return search results for both files and records |
+|  `FILE`  |  "FILE"  | Return search results for files only             |
+| `FOLDER` | "FOLDER" | Return search results for folders only           |
 
 ### ResultType
 
 An enum representing search result types.
 
-|   Key    | Value  | Description                                  |
-|:--------:|:------:|:---------------------------------------------|
-|  `FILE`  |  FILE  | A search result representing a File record   |
-| `FOLDER` | FOLDER | A search result representing a Folder record |
+|   Key    |  Value   | Description                                  |
+|:--------:|:--------:|:---------------------------------------------|
+|  `FILE`  |  "FILE"  | A search result representing a File record   |
+| `FOLDER` | "FOLDER" | A search result representing a Folder record |
 
 ### SearchResult
 
@@ -377,6 +375,81 @@ or it doesn't exist
 
 ***
 
+# NextList (next-list.js)
+
+File management functions.
+
+## Module import
+
+```
+require(['SuiteScripts/NextSweep/next-list'], nextList => {
+    // your code here
+});
+```
+
+## Classes
+
+### CustomListOrder
+
+An enum representing Custom List sort types.
+
+|         Key          |        Value         | Description                             |
+|:--------------------:|:--------------------:|:----------------------------------------|
+| `THE_ORDER_ENTERED`  | "THE_ORDER_ENTERED"  | List entries are ordered as entered     |
+| `ALPHABETICAL_ORDER` | "ALPHABETICAL_ORDER" | List entries are ordered alphabetically |
+
+### CustomListEntry
+
+Encapsulates a Custom List entry
+
+|     Key      |  Type   | Description                     |
+|:------------:|:-------:|:--------------------------------|
+|   `value`    | string  | Entry label ("Value" in the UI) |
+|     `id`     | string  | Entry Script ID                 |
+| `internalId` | string  | Entry Internal ID               |
+|  `inactive`  | boolean | Entry inactive flag             |
+
+### CustomList
+
+Encapsulates a Custom List definition
+
+|      Key      |         Type          | Description                                                                      |
+|:-------------:|:---------------------:|:---------------------------------------------------------------------------------|
+|    `name`     |        string         | List title                                                                       |
+|     `id`      |        string         | List Script ID                                                                   |
+| `internalId`  |        string         | List Internal ID (numeric ID)                                                    |
+|    `owner`    |        string         | List owner                                                                       |
+| `description` |        string         | List description                                                                 |
+|    `order`    |    CustomListOrder    | List entry order                                                                 |
+|  `inactive`   |        boolean        | Inactive flag                                                                    |
+|   `entries`   | CustomListEntry array | List entries &mdash; should not be used directly, use accessor functions instead |
+
+#### Class Methods
+
+|             Name              | Description                                |
+|:-----------------------------:|:-------------------------------------------|
+|         `get(index)`          | Gets a list entry by index                 |
+|      `getById(scriptId)`      | Gets a list entry by Script ID             |
+| `getByInternalId(internalId)` | Gets a list entry by Internal ID           |
+|          `getAll()`           | Gets all list entries (including inactive) |
+|         `getActive()`         | Gets all list entries not flagged inactive |
+|        `getInactive()`        | Gets all list entries flagged inactive     |
+
+## load &mdash; Load a Custom List
+
+### Parameters
+
+|     Key      |  Type  | Required | Description      |
+|:------------:|:------:|:--------:|:-----------------|
+|     `id`     | string | &#x25B3; | List Script ID   |
+| `internalId` | string | &#x25B3; | List Internal ID |
+
+### Returns
+
+A CustomList instance
+
+***
+
 # NextRecord (next-record.js)
 
 Record management functions.
@@ -390,8 +463,14 @@ require(['SuiteScripts/NextSweep/next-record'], nextRecord => {
 ```
 
 ## Classes
+### ComparatorDefinition
 ### Comparator
+### OperatorDefinition
 ### Operator
+### CriteriaNode
+### CriteriaBranch
+### CriteriaLeaf
+### CriteriaNodeTraversalPath
 
 ## quickCreate &mdash; Create Records
 
