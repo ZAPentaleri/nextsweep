@@ -377,7 +377,7 @@ or it doesn't exist
 
 # NextList (next-list.js)
 
-File management functions.
+Custom List mapping functions.
 
 ## Module import
 
