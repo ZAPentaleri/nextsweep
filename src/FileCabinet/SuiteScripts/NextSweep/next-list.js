@@ -43,7 +43,6 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
             });
         }
 
-
         /**
          * Get a list entry by index -- adjusted for inactive entries; i.e. the
          * second entry will correspond to index=0 if the first entry is flagged
