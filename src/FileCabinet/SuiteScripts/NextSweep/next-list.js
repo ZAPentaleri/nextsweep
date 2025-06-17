@@ -50,7 +50,7 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
          * inactive
          *
          * @param {number} index List entry index (adjusted for inactive entries)
-         * @param {boolean} [includeInactive] Include inactive-flagged entries
+         * @param {boolean} [includeInactive=false] Include inactive-flagged entries
          * @returns {CustomListEntry|undefined}
          */
         get(index, includeInactive=false) {
@@ -75,10 +75,10 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
          * Get a list entry by Script ID (labeled "ID" in the UI)
          *
          * @param {string} scriptId List entry Script ID
-         * @param {boolean} [includeInactive] Include inactive-flagged entries
+         * @param {boolean} [includeInactive=true] Include inactive-flagged entries
          * @returns {CustomListEntry|undefined}
          */
-        getById(scriptId, includeInactive=false) {
+        getById(scriptId, includeInactive=true) {
             for (const entry of this.entries) {
                 if (entry.id === scriptId.toLowerCase())
                     return (!entry.inactive || includeInactive) ? entry : undefined;
@@ -93,10 +93,10 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
          *
          * @param {string} internalId List entry internal ID (not guaranteed to be consistent across accounts for
          *     deployed lists)
-         * @param {boolean} [includeInactive] Include inactive-flagged entries
+         * @param {boolean} [includeInactive=true] Include inactive-flagged entries
          * @returns {CustomListEntry|undefined}
          */
-        getByInternalId(internalId, includeInactive=false) {
+        getByInternalId(internalId, includeInactive=true) {
             for (const entry of this.entries) {
                 if (entry.internalId === internalId.toString())
                     return (!entry.inactive || includeInactive) ? entry : undefined;
