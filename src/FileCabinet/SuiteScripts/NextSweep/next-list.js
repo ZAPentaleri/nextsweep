@@ -69,7 +69,7 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
         }
         getByInternalId(internalId, includeInactive=false) {
             for (const entry of this.entries) {
-                if (entry.internalId === internalId || Number(entry.internalId) === Number(internalId))
+                if (entry.internalId === internalId.toString())
                     return (!entry.inactive || includeInactive) ? entry : undefined;
             }
             return undefined;
