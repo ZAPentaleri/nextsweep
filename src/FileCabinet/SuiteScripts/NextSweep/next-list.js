@@ -22,10 +22,10 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
     }
     class CustomListEntry {
         constructor(id, internalId, value, inactive) {
-            Object.defineProperty(this, 'id',         { value: id, writable: false, });
-            Object.defineProperty(this, 'internalId', { value: internalId, writable: false, });
-            Object.defineProperty(this, 'value',      { value: value, writable: false, });
-            Object.defineProperty(this, 'inactive',   { value: inactive, writable: false, });
+            Object.defineProperty(this, 'value',      { value: value,                 writable: false, });
+            Object.defineProperty(this, 'id',         { value: id.toLowerCase(),      writable: false, });
+            Object.defineProperty(this, 'internalId', { value: internalId.toString(), writable: false, });
+            Object.defineProperty(this, 'inactive',   { value: inactive,              writable: false, });
         }
     }
     class CustomList {
@@ -115,9 +115,9 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
                 : CustomListOrder.ALPHABETICAL_ORDER,
             listRecord.getValue({ fieldId: 'isinactive' }),
             [...Array(listRecord.getLineCount({ sublistId: 'customvalue', }))].map((_, lineIndex) => [
-                listRecord.getSublistValue({ sublistId: 'customvalue', line: lineIndex, fieldId: 'valueid', }),
-                listRecord.getSublistValue({ sublistId: 'customvalue', line: lineIndex, fieldId: 'scriptid', }),
                 listRecord.getSublistValue({ sublistId: 'customvalue', line: lineIndex, fieldId: 'value', }),
+                listRecord.getSublistValue({ sublistId: 'customvalue', line: lineIndex, fieldId: 'scriptid', }),
+                listRecord.getSublistValue({ sublistId: 'customvalue', line: lineIndex, fieldId: 'valueid', }),
                 listRecord.getSublistValue({ sublistId: 'customvalue', line: lineIndex, fieldId: 'isinactive', }),
             ]),
         );
