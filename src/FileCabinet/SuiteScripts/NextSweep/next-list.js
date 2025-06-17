@@ -137,7 +137,7 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
         }).run().getRange({ start: 0, end: 1, })?.[0]?.id ?? null;
 
         if (listId === null) throw error.create({
-            message: `List matching "${options.id ?? options.scriptId}" could not be found`, name: LIST_ERR_NAME, });
+            message: `List matching "${options.id ?? options.internalId}" could not be found`, name: LIST_ERR_NAME, });
 
         const listRecord = record.load({ type: 'customlist', id: listId, });
         return new CustomList(
