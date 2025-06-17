@@ -38,7 +38,7 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
             Object.defineProperty(this, 'order',       { value: order,       writable: false, });
             Object.defineProperty(this, 'inactive',    { value: inactive,    writable: false, });
             Object.defineProperty(this, 'entries', {
-                value: Object.freeze(entries.map(entry => Object.freeze(new CustomListEntry(...entry)))),
+                value: Object.freeze(entries.map(entryParams => Object.freeze(new CustomListEntry(...entryParams)))),
                 writable: false,
             });
         }
@@ -56,11 +56,8 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
         get(index, includeInactive=false) {
             if (index >= this.entries.length || index < -this.entries.length) return undefined;
             let adjustedIndex = index >= 0 ? 0 : -1;
-            for (
-                let i = index >= 0 ? 0 : -1;
-                index >= 0 ? i < this.entries.length : i >= -this.entries.length;
-                index >= 0 ? i++ : i--
-            ) {
+            let step = index >= 0 ? 1 : -1;
+            for (let i = adjustedIndex; index >= 0 ? i < this.entries.length : i >= -this.entries.length; i += step) {
                 if ((!this.entries[i].inactive || includeInactive) && adjustedIndex === index) {
                     return this.entries[i];
                 } else if (!this.entries[i].inactive || includeInactive) {
@@ -144,7 +141,6 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
         const listId = options.internalId ?? search.create({
             type: 'customlist',
             filters: [['scriptid', 'is', options.id,]],
-            columns: [],
         }).run().getRange({ start: 0, end: 1, })?.[0]?.id ?? null;
 
         if (listId === null) throw error.create({
