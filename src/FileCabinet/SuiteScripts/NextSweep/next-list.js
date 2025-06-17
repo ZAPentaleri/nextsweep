@@ -139,6 +139,7 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
         if (listId === null) throw error.create({
             message: `List matching "${options.id ?? options.internalId}" could not be found`, name: LIST_ERR_NAME, });
 
+        // load list record -- entries can be retrieved via search, but the entry order is only shown on the record
         const listRecord = record.load({ type: 'customlist', id: listId, });
         return new CustomList(
             listRecord.getValue({ fieldId: 'name' }),
