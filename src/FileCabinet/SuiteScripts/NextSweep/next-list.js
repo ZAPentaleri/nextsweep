@@ -71,17 +71,24 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
         }
     }
 
+    /**
+     *
+     * @param {object} options
+     * @param {string} [options.id]
+     * @param {string} [options.internalId]
+     * @returns {CustomList}
+     */
     function load(options) {
-        if ((typeof options.id) === 'undefined' && (typeof options.scriptId) === 'undefined')
+        if ((typeof options.id) === 'undefined' && (typeof options.internalId) === 'undefined')
             throw error.create({ message: 'No list ID was provided', name: LIST_ERR_NAME, });
-        if ((typeof options.id) !== 'undefined' && (typeof options.scriptId) !== 'undefined')
+        if ((typeof options.id) !== 'undefined' && (typeof options.internalId) !== 'undefined')
             throw error.create({ message: 'ID and Script ID should not both be provided', name: LIST_ERR_NAME, });
 
         const listId = search.create({
             type: 'customlist',
             filters: options.id
-                ? [['internalid', 'is', options.id,]]
-                : [['scriptid', 'is', options.scriptId,]],
+                ? [['scriptid', 'is', options.id,]]
+                : [['internalid', 'is', options.internalId,]],
             columns: [],
         }).run().getRange({ start: 0, end: 1, })?.[0]?.id ?? null;
 
