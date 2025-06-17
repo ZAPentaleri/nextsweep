@@ -147,7 +147,7 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
             listRecord.getValue({ fieldId: 'id' }),
             listRecord.getValue({ fieldId: 'owner' }),
             listRecord.getValue({ fieldId: 'description' }),
-            listRecord.getValue({ fieldId: 'isordered' }) === 'T'
+            listRecord.getValue({ fieldId: 'isordered' }) === 'T'  // for some reason, this one is returned as a string
                 ? CustomListOrder.THE_ORDER_ENTERED
                 : CustomListOrder.ALPHABETICAL_ORDER,
             listRecord.getValue({ fieldId: 'isinactive' }),
