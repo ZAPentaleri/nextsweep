@@ -27,9 +27,9 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/search', './next-list', './
      */
     class AsyncTaskResult {
         constructor(id, status, result) {
-            Object.defineProperty(this, 'id',     { value: id.toString(), writable: false, });
-            Object.defineProperty(this, 'status', { value: status, writable: false, });
-            Object.defineProperty(this, 'result', { value: result, writable: false, });
+            Object.defineProperty(this, 'id',     { value: id.toString(), writable: false, enumerable: true, });
+            Object.defineProperty(this, 'status', { value: status, writable: false, enumerable: true, });
+            Object.defineProperty(this, 'result', { value: result, writable: false, enumerable: true, });
         }
 
         toJSON() { return JSON.stringify({ id: this.id, status: this.status, result: this.result, }); }
