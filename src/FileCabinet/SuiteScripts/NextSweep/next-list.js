@@ -30,10 +30,11 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
      */
     class CustomListEntry {
         constructor(value, id, internalId, inactive) {
-            Object.defineProperty(this, 'value',      { value: value,                 writable: false, });
-            Object.defineProperty(this, 'id',         { value: id.toLowerCase(),      writable: false, });
-            Object.defineProperty(this, 'internalId', { value: internalId.toString(), writable: false, });
-            Object.defineProperty(this, 'inactive',   { value: inactive,              writable: false, });
+            Object.defineProperty(this, 'value',    { value: value, writable: false, enumerable: true, });
+            Object.defineProperty(this, 'id',       { value: id.toLowerCase(), writable: false, enumerable: true, });
+            Object.defineProperty(this, 'internalId',
+                { value: internalId.toString(), writable: false, enumerable: true, });
+            Object.defineProperty(this, 'inactive', { value: inactive, writable: false, enumerable: true, });
         }
 
         toJSON() { return JSON.stringify({
@@ -54,16 +55,16 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
      */
     class CustomList {
         constructor(name, id, internalId, owner, description, order, inactive, entries) {
-            Object.defineProperty(this, 'name',        { value: name,        writable: false, });
-            Object.defineProperty(this, 'id',          { value: id,          writable: false, });
-            Object.defineProperty(this, 'internalId',  { value: internalId,  writable: false, });
-            Object.defineProperty(this, 'owner',       { value: owner,       writable: false, });
-            Object.defineProperty(this, 'description', { value: description, writable: false, });
-            Object.defineProperty(this, 'order',       { value: order,       writable: false, });
-            Object.defineProperty(this, 'inactive',    { value: inactive,    writable: false, });
+            Object.defineProperty(this, 'name',        { value: name,        writable: false, enumerable: true, });
+            Object.defineProperty(this, 'id',          { value: id,          writable: false, enumerable: true, });
+            Object.defineProperty(this, 'internalId',  { value: internalId,  writable: false, enumerable: true, });
+            Object.defineProperty(this, 'owner',       { value: owner,       writable: false, enumerable: true, });
+            Object.defineProperty(this, 'description', { value: description, writable: false, enumerable: true, });
+            Object.defineProperty(this, 'order',       { value: order,       writable: false, enumerable: true, });
+            Object.defineProperty(this, 'inactive',    { value: inactive,    writable: false, enumerable: true, });
             Object.defineProperty(this, 'entries', {
                 value: Object.freeze(entries.map(entryParams => Object.freeze(new CustomListEntry(...entryParams)))),
-                writable: false,
+                writable: false, enumerable: true,
             });
         }
 
