@@ -16,8 +16,8 @@
 const TASK_ERR_NAME = 'NEXT_TASK_ERROR';
 const NO_PARAMS_STRING = '>NEXT_TASK_NO_PARAMETERS<';
 
-define(['N/crypto/random', 'N/error', 'N/record', 'N/task', './next-list', './next-record'], (
-    cryptoRandom, error, record, task, nextList, nextRecord,
+define(['N/crypto/random', 'N/error', 'N/record', './next-list', './next-record'], (
+    cryptoRandom, error, record, nextList, nextRecord,
 ) => {
     /**
      * @class
@@ -74,10 +74,10 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/task', './next-list', './ne
      */
     function dispatchAsyncTaskProcessor() {
         try {
-            task.create({
+            require(['N/task'], task => task.create({
                 taskType: task.TaskType.SCHEDULED_SCRIPT,
                 scriptId: 'customscript_next_async_task_dispatch_sc',
-            }).submit();
+            }).submit());
         } catch {
             // do nothing
         }
