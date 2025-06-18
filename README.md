@@ -406,7 +406,7 @@ Encapsulates a Custom List entry
 |:------------:|:-------:|:--------------------------------|
 |   `value`    | string  | Entry label ("Value" in the UI) |
 |     `id`     | string  | Entry Script ID                 |
-| `internalId` | string  | Entry Internal ID               |
+| `internalId` | string  | Entry Internal ID (numeric ID)  |
 |  `inactive`  | boolean | Entry inactive flag             |
 
 ### CustomList
@@ -418,7 +418,7 @@ Encapsulates a Custom List definition
 |    `name`     |        string         | List title                                                                       |
 |     `id`      |        string         | List Script ID                                                                   |
 | `internalId`  |        string         | List Internal ID (numeric ID)                                                    |
-|    `owner`    |        string         | List owner                                                                       |
+|    `owner`    |        string         | List owner ID                                                                    |
 | `description` |        string         | List description                                                                 |
 |    `order`    |    CustomListOrder    | List entry order                                                                 |
 |  `inactive`   |        boolean        | Inactive flag                                                                    |
