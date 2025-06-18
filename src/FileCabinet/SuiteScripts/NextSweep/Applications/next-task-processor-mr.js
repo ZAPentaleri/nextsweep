@@ -118,8 +118,8 @@ define(['N/crypto/random', 'N/record', 'N/runtime', 'N/search', '../next-list', 
             try {
                 const functionData = jobData.functionData;
                 let _asyncTaskResult;
-                require([functionData.module], _asyncTaskModule =>
-                    _asyncTaskResult = _asyncTaskModule[functionData.function](...(functionData.spread
+                require([functionData.module], asyncTaskModule =>
+                    _asyncTaskResult = asyncTaskModule[functionData.function](...(functionData.spread
                         ? functionData.parameters
                         : [functionData.parameters]
                     ))
