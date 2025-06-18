@@ -1,0 +1,22 @@
+<customlist scriptid="customlist_next_async_task_status">
+    <description>NextSweep Asynchronous Task Status</description>
+    <isordered>T</isordered>
+    <name>Next — Asynchronous Task Status</name>
+    <customvalues>
+        <customvalue scriptid="next_ats_new">
+            <value>New</value>
+        </customvalue>
+        <customvalue scriptid="next_ats_queued">
+            <value>Added to Queue</value>
+        </customvalue>
+        <customvalue scriptid="next_ats_processing">
+            <value>In Progress</value>
+        </customvalue>
+        <customvalue scriptid="next_ats_completed">
+            <value>Completed</value>
+        </customvalue>
+        <customvalue scriptid="next_ats_failed">
+            <value>Failed</value>
+        </customvalue>
+    </customvalues>
+</customlist>
