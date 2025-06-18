@@ -106,7 +106,7 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/search', './next-list', './
             asyncTaskSearchData.fetch({ index: page.index, }).data
         ).map(taskResult => {
             const paramsString = taskResult.getValue('custrecord_next_at_parameters');
-            const noParams = paramsString !== NO_PARAMS_STRING;
+            const noParams = paramsString === NO_PARAMS_STRING;
 
             return {
                 recordId: taskResult.id,

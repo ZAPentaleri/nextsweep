@@ -126,7 +126,7 @@ define(['N/crypto/random', 'N/record', 'N/runtime', 'N/search', '../next-list', 
                 record.submitFields({
                     type: 'customrecord_next_async_task', id: jobData.recordId,
                     values: {
-                        'custrecord_next_at_status': AsyncTaskStatus.getById('next_ats_complete').internalId,
+                        'custrecord_next_at_status': AsyncTaskStatus.getById('next_ats_completed').internalId,
                         'custrecord_next_at_task':   jobData.taskId,
                         'custrecord_next_at_result': JSON.stringify(_asyncTaskResult ?? null),
                     },
