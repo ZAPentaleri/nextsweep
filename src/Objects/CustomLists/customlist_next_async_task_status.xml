@@ -1,7 +1,7 @@
 <customlist scriptid="customlist_next_async_task_status">
     <description>NextSweep Asynchronous Task Status</description>
     <isordered>T</isordered>
-    <name>Next — Asynchronous Task Status</name>
+    <name>Next — Async Task Status</name>
     <customvalues>
         <customvalue scriptid="next_ats_new">
             <value>New</value>
