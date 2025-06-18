@@ -65,7 +65,7 @@ define(['N/crypto/random', 'N/record', 'N/runtime', 'N/search', '../next-list', 
             columns: ['custrecord_next_at_status'],
         })?.['custrecord_next_at_status']?.[0]?.value)?.id;
 
-        if (recordedStatus !== 'next_ats_new') {  // modify this conditional for retry logic
+        if (recordedStatus === 'next_ats_new') {  // modify this conditional for retry logic
             // update task record status to "Added to Queue"
             record.submitFields({
                 type: 'customrecord_next_async_task', id: jobData.recordId,
