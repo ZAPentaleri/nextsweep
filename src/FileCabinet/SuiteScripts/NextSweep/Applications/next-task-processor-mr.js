@@ -32,7 +32,7 @@ define(['N/crypto/random', 'N/record', 'N/runtime', 'N/search', '../next-list', 
         }).run().getRange({ start: 0, end: 1, })?.[0]?.getValue?.('taskid');
 
         return nextTask.getOpenAsyncTasks().map(jobData => JSON.stringify({
-            statusList: nextList.load({ id: 'customlist_next_async_task_status', }).toJSON(),
+            statusList: JSON.stringify(nextList.load({ id: 'customlist_next_async_task_status', })),
             taskId:     currentMapReduceTaskId,
             ...jobData,
         }));

@@ -36,10 +36,6 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
                 { value: internalId.toString(), writable: false, enumerable: true, });
             Object.defineProperty(this, 'inactive', { value: inactive, writable: false, enumerable: true, });
         }
-
-        toJSON() { return JSON.stringify({
-            value: this.value, id: this.id, internalId: this.internalId, inactive: this.inactive,
-        }); }
     }
 
     /**
@@ -81,17 +77,6 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
                 obj.entries.map(entryObj => [entryObj.value, entryObj.id, entryObj.internalId, entryObj.inactive,]),
             );
         }
-
-        /**
-         * Serializes a JSON representation of the CustomList object
-         *
-         * @returns {object}
-         */
-        toJSON() { return JSON.stringify({
-            name: this.name, id: this.id, internalId: this.internalId, owner: this.owner,
-            description: this.description, order: this.order, inactive: this.inactive,
-            entries: this.entries.map(entry => JSON.parse(entry.toJSON())),
-        }); }
 
         /**
          * Get a list entry by index -- adjusted for inactive entries; i.e. the
