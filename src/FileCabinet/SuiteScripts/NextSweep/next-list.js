@@ -89,7 +89,7 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
         toJSON() { return JSON.stringify({
             name: this.name, id: this.id, internalId: this.internalId, owner: this.owner,
             description: this.description, order: this.order, inactive: this.inactive,
-            entries: this.entries.map(entry => entry.toJSON()),
+            entries: this.entries.map(entry => JSON.parse(entry.toJSON())),
         }); }
 
         /**
