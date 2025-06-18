@@ -20,29 +20,63 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
         static THE_ORDER_ENTERED  = 'THE_ORDER_ENTERED';
         static ALPHABETICAL_ORDER = 'ALPHABETICAL_ORDER';
     }
+
+    /**
+     * @class
+     * @property {string} value Entry label ("Value" in the UI)
+     * @property {string} id Entry Script ID ("ID" in the UI)
+     * @property {string} internalId Entry Internal ID (numeric ID)
+     * @property {boolean} inactive Entry inactive flag
+     */
     class CustomListEntry {
         constructor(value, id, internalId, inactive) {
-            Object.defineProperty(this, 'value',      { value: value,                 writable: false, });
-            Object.defineProperty(this, 'id',         { value: id.toLowerCase(),      writable: false, });
-            Object.defineProperty(this, 'internalId', { value: internalId.toString(), writable: false, });
-            Object.defineProperty(this, 'inactive',   { value: inactive,              writable: false, });
+            Object.defineProperty(this, 'value',    { value: value, writable: false, enumerable: true, });
+            Object.defineProperty(this, 'id',       { value: id.toLowerCase(), writable: false, enumerable: true, });
+            Object.defineProperty(this, 'internalId',
+                { value: internalId.toString(), writable: false, enumerable: true, });
+            Object.defineProperty(this, 'inactive', { value: inactive, writable: false, enumerable: true, });
         }
     }
+
+    /**
+     * @class
+     * @property {string} name List title
+     * @property {string} id List Script ID
+     * @property {string} internalId List Internal ID (numeric ID)
+     * @property {string} owner List owner ID
+     * @property {string} description List description
+     * @property {string} order List entry order
+     * @property {boolean} inactive Inactive flag
+     * @property {CustomListEntry[]} entries List entries -- should not be used directly, use accessor functions instead
+     */
     class CustomList {
         constructor(name, id, internalId, owner, description, order, inactive, entries) {
-            Object.defineProperty(this, 'name',        { value: name,        writable: false, });
-            Object.defineProperty(this, 'id',          { value: id,          writable: false, });
-            Object.defineProperty(this, 'internalId',  { value: internalId,  writable: false, });
-            Object.defineProperty(this, 'owner',       { value: owner,       writable: false, });
-            Object.defineProperty(this, 'description', { value: description, writable: false, });
-            Object.defineProperty(this, 'order',       { value: order,       writable: false, });
-            Object.defineProperty(this, 'inactive',    { value: inactive,    writable: false, });
+            Object.defineProperty(this, 'name',        { value: name,        writable: false, enumerable: true, });
+            Object.defineProperty(this, 'id',          { value: id,          writable: false, enumerable: true, });
+            Object.defineProperty(this, 'internalId',  { value: internalId,  writable: false, enumerable: true, });
+            Object.defineProperty(this, 'owner',       { value: owner,       writable: false, enumerable: true, });
+            Object.defineProperty(this, 'description', { value: description, writable: false, enumerable: true, });
+            Object.defineProperty(this, 'order',       { value: order,       writable: false, enumerable: true, });
+            Object.defineProperty(this, 'inactive',    { value: inactive,    writable: false, enumerable: true, });
             Object.defineProperty(this, 'entries', {
                 value: Object.freeze(entries.map(entryParams => Object.freeze(new CustomListEntry(...entryParams)))),
-                writable: false,
+                writable: false, enumerable: true,
             });
         }
 
+        /**
+         * Unserializes a JSON representation of a CustomList object into a
+         * new CustomList object
+         *
+         * @returns {CustomList}
+         */
+        static fromJSON(jsonList) {
+            const obj = JSON.parse(jsonList);
+            return new CustomList(
+                obj.name, obj.id, obj.internalId, obj.owner, obj.description, obj.order, obj.inactive,
+                obj.entries.map(entryObj => [entryObj.value, entryObj.id, entryObj.internalId, entryObj.inactive,]),
+            );
+        }
 
         /**
          * Get a list entry by index -- adjusted for inactive entries; i.e. the
@@ -167,5 +201,5 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
         );
     }
 
-    return { CustomListOrder, load, };
+    return { CustomListOrder, CustomList, load, };
 });
