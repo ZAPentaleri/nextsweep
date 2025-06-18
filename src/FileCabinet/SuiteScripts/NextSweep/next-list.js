@@ -44,6 +44,33 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
         }
 
         /**
+         * Unserializes a JSON representation of a CustomList object into a
+         * new CustomList object
+         *
+         * @returns {CustomList}
+         */
+        static fromJSON(jsonList) {
+            const obj = JSON.parse(jsonList);
+            return new CustomList(
+                obj.name, obj.id, obj.internalId, obj.owner, obj.description, obj.order, obj.inactive,
+                obj.entries.map(entryObj => [entryObj.value, entryObj.id, entryObj.internalId, entryObj.inactive,]),
+            );
+        }
+
+        /**
+         * Serializes a JSON representation of the CustomList object
+         *
+         * @returns {object}
+         */
+        toJSON() { return JSON.stringify({
+            name: this.name, id: this.id, internalId: this.internalId, owner: this.owner,
+            description: this.description, order: this.order, inactive: this.inactive,
+            entries: this.entries.map(entry => ({
+                value: entry.value, id: entry.id, internalId: entry.internalId, inactive: entry.inactive,
+            })),
+        }); }
+
+        /**
          * Get a list entry by index -- adjusted for inactive entries; i.e. the
          * second entry will correspond to index=0 if the first entry is flagged
          * inactive
