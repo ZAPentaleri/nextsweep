@@ -26,7 +26,7 @@
                     <everyxdays>1</everyxdays>
                     <repeat>PT15M</repeat>
                     <startdate>2025-06-18</startdate>
-                    <startdate>00:00:00Z</startdate>
+                    <starttime>00:00:00Z</starttime>
                 </daily>
             </recurrence>
         </scriptdeployment>
