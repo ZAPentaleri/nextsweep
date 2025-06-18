@@ -26,10 +26,11 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/search', './next-list', './
      * @property {any} result Task result after successful completion
      */
     class AsyncTaskResult {
-        constructor(id, status, result) {
+        constructor(id, status, result, error) {
             Object.defineProperty(this, 'id',     { value: id.toString(), writable: false, enumerable: true, });
             Object.defineProperty(this, 'status', { value: status, writable: false, enumerable: true, });
-            Object.defineProperty(this, 'result', { value: result, writable: false, enumerable: true, });
+            Object.defineProperty(this, 'result', { value: result ?? null, writable: false, enumerable: true, });
+            Object.defineProperty(this, 'error',  { value: error ?? null, writable: false, enumerable: true, });
         }
     }
 
@@ -131,7 +132,11 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/search', './next-list', './
 
         const currentStatus = AsyncTaskStatus.getByInternalId(asyncJobRecord.getValue('custrecord_next_at_status')).id;
         return new AsyncTaskResult(asyncJobRecord.id, currentStatus,
-            (currentStatus === 'next_ats_completed' ? JSON.parse(currentStatus) : null),);
+            (currentStatus === 'next_ats_completed'
+                ? JSON.parse(asyncJobRecord.getValue('custrecord_next_at_result')) : null),
+            (currentStatus === 'next_ats_failed'
+                ? JSON.parse(asyncJobRecord.getValue('custrecord_next_at_error')) : null),
+        );
     }
 
     return { dispatchAsyncTask, dispatchAsyncTaskProcessor, getOpenAsyncTasks, getAsyncTaskResult, };
