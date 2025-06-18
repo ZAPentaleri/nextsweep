@@ -18,5 +18,8 @@
         <customvalue scriptid="next_ats_failed">
             <value>Failed</value>
         </customvalue>
+        <customvalue scriptid="next_ats_cancelled">
+            <value>Cancelled</value>
+        </customvalue>
     </customvalues>
 </customlist>
