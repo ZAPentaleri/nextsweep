@@ -691,7 +691,7 @@ define(['N/error', 'N/record',], (error, record,) => {
             return workRecord.save({
                 enableSourcing:        options?.flags?.sourceOnSave ?? false,
                 ignoreMandatoryFields: options?.flags?.ignoreOnSave ?? false,
-            });
+            }).toString();
         } else {
             return workRecord;
         }

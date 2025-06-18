@@ -1,0 +1,34 @@
+<scheduledscript scriptid="customscript_next_async_task_dispatch_sc">
+    <defaultfunction></defaultfunction>
+    <name>Next — Async Task Process Dispatch SC</name>
+    <notifyowner>T</notifyowner>
+    <scriptfile>[/SuiteScripts/NextSweep/Applications/next-task-dispatch-scheduled.js]</scriptfile>
+    <scriptdeployments>
+        <scriptdeployment scriptid="customdeploy_next_async_task_dispatch_m1">
+            <isdeployed>T</isdeployed>
+            <loglevel>DEBUG</loglevel>
+            <status>NOTSCHEDULED</status>
+            <title>Next — Async Task Process Dispatch SC — Manual #1</title>
+        </scriptdeployment>
+        <scriptdeployment scriptid="customdeploy_next_async_task_dispatch_m2">
+            <isdeployed>T</isdeployed>
+            <loglevel>DEBUG</loglevel>
+            <status>NOTSCHEDULED</status>
+            <title>Next — Async Task Process Dispatch SC — Manual #2</title>
+        </scriptdeployment>
+        <scriptdeployment scriptid="customdeploy_next_async_task_dispatch_s1">
+            <isdeployed>T</isdeployed>
+            <loglevel>DEBUG</loglevel>
+            <status>SCHEDULED</status>
+            <title>Next — Async Task Process Dispatch SC — Scheduled #1</title>
+            <recurrence>
+                <daily>
+                    <everyxdays>1</everyxdays>
+                    <repeat>PT15M</repeat>
+                    <startdate>2025-06-18</startdate>
+                    <starttime>00:00:00Z</starttime>
+                </daily>
+            </recurrence>
+        </scriptdeployment>
+    </scriptdeployments>
+</scheduledscript>
