@@ -16,8 +16,8 @@
 const TASK_ERR_NAME = 'NEXT_TASK_ERROR';
 const NO_PARAMS_STRING = '>NEXT_TASK_NO_PARAMETERS<';
 
-define(['N/crypto/random', 'N/error', 'N/record', './next-list', './next-record'], (
-    cryptoRandom, error, record, nextList, nextRecord,
+define(['N/crypto/random', 'N/error', 'N/record', 'N/search', './next-list', './next-record'], (
+    cryptoRandom, error, record, search, nextList, nextRecord,
 ) => {
     /**
      * @class
