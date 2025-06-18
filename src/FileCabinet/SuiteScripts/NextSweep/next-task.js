@@ -131,7 +131,7 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/search', './next-list', './
         const AsyncTaskStatus = nextList.load({ id: 'customlist_next_async_task_status', });
         const asyncJobRecord = record.load({ type: 'customrecord_next_async_task', id: options.id, });
 
-        const currentStatus = AsyncTaskStatus.getByInternalId(asyncJobRecord.getValue('custrecord_next_at_status').id);
+        const currentStatus = AsyncTaskStatus.getByInternalId(asyncJobRecord.getValue('custrecord_next_at_status')).id;
         return new AsyncTaskResult(asyncJobRecord.id, currentStatus,
             (currentStatus === 'next_ats_completed' ? JSON.parse(currentStatus) : null),);
     }
