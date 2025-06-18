@@ -1,0 +1,106 @@
+<customrecordtype scriptid="customrecord_next_async_task">
+    <allowattachments>F</allowattachments>
+    <allowinlinedeleting>F</allowinlinedeleting>
+    <allowinlinedetaching>F</allowinlinedetaching>
+    <allowinlineediting>F</allowinlineediting>
+    <allowmobileaccess>F</allowmobileaccess>
+    <allownumberingoverride>F</allownumberingoverride>
+    <allowquickadd>F</allowquickadd>
+    <allowuiaccess>T</allowuiaccess>
+    <enabledle>F</enabledle>
+    <enablekeywords>F</enablekeywords>
+    <enablenumbering>T</enablenumbering>
+    <enableoptimisticlocking>T</enableoptimisticlocking>
+    <enablesystemnotes>T</enablesystemnotes>
+    <iconbuiltin>T</iconbuiltin>
+    <includeinsearchmenu>T</includeinsearchmenu>
+    <includename>F</includename>
+    <numberinginit>1</numberinginit>
+    <numberingmindigits>10</numberingmindigits>
+    <numberingprefix>NEXT_AT_</numberingprefix>
+    <recordname>Next — Asynchronous Task</recordname>
+    <showcreationdate>T</showcreationdate>
+    <showcreationdateonlist>T</showcreationdateonlist>
+    <showid>T</showid>
+    <showlastmodified>T</showlastmodified>
+    <showlastmodifiedonlist>T</showlastmodifiedonlist>
+    <shownotes>F</shownotes>
+    <showowner>F</showowner>
+    <recordname></recordname>
+    <customrecordcustomfields>
+        <customrecordcustomfield scriptid="custrecord_next_at_status">
+            <accesslevel>2</accesslevel>
+            <defaultselection>[scriptid=customlist_next_async_task_status.next_ats_new]</defaultselection>
+            <description>Asynchronous Task status (New, Added to Queue, In Progress, etc.)</description>
+            <displaytype>STATICTEXT</displaytype>
+            <fieldtype>SELECT</fieldtype>
+            <label>Status</label>
+            <searchlevel>2</searchlevel>
+            <selectrecordtype>[scriptid=customlist_next_async_task_status]</selectrecordtype>
+            <showinlist>T</showinlist>
+            <storevalue>T</storevalue>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_next_at_module">
+            <accesslevel>2</accesslevel>
+            <description>The path to the module that should be called when the task is executed.</description>
+            <displaytype>STATICTEXT</displaytype>
+            <fieldtype>TEXTAREA</fieldtype>
+            <label>Module</label>
+            <searchlevel>2</searchlevel>
+            <showinlist>T</showinlist>
+            <storevalue>T</storevalue>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_next_at_function">
+            <accesslevel>2</accesslevel>
+            <description>The name of the function that should be called when the task is executed.</description>
+            <displaytype>STATICTEXT</displaytype>
+            <fieldtype>TEXT</fieldtype>
+            <label>Function</label>
+            <searchlevel>2</searchlevel>
+            <showinlist>T</showinlist>
+            <storevalue>T</storevalue>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_next_at_spread">
+            <accesslevel>2</accesslevel>
+            <description>Interpret parameter array as multiple parameters taht should be passed into the function instead of one monolithic array parameter.&#xd;
+&#xd;
+Note: Parameters MUST be passed as an array if this options is selected.</description>
+            <displaytype>STATICTEXT</displaytype>
+            <fieldtype>CHECKBOX</fieldtype>
+            <label>Spread Parameters at Execution</label>
+            <searchlevel>2</searchlevel>
+            <showinlist>T</showinlist>
+            <storevalue>T</storevalue>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_next_at_parameters">
+            <accesslevel>2</accesslevel>
+            <description>The parameters taht should be passed to the function when the task is executed.</description>
+            <displaytype>STATICTEXT</displaytype>
+            <fieldtype>CLOBTEXT</fieldtype>
+            <label>Parameters</label>
+            <searchlevel>2</searchlevel>
+            <showinlist>T</showinlist>
+            <storevalue>T</storevalue>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_next_at_result">
+            <accesslevel>2</accesslevel>
+            <description>The return value of the function after successful execution.</description>
+            <displaytype>STATICTEXT</displaytype>
+            <fieldtype>CLOBTEXT</fieldtype>
+            <label>Result</label>
+            <searchlevel>2</searchlevel>
+            <showinlist>T</showinlist>
+            <storevalue>T</storevalue>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_next_at_error">
+            <accesslevel>2</accesslevel>
+            <description>The error produced by the function upon execution failure.</description>
+            <displaytype>STATICTEXT</displaytype>
+            <fieldtype>TEXTAREA</fieldtype>
+            <label>Execution Error</label>
+            <searchlevel>2</searchlevel>
+            <showinlist>T</showinlist>
+            <storevalue>T</storevalue>
+        </customrecordcustomfield>
+    </customrecordcustomfields>
+</customrecordtype>

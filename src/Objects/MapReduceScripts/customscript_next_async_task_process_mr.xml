@@ -1,0 +1,16 @@
+<mapreducescript scriptid="customscript_next_async_task_process_mr">
+    <isinactive>F</isinactive>
+    <name>Next — Async Task Processor M/R</name>
+    <notifyowner>T</notifyowner>
+    <scriptfile>[]</scriptfile>
+    <scriptdeployments>
+        <scriptdeployment scriptid="customdeploy_next_async_task_process_mr">
+            <isdeployed>T</isdeployed>
+            <loglevel>DEBUG</loglevel>
+            <runasrole>ADMINISTRATOR</runasrole>
+            <status>NOTSCHEDULED</status>
+            <title>Next — Async Task Processor M/R</title>
+            <yieldaftermins>60</yieldaftermins>
+        </scriptdeployment>
+    </scriptdeployments>
+</mapreducescript>
