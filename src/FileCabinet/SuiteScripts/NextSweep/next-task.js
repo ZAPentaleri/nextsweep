@@ -35,6 +35,7 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/search', './next-list', './
     }
 
     /**
+     * Dispatches a new Asynchronous Task
      *
      * @param {object} options
      * @param {string} options.module Asynchronous task module path
@@ -69,7 +70,8 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/search', './next-list', './
     }
 
     /**
-     *
+     * Dispatches the Asynchronous Task processor. You do not need to call this
+     * function directly, it happens automatically
      */
     function dispatchAsyncTaskProcessor() {
         try {
@@ -83,6 +85,7 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/search', './next-list', './
     }
 
     /**
+     * Gets certain data about open Asynchronous Tasks
      *
      * @returns {{
      *     recordId: string, status: string,
@@ -121,6 +124,7 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/search', './next-list', './
     }
 
     /**
+     * Gets the result and/or current status of an Asynchronous Task by ID
      *
      * @param {object} options
      * @param {string|number} options.id
