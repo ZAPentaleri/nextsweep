@@ -193,5 +193,5 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
         );
     }
 
-    return { CustomListOrder, load, };
+    return { CustomListOrder, CustomList, load, };
 });
