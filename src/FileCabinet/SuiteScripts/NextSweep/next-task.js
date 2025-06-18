@@ -135,7 +135,7 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/search', './next-list', './
             (currentStatus === 'next_ats_completed'
                 ? JSON.parse(asyncJobRecord.getValue('custrecord_next_at_result')) : null),
             (currentStatus === 'next_ats_failed'
-                ? JSON.parse(asyncJobRecord.getValue('custrecord_next_at_error')) : null),
+                ? JSON.parse(asyncJobRecord.getValue('custrecord_next_at_error') || null) : null),
         );
     }
 
