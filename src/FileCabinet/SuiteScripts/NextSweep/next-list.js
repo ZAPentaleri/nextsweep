@@ -35,6 +35,10 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
             Object.defineProperty(this, 'internalId', { value: internalId.toString(), writable: false, });
             Object.defineProperty(this, 'inactive',   { value: inactive,              writable: false, });
         }
+
+        toJSON() { return JSON.stringify({
+            value: this.value, id: this.id, internalId: this.internalId, inactive: this.inactive,
+        }); }
     }
 
     /**
@@ -85,9 +89,7 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
         toJSON() { return JSON.stringify({
             name: this.name, id: this.id, internalId: this.internalId, owner: this.owner,
             description: this.description, order: this.order, inactive: this.inactive,
-            entries: this.entries.map(entry => ({
-                value: entry.value, id: entry.id, internalId: entry.internalId, inactive: entry.inactive,
-            })),
+            entries: this.entries.map(entry => entry.toJSON()),
         }); }
 
         /**
