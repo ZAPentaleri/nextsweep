@@ -6,7 +6,7 @@
  *   /  //__/ |  ||   __//__/  \__ \/ . \|  _||  _|
  * /_________\|__||__| /__/(R)/____/\___/|_|  \__\
  *
- * NextSweep List Module: useful methods for accessing Custom Lists
+ * NextSweep Task Module: methods relating to NextSweep asynchronous tasks
  *
  * ZAPentaleri, 2025
  *
