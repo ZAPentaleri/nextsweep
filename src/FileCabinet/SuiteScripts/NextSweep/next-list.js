@@ -20,6 +20,14 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
         static THE_ORDER_ENTERED  = 'THE_ORDER_ENTERED';
         static ALPHABETICAL_ORDER = 'ALPHABETICAL_ORDER';
     }
+
+    /**
+     * @class
+     * @property {string} value Entry label ("Value" in the UI)
+     * @property {string} id Entry Script ID ("ID" in the UI)
+     * @property {string} internalId Entry Internal ID (numeric ID)
+     * @property {boolean} inactive Entry inactive flag
+     */
     class CustomListEntry {
         constructor(value, id, internalId, inactive) {
             Object.defineProperty(this, 'value',      { value: value,                 writable: false, });
@@ -28,6 +36,18 @@ define(['N/error', 'N/record', 'N/search',], (error, record, search,) => {
             Object.defineProperty(this, 'inactive',   { value: inactive,              writable: false, });
         }
     }
+
+    /**
+     * @class
+     * @property {string} name List title
+     * @property {string} id List Script ID
+     * @property {string} internalId List Internal ID (numeric ID)
+     * @property {string} owner List owner ID
+     * @property {string} description List description
+     * @property {string} order List entry order
+     * @property {boolean} inactive Inactive flag
+     * @property {CustomListEntry[]} entries List entries -- should not be used directly, use accessor functions instead
+     */
     class CustomList {
         constructor(name, id, internalId, owner, description, order, inactive, entries) {
             Object.defineProperty(this, 'name',        { value: name,        writable: false, });
