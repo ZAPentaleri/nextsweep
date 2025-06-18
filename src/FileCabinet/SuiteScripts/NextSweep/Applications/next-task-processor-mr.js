@@ -73,6 +73,7 @@ define(['N/crypto/random', 'N/record', 'N/runtime', 'N/search', '../next-list', 
                     'custrecord_next_at_status': AsyncTaskStatus.getById('next_ats_queued').internalId,
                     'custrecord_next_at_task':   jobData.taskId,
                     'custrecord_next_at_result': '',
+                    'custrecord_next_at_error':  '',
                 },
             });
 
@@ -109,6 +110,8 @@ define(['N/crypto/random', 'N/record', 'N/runtime', 'N/search', '../next-list', 
                 values: {
                     'custrecord_next_at_status': AsyncTaskStatus.getById('next_ats_processing').internalId,
                     'custrecord_next_at_task':   jobData.taskId,
+                    'custrecord_next_at_result': '',
+                    'custrecord_next_at_error':  '',
                 },
             });
 
@@ -129,6 +132,7 @@ define(['N/crypto/random', 'N/record', 'N/runtime', 'N/search', '../next-list', 
                         'custrecord_next_at_status': AsyncTaskStatus.getById('next_ats_completed').internalId,
                         'custrecord_next_at_task':   jobData.taskId,
                         'custrecord_next_at_result': JSON.stringify(_asyncTaskResult ?? null),
+                        'custrecord_next_at_error':  '',
                     },
                 });
             } catch (asyncTaskError) {
@@ -138,6 +142,9 @@ define(['N/crypto/random', 'N/record', 'N/runtime', 'N/search', '../next-list', 
                     values: {
                         'custrecord_next_at_status': AsyncTaskStatus.getById('next_ats_failed').internalId,
                         'custrecord_next_at_task':   jobData.taskId,
+                        'custrecord_next_at_result': '',
+                        'custrecord_next_at_error':
+                            JSON.stringify(asyncTaskError, Object.getOwnPropertyNames(asyncTaskError)),
                     },
                 });
             }
