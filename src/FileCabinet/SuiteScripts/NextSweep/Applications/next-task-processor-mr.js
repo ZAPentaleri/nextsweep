@@ -65,6 +65,12 @@ define(['N/crypto/random', 'N/record', 'N/runtime', 'N/search', '../next-list', 
             columns: ['custrecord_next_at_status'],
         })?.['custrecord_next_at_status']?.[0]?.value)?.id;
 
+        if (jobData.functionData.paramsTooLong) {
+            jobData.functionData.parameters = JSON.parse(record.load({
+                type: 'customrecord_next_async_task', id: jobData.recordId,
+            }).getValue({ fieldId: 'custrecord_next_at_parameters', }));
+        }
+
         if (recordedStatus === 'next_ats_new') {  // modify this conditional for retry logic
             // update task record status to "Added to Queue"
             record.submitFields({

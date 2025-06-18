@@ -89,8 +89,8 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/search', './next-list', './
      *
      * @returns {{
      *     recordId: string, status: string,
-     *     functionData: {module: string, function: string, parameters: any, spread: boolean
-     * }}[]}
+     *     functionData: {module: string, function: string, parameters: any, spread: boolean, paramsTooLong: boolean}
+     * }[]}
      */
     function getOpenAsyncTasks() {
         const AsyncTaskStatus = nextList.load({ id: 'customlist_next_async_task_status', });
@@ -109,6 +109,7 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/search', './next-list', './
         ).map(taskResult => {
             const paramsString = taskResult.getValue('custrecord_next_at_parameters');
             const noParams = paramsString === NO_PARAMS_STRING;
+            const paramsTooLongForSearch = paramsString.length >= 4000;
 
             return {
                 recordId: taskResult.id,
@@ -116,8 +117,9 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/search', './next-list', './
                 functionData: {
                     module:     taskResult.getValue('custrecord_next_at_module'),
                     function:   taskResult.getValue('custrecord_next_at_function'),
-                    parameters: noParams ? [] : JSON.parse(paramsString),
+                    parameters: noParams || paramsTooLongForSearch ? [] : JSON.parse(paramsString),
                     spread:     noParams || !!taskResult.getValue('custrecord_next_at_spread'),
+                    paramsTooLong: paramsTooLongForSearch,
                 },
             }
         });
