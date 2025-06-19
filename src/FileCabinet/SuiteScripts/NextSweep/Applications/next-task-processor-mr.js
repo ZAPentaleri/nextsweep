@@ -21,7 +21,7 @@ define(['N/crypto/random', 'N/record', 'N/runtime', 'N/search', '../next-list', 
      */
     function getInputData(inputContext) {
         const currentScript = runtime.getCurrentScript();
-        const currentMapReduceTaskId = search.create({
+        const currentMapReduceTaskId = search.create({  // task ID is not known to the task itself, fetch it here
             type: search.Type.SCHEDULED_SCRIPT_INSTANCE,
             filters: [
                 ['status', 'anyof', 'PROCESSING',], 'AND',
@@ -31,7 +31,7 @@ define(['N/crypto/random', 'N/record', 'N/runtime', 'N/search', '../next-list', 
             columns: ['taskid'],
         }).run().getRange({ start: 0, end: 1, })?.[0]?.getValue?.('taskid');
 
-        return nextTask.getOpenAsyncTasks().map(jobData => JSON.stringify({
+        return nextTask.getOpenAsyncTasks().map(jobData => JSON.stringify({  // map status JSON and task ID into values
             statusList: JSON.stringify(nextList.load({ id: 'customlist_next_async_task_status', })),
             taskId:     currentMapReduceTaskId,
             ...jobData,
@@ -65,6 +65,7 @@ define(['N/crypto/random', 'N/record', 'N/runtime', 'N/search', '../next-list', 
             columns: ['custrecord_next_at_status'],
         })?.['custrecord_next_at_status']?.[0]?.value)?.id;
 
+        // if function parameters are presumed to be too long for search-based retrieval, retrieve from the record here
         if (jobData.functionData.paramsTooLong) {
             jobData.functionData.parameters = JSON.parse(record.load({
                 type: 'customrecord_next_async_task', id: jobData.recordId,
@@ -123,6 +124,7 @@ define(['N/crypto/random', 'N/record', 'N/runtime', 'N/search', '../next-list', 
 
             try {
                 const functionData = jobData.functionData;
+                // load module, execute function with parameters
                 let _asyncTaskResult;
                 require([functionData.module], asyncTaskModule =>
                     _asyncTaskResult = asyncTaskModule[functionData.function](...(functionData.spread

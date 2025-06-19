@@ -11,6 +11,8 @@ define(['N/task'], (task) => {
      */
     function execute(scriptContext) {
         try {
+            // this WILL FAIL if the script is already running -- this a feature, not a bug.
+            // we only *want* one execution to take place at a time
             task.create({
                 taskType: task.TaskType.MAP_REDUCE,
                 scriptId: 'customscript_next_async_task_process_mr',

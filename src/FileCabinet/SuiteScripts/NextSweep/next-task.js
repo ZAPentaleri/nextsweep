@@ -75,6 +75,9 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/search', './next-list', './
      */
     function dispatchAsyncTaskProcessor() {
         try {
+            // this *may* fail, but if that happens then that means the script is already queued or executing, in which
+            // case its job will be done anyway. It only takes a matter of seconds to complete execution, so queueing it
+            // again will do nothing
             require(['N/task'], task => task.create({
                 taskType: task.TaskType.SCHEDULED_SCRIPT,
                 scriptId: 'customscript_next_async_task_dispatch_sc',
@@ -108,8 +111,8 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/search', './next-list', './
             asyncTaskSearchData.fetch({ index: page.index, }).data
         ).map(taskResult => {
             const paramsString = taskResult.getValue('custrecord_next_at_parameters');
-            const noParams = paramsString === NO_PARAMS_STRING;
-            const paramsTooLongForSearch = paramsString.length >= 4000;
+            const noParams = paramsString === NO_PARAMS_STRING;  // check against magic string that signifies no params
+            const paramsTooLongForSearch = paramsString.length >= 4000;  // searches can only return 4000 bytes of text
 
             return {
                 recordId: taskResult.id,
@@ -136,6 +139,8 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/search', './next-list', './
         const AsyncTaskStatus = nextList.load({ id: 'customlist_next_async_task_status', });
         const asyncJobRecord = record.load({ type: 'customrecord_next_async_task', id: options.id, });
 
+        // status determines how certain properties will be set; this covers for the future potential case where a task
+        // is "retried", but its state hasn't been fully restored to initial
         const currentStatus = AsyncTaskStatus.getByInternalId(asyncJobRecord.getValue('custrecord_next_at_status')).id;
         return new AsyncTaskResult(asyncJobRecord.id, currentStatus,
             (currentStatus === 'next_ats_completed'
