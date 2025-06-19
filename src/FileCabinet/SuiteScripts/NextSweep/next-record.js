@@ -614,7 +614,7 @@ define(['N/error', 'N/record',], (error, record,) => {
                 } else if (unboundedLineIndices.length > 0) {
                     for (const unboundedIndex of unboundedLineIndices) {
                         const boundedIndex = unboundedIndex === null
-                            ? initialLineCount - 1
+                            ? initialLineCount
                             : unboundedIndex >= 0
                                 ? unboundedIndex  // index is already bounded from 0 to length-1
                                 : unboundedIndex < 0
