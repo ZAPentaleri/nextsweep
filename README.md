@@ -14,6 +14,12 @@ File management methods.
 
 ### Module import
 
+```
+require(['SuiteScripts/NextSweep/next-file'], nextFile => {
+    // your code here
+});
+```
+
 ***
 
 ## NextList (next-list.js)

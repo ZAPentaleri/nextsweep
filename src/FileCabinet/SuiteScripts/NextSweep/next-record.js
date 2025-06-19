@@ -76,7 +76,7 @@
  * @property {string|string[]|number|number[]|boolean|Date} [values] Simple field values
  * @property {string|string[]} [text] Text field values
  * @property {boolean} [flags.suppressEvents=false] Suppress field change events
- * @property {boolean} [flags.forceSyncSource=false] Force synchronous field sourcing
+ * @property {boolean} [flags.forceSyncSource=true] Force synchronous field sourcing
  */
 
 const RECORD_ERR_NAME = 'NEXT_RECORD_ERROR';
@@ -498,7 +498,7 @@ define(['N/error', 'N/record',], (error, record,) => {
         const workRecord = options?.record
             ?? record.load({ type: options?.type, id: options?.id, isDynamic: options?.flags?.dynamic ?? false, });
 
-        const insertionCountMap = {};
+        const insertCountsPersistent = {};
         for (let stepIndex = 0; stepIndex < procedure.length; stepIndex++) {
             const throwStepError = msg =>
                 { throw error.create({ message: `Step ${stepIndex + 1}: ${msg}`, name: RECORD_ERR_NAME, }); };
@@ -535,11 +535,14 @@ define(['N/error', 'N/record',], (error, record,) => {
 
                 const initialLineCount = workRecord.getLineCount({ sublistId: sublistId, });  // initial for
                                                                                 // subprocedure, not for execution
-                if (!insertionCountMap.hasOwnProperty(sublistId)) {
-                    insertionCountMap[sublistId] = Object.fromEntries(
-                        Array.from({ length: (initialLineCount + 1), }, (_, index) => [index,0,])
-                    );
+                if (!insertCountsPersistent.hasOwnProperty(sublistId)) {
+                    insertCountsPersistent[sublistId] = [...Array(initialLineCount + 1)].map(() => 0);
+                } else {
+                    for (let cmIndex = insertCountsPersistent[sublistId].length; cmIndex <= initialLineCount; cmIndex++)
+                        insertCountsPersistent[sublistId][cmIndex] = 0;
                 }
+
+                const insertCountsFresh = [...Array(initialLineCount + 1)].map(() => 0);
 
                 const lineEditMode = step.edit ?? true;
 
@@ -611,21 +614,20 @@ define(['N/error', 'N/record',], (error, record,) => {
                 } else if (unboundedLineIndices.length > 0) {
                     for (const unboundedIndex of unboundedLineIndices) {
                         const boundedIndex = unboundedIndex === null
-                            ? initialLineCount - 1
+                            ? initialLineCount
                             : unboundedIndex >= 0
                                 ? unboundedIndex  // index is already bounded from 0 to length-1
                                 : unboundedIndex < 0
                                     ? initialLineCount - unboundedIndex  // index is negative, subtract from length
                                     : initialLineCount;  // index is not a number, set at length (insertion past end)
 
-                        adjustedLineIndices.push(lineEditMode
-                            ? boundedIndex  // edit mode so do not adjust indices
-                            : boundedIndex + Array.from({ length: boundedIndex, }, (_, index) => index).reduce(
-                                (accumulator, previousIndex) =>  // sums adjustments excluding current index
-                                    accumulator + insertionCountMap[sublistId][previousIndex],
-                                0,
-                            ) + insertionCountMap[sublistId][boundedIndex]++  // adjust for current index, with
-                        );                                                    // postfix increment
+                        const indexAdjustment = unboundedIndex === null ? 0 : (
+                            matchCriteriaRaw.length > 0 ? insertCountsFresh : insertCountsPersistent[sublistId]
+                        ).slice(0, (boundedIndex + 1)).reduce((a, x) => a + x, 0);
+                        adjustedLineIndices.push(lineEditMode ? boundedIndex : boundedIndex + indexAdjustment);
+
+                        insertCountsPersistent[sublistId][boundedIndex]++;
+                        insertCountsFresh[boundedIndex]++;
                     }
                 }
 
@@ -677,7 +679,7 @@ define(['N/error', 'N/record',], (error, record,) => {
                                 valuesAreText: checkForValue(textValues),
                                 commit: lastSubStep,
                                 ignoreFieldChange: subStep?.flags?.suppressEvents ?? false,
-                                forceSyncSourcing: subStep?.flags?.forceSyncSource ?? false,
+                                forceSyncSourcing: subStep?.flags?.forceSyncSource ?? true,
                             },
                         );
                     }
