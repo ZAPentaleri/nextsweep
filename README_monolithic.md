@@ -634,14 +634,14 @@ Note that element order is not considered in any comparison. For example,
 
 #### Subprocedure Step explicit object definition
 
-|           Key           |     Type     | Required | Description                                              | Additional notes                                     |
-|:-----------------------:|:------------:|:--------:|:---------------------------------------------------------|------------------------------------------------------|
-|        `column`         |    string    | &#x3007; | Column ID                                                |                                                      |
-|        `values`         |    array     | &#x25B3; | For by-value setting, the value or values to be assigned | Exclusive with `text` &mdash; one must be assigned   |
-|         `text`          | string array | &#x25B3; | For by-text setting, the value or values to be assigned  | Exclusive with `values` &mdash; one must be assigned |
-|         `flags`         |    object    | &#x2715; | Step option flags (all flags default disabled)           |                                                      |
-| `flags.suppressEvents`  |   boolean    | &#x2715; | Suppress field change events                             |                                                      |
-| `flags.forceSyncSource` |   boolean    | &#x2715; | Force synchronous field sourcing                         |                                                      |
+|           Key           |     Type     | Required | Description                                              | Additional notes                                                                              |
+|:-----------------------:|:------------:|:--------:|:---------------------------------------------------------|-----------------------------------------------------------------------------------------------|
+|        `column`         |    string    | &#x3007; | Column ID                                                |                                                                                               |
+|        `values`         |    array     | &#x25B3; | For by-value setting, the value or values to be assigned | Exclusive with `text` &mdash; one must be assigned                                            |
+|         `text`          | string array | &#x25B3; | For by-text setting, the value or values to be assigned  | Exclusive with `values` &mdash; one must be assigned                                          |
+|         `flags`         |    object    | &#x2715; | Step option flags                                        |                                                                                               |
+| `flags.suppressEvents`  |   boolean    | &#x2715; | Suppress field change events                             |                                                                                               |
+| `flags.forceSyncSource` |   boolean    | &#x2715; | Force synchronous field sourcing (**DEFAULTS TRUE**)     | Initially intended to default false, but was changed due to inconsistent behavior in NetSuite |
 
 #### Subprocedure Step implicit array definition (no flag support)
 

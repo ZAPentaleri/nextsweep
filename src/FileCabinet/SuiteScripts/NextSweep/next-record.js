@@ -76,7 +76,7 @@
  * @property {string|string[]|number|number[]|boolean|Date} [values] Simple field values
  * @property {string|string[]} [text] Text field values
  * @property {boolean} [flags.suppressEvents=false] Suppress field change events
- * @property {boolean} [flags.forceSyncSource=false] Force synchronous field sourcing
+ * @property {boolean} [flags.forceSyncSource=true] Force synchronous field sourcing
  */
 
 const RECORD_ERR_NAME = 'NEXT_RECORD_ERROR';
@@ -679,7 +679,7 @@ define(['N/error', 'N/record',], (error, record,) => {
                                 valuesAreText: checkForValue(textValues),
                                 commit: lastSubStep,
                                 ignoreFieldChange: subStep?.flags?.suppressEvents ?? false,
-                                forceSyncSourcing: subStep?.flags?.forceSyncSource ?? false,
+                                forceSyncSourcing: subStep?.flags?.forceSyncSource ?? true,
                             },
                         );
                     }
