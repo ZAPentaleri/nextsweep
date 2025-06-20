@@ -100,7 +100,11 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/search', './next-list', './
         const asyncTaskSearchData = search.create({
             type: 'customrecord_next_async_task',
             filters: [
-                ['custrecord_next_at_status', 'is', AsyncTaskStatus.getById('next_ats_new').internalId,], 'AND',
+                [
+                    'custrecord_next_at_status', 'anyof',
+                    AsyncTaskStatus.getById('next_ats_new').internalId,
+                    AsyncTaskStatus.getById('next_ats_retrying').internalId,
+                ], 'AND',
                 ['isinactive', 'is', false,],
             ],
             columns: ['custrecord_next_at_status', 'custrecord_next_at_module', 'custrecord_next_at_function',

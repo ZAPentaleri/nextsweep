@@ -72,20 +72,38 @@ define(['N/crypto/random', 'N/record', 'N/runtime', 'N/search', '../next-list', 
             }).getValue({ fieldId: 'custrecord_next_at_parameters', }));
         }
 
-        if (recordedStatus === 'next_ats_new') {  // modify this conditional for retry logic
-            // update task record status to "Added to Queue"
-            record.submitFields({
-                type: 'customrecord_next_async_task', id: jobData.recordId,
-                values: {
-                    'custrecord_next_at_status': AsyncTaskStatus.getById('next_ats_queued').internalId,
-                    'custrecord_next_at_task':   jobData.taskId,
-                    'custrecord_next_at_result': '',
-                    'custrecord_next_at_error':  '',
-                },
-            });
+        switch (recordedStatus) {
+            case 'next_ats_new': {
+                // update task record status to "Added to Queue"
+                record.submitFields({
+                    type: 'customrecord_next_async_task', id: jobData.recordId,
+                    values: {
+                        'custrecord_next_at_status': AsyncTaskStatus.getById('next_ats_queued').internalId,
+                        'custrecord_next_at_task':   jobData.taskId,
+                        'custrecord_next_at_result': '',
+                        'custrecord_next_at_error':  '',
+                    },
+                });
 
-            // for batching, modify below key
-            mapContext.write({ key: cryptoRandom.generateUUID(), value: JSON.stringify(jobData), });
+                // for batching, modify below key
+                mapContext.write({ key: cryptoRandom.generateUUID(), value: JSON.stringify(jobData), });
+                break;
+            }
+            case 'next_ats_retrying': {  // add retry logic here if it becomes necessary
+                // update task record status to "Cancelled"
+                record.submitFields({
+                    type: 'customrecord_next_async_task', id: jobData.recordId,
+                    values: {
+                        'custrecord_next_at_status': AsyncTaskStatus.getById('next_ats_cancelled').internalId,
+                        'custrecord_next_at_task':   jobData.taskId,
+                        'custrecord_next_at_result': '',
+                        'custrecord_next_at_error':  '',
+                    },
+                });
+
+                break;
+            }
+            default: {}
         }
     }
 
