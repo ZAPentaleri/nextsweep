@@ -1,0 +1,91 @@
+<customrecordtype scriptid="customrecord_next_pdf_render_task">
+    <accesstype>USEPERMISSIONLIST</accesstype>
+    <allowattachments>F</allowattachments>
+    <allowinlinedeleting>F</allowinlinedeleting>
+    <allowinlinedetaching>F</allowinlinedetaching>
+    <allowinlineediting>F</allowinlineediting>
+    <allowmobileaccess>F</allowmobileaccess>
+    <allownumberingoverride>F</allownumberingoverride>
+    <allowquickadd>F</allowquickadd>
+    <allowuiaccess>T</allowuiaccess>
+    <enabledle>F</enabledle>
+    <enablekeywords>F</enablekeywords>
+    <enablenumbering>T</enablenumbering>
+    <enableoptimisticlocking>T</enableoptimisticlocking>
+    <enablesystemnotes>T</enablesystemnotes>
+    <iconbuiltin>T</iconbuiltin>
+    <includeinsearchmenu>T</includeinsearchmenu>
+    <includename>F</includename>
+    <numberinginit>1</numberinginit>
+    <numberingmindigits>10</numberingmindigits>
+    <numberingprefix>NEXT_PR_</numberingprefix>
+    <recordname>Next — PDF Render Task</recordname>
+    <showcreationdate>T</showcreationdate>
+    <showcreationdateonlist>T</showcreationdateonlist>
+    <showid>T</showid>
+    <showlastmodified>T</showlastmodified>
+    <showlastmodifiedonlist>T</showlastmodifiedonlist>
+    <shownotes>F</shownotes>
+    <showowner>F</showowner>
+    <customrecordcustomfields>
+        <customrecordcustomfield scriptid="custrecord_next_pr_status">
+            <accesslevel>2</accesslevel>
+            <defaultselection>[scriptid=customlist_next_async_task_status.next_ats_new]</defaultselection>
+            <description>PDF Render Task status (New, Added to Queue, In Progress, etc.)</description>
+            <displaytype>STATICTEXT</displaytype>
+            <fieldtype>SELECT</fieldtype>
+            <label>Status</label>
+            <searchlevel>2</searchlevel>
+            <selectrecordtype>[scriptid=customlist_next_async_task_status]</selectrecordtype>
+            <showinlist>T</showinlist>
+            <storevalue>T</storevalue>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_next_pr_configuration">
+            <accesslevel>2</accesslevel>
+            <description>Render configuration (form, template, etc.)</description>
+            <displaytype>STATICTEXT</displaytype>
+            <fieldtype>TEXTAREA</fieldtype>
+            <label>Configuration</label>
+            <searchlevel>2</searchlevel>
+            <showinlist>T</showinlist>
+            <storevalue>T</storevalue>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_next_pr_staged_records">
+            <accesslevel>2</accesslevel>
+            <description>Identifying data for staged records (type, numeric ID, etc.)</description>
+            <displaytype>STATICTEXT</displaytype>
+            <fieldtype>CLOBTEXT</fieldtype>
+            <label>Parameters</label>
+            <searchlevel>2</searchlevel>
+            <showinlist>T</showinlist>
+            <storevalue>T</storevalue>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_next_pr_rendered_records">
+            <accesslevel>2</accesslevel>
+            <description>Identifying data for rendered records (type, numeric ID, etc.)</description>
+            <displaytype>STATICTEXT</displaytype>
+            <fieldtype>CLOBTEXT</fieldtype>
+            <label>Result</label>
+            <searchlevel>2</searchlevel>
+            <showinlist>T</showinlist>
+            <storevalue>T</storevalue>
+        </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_next_pr_error">
+            <accesslevel>2</accesslevel>
+            <description>Any fatal error that prevented rendering process.</description>
+            <displaytype>STATICTEXT</displaytype>
+            <fieldtype>TEXTAREA</fieldtype>
+            <label>Execution Error</label>
+            <searchlevel>2</searchlevel>
+            <showinlist>T</showinlist>
+            <storevalue>T</storevalue>
+        </customrecordcustomfield>
+    </customrecordcustomfields>
+    <permission>
+        <permission>
+            <permittedlevel>FULL</permittedlevel>
+            <permittedrole>ADMINISTRATOR</permittedrole>
+            <restriction></restriction>
+        </permission>
+    </permission>
+</customrecordtype>
