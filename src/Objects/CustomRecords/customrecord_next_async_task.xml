@@ -103,11 +103,11 @@ Note: Parameters MUST be passed as an array if this options is selected.</descri
             <storevalue>T</storevalue>
         </customrecordcustomfield>
     </customrecordcustomfields>
-    <permission>
+    <permissions>
         <permission>
             <permittedlevel>FULL</permittedlevel>
             <permittedrole>ADMINISTRATOR</permittedrole>
             <restriction></restriction>
         </permission>
-    </permission>
+    </permissions>
 </customrecordtype>
