@@ -62,7 +62,7 @@
         </customrecordcustomfield>
         <customrecordcustomfield scriptid="custrecord_next_at_spread">
             <accesslevel>2</accesslevel>
-            <description>Interpret parameter array as multiple parameters taht should be passed into the function instead of one monolithic array parameter.&#xd;
+            <description>Interpret parameter array as multiple parameters that should be passed into the function instead of one monolithic array parameter.&#xd;
 &#xd;
 Note: Parameters MUST be passed as an array if this options is selected.</description>
             <displaytype>STATICTEXT</displaytype>
