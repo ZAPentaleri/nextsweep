@@ -6,8 +6,8 @@
 const RENDERS_PER_REDUCE = 25;  // number of renders to complete on each reduce execution
 
 define(['N/crypto/random', 'N/error', 'N/record', 'N/render', 'N/search',
-    '../next-file', '../next-list', '../next-runtime', '../next-task'
-], (cryptoRandom, error, record, render, search, nextFile, nextList, nextRuntime, nextTask
+    '../next-file', '../next-list', '../next-runtime', '../next-task'], (
+    cryptoRandom, error, record, render, search, nextFile, nextList, nextRuntime, nextTask
 ) => {
     function mergeRenderedArrays() {
         return Object.values(Object.fromEntries(
