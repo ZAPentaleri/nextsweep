@@ -2,7 +2,7 @@
     <defaultfunction></defaultfunction>
     <name>Next — Async Task Process Dispatch SC</name>
     <notifyowner>T</notifyowner>
-    <scriptfile>[/SuiteScripts/NextSweep/Applications/next-task-dispatch-scheduled.js]</scriptfile>
+    <scriptfile>[/SuiteScripts/NextSweep/Applications/next-async-task-dispatch-sc.js]</scriptfile>
     <scriptdeployments>
         <scriptdeployment scriptid="customdeploy_next_async_task_dispatch_m1">
             <isdeployed>T</isdeployed>

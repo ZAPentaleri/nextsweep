@@ -2,7 +2,7 @@
     <isinactive>F</isinactive>
     <name>Next — Async Task Processor M/R</name>
     <notifyowner>T</notifyowner>
-    <scriptfile>[/SuiteScripts/NextSweep/Applications/next-task-processor-mr.js]</scriptfile>
+    <scriptfile>[/SuiteScripts/NextSweep/Applications/next-async-task-processor-mr.js]</scriptfile>
     <scriptdeployments>
         <scriptdeployment scriptid="customdeploy_next_async_task_process_mr">
             <isdeployed>T</isdeployed>
