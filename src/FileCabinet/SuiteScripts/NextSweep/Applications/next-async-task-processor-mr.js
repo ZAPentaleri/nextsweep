@@ -2,8 +2,8 @@
  * @NApiVersion 2.1
  * @NScriptType MapReduceScript
  */
-define(['N/crypto/random', 'N/record', 'N/runtime', 'N/search', '../next-list', '../next-task'], (
-    cryptoRandom, record, runtime, search, nextList, nextTask
+define(['N/crypto/random', 'N/record', 'N/search', '../next-list', '../next-runtime', '../next-task'], (
+    cryptoRandom, record, search, nextList, nextRuntime, nextTask
 ) => {
     /**
      * Defines the function that is executed at the beginning of the map/reduce
@@ -20,17 +20,7 @@ define(['N/crypto/random', 'N/record', 'N/runtime', 'N/search', '../next-list', 
      * @since 2015.2
      */
     function getInputData(inputContext) {
-        const currentScript = runtime.getCurrentScript();
-        const currentMapReduceTaskId = search.create({  // task ID is not known to the task itself, fetch it here
-            type: search.Type.SCHEDULED_SCRIPT_INSTANCE,
-            filters: [
-                ['status', 'anyof', 'PROCESSING',], 'AND',
-                ['script.scriptid', 'is', currentScript.id,], 'AND',
-                ['scriptdeployment.scriptid', 'is', currentScript.deploymentId,],
-            ],
-            columns: ['taskid'],
-        }).run().getRange({ start: 0, end: 1, })?.[0]?.getValue?.('taskid');
-
+        const currentMapReduceTaskId = nextRuntime.getCurrentScheduledTaskId() ?? 'UNKNOWN';
         return nextTask.getOpenAsyncTasks().map(taskData => JSON.stringify({  // map status JSON and task ID into values
             statusList: JSON.stringify(nextList.load({ id: 'customlist_next_async_task_status', })),
             taskId:     currentMapReduceTaskId,
