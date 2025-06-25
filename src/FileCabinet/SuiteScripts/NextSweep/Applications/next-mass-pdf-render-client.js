@@ -142,7 +142,6 @@ define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client',
         }
 
         async setParameters(parameters) {
-            console.log(parameters);
             for (const param of Object.entries(parameters)) {
                 switch (param[0]) {
                     case 'availableSearches': {
@@ -165,11 +164,6 @@ define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client',
                         const addedSearchIds = new Set(param[1].filter(sId =>
                             this.#SearchOptions.sortSearches.includes(sId) && !currentSearchIds.includes(sId)));
                         const removedSearchIds = currentSearchIds.filter(sId => !param[1].includes(sId));
-                        console.log('new value', param[1]);
-                        console.log('available value', this.#SearchOptions.sortSearches);
-                        console.log('old value', currentSearchIds);
-                        console.log('added', addedSearchIds);
-                        console.log('removed', removedSearchIds);
 
                         for (const searchID of removedSearchIds)
                             selectedElem.querySelector(`[data-search="${searchID}"]`)?.remove();
@@ -310,7 +304,6 @@ define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client',
                 'change',
                 async changeEvent => {
                     const searchID = changeEvent.target.value;
-                    console.log(searchID);
 
                     const unselectedTableQuery = document.querySelectorAll(
                         `#nmpr-pane-searches .nmpr-table-search:not([data-search="${searchID}"])`);
@@ -327,7 +320,6 @@ define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client',
                 'change',
                 async changeEvent => {
                     const pageIndex = changeEvent.target.value;
-                    console.log(pageIndex);
 
                     const hiddenRowQuery =
                         document.querySelectorAll(`#nmpr-table-queue tbody tr:not([data-page="${pageIndex}"])`);
@@ -351,7 +343,6 @@ define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client',
 
     async function submitQuery() {
         const searchIDs = getForm().parameters.lookupSearches;
-        console.log(searchIDs);
 
         if (searchIDs.length === 0) return;
         if ( getForm().searchInProgress || getForm().renderInProgress || getForm().downloadInProgress) {
@@ -511,7 +502,6 @@ define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client',
         const stagedRecordMap = getForm().stagedRender.sortRecords.map(recordID =>
             getForm().stagedRender.records[recordID]
         ).map(recordData => ({ type: 'transaction', id: recordData.id, name: recordData.fileName, }));
-        console.log(stagedRecordMap);
 
         // dispatch record renders by page
         for (let recordIndex = 0; recordIndex < stagedRecordMap.length; recordIndex += RECORD_RENDER_PAGE_MAX) {
@@ -546,7 +536,6 @@ define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client',
                 }
                 const renderResult = getForm().taskPool[pendingTaskRecordId];
                 if (renderResult === null) continue;
-                console.log(renderResult);
 
                 // collate failed and newly rendered records
                 const failedRecords = FAILED_STATUSES.includes(renderResult.status)
