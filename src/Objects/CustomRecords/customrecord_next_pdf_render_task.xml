@@ -40,6 +40,16 @@
             <showinlist>T</showinlist>
             <storevalue>T</storevalue>
         </customrecordcustomfield>
+        <customrecordcustomfield scriptid="custrecord_next_pr_folder">
+            <accesslevel>2</accesslevel>
+            <description>Render output folder</description>
+            <displaytype>STATICTEXT</displaytype>
+            <fieldtype>TEXT</fieldtype>
+            <label>Folder ID</label>
+            <searchlevel>2</searchlevel>
+            <showinlist>T</showinlist>
+            <storevalue>T</storevalue>
+        </customrecordcustomfield>
         <customrecordcustomfield scriptid="custrecord_next_pr_configuration">
             <accesslevel>2</accesslevel>
             <description>Render configuration (form, template, etc.)</description>
@@ -55,7 +65,7 @@
             <description>Identifying data for staged records (type, numeric ID, etc.)</description>
             <displaytype>STATICTEXT</displaytype>
             <fieldtype>CLOBTEXT</fieldtype>
-            <label>Parameters</label>
+            <label>Staged Records</label>
             <searchlevel>2</searchlevel>
             <showinlist>T</showinlist>
             <storevalue>T</storevalue>
@@ -65,7 +75,7 @@
             <description>Identifying data for rendered records (type, numeric ID, etc.)</description>
             <displaytype>STATICTEXT</displaytype>
             <fieldtype>CLOBTEXT</fieldtype>
-            <label>Result</label>
+            <label>Rendered Records</label>
             <searchlevel>2</searchlevel>
             <showinlist>T</showinlist>
             <storevalue>T</storevalue>
