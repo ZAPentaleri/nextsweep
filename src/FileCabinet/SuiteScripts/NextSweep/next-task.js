@@ -24,6 +24,7 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/search', './next-list', './
      * @property {string} id Task record ID
      * @property {string} status Task status
      * @property {any} result Task result after successful completion
+     * @property {any} error Task error
      */
     class AsyncTaskResult {
         constructor(id, status, result, error) {
@@ -141,16 +142,16 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/search', './next-list', './
      */
     function getAsyncTaskResult(options) {
         const AsyncTaskStatus = nextList.load({ id: 'customlist_next_async_task_status', });
-        const asyncJobRecord = record.load({ type: 'customrecord_next_async_task', id: options.id, });
+        const asyncTaskRecord = record.load({ type: 'customrecord_next_async_task', id: options?.id, });
 
         // status determines how certain properties will be set; this covers for the future potential case where a task
         // is "retried", but its state hasn't been fully restored to initial
-        const currentStatus = AsyncTaskStatus.getByInternalId(asyncJobRecord.getValue('custrecord_next_at_status')).id;
-        return new AsyncTaskResult(asyncJobRecord.id, currentStatus,
+        const currentStatus = AsyncTaskStatus.getByInternalId(asyncTaskRecord.getValue('custrecord_next_at_status')).id;
+        return new AsyncTaskResult(asyncTaskRecord.id, currentStatus,
             (currentStatus === 'next_ats_completed'
-                ? JSON.parse(asyncJobRecord.getValue('custrecord_next_at_result')) : null),
+                ? JSON.parse(asyncTaskRecord.getValue('custrecord_next_at_result')) : null),
             (currentStatus === 'next_ats_failed'
-                ? JSON.parse(asyncJobRecord.getValue('custrecord_next_at_error') || null) : null),
+                ? JSON.parse(asyncTaskRecord.getValue('custrecord_next_at_error') || null) : null),
         );
     }
 
