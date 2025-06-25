@@ -103,16 +103,17 @@ define(['N/crypto/random', 'N/record', 'N/search', '../next-list', '../next-runt
      * associated map stage is complete. This function is applied to each group
      * in the provided context.
      *
-     * @param {Object} reduceContext Data collection containing the groups to process in the reduce stage. This parameter is
-     *     provided automatically based on the results of the map stage.
+     * @param {Object} reduceContext Data collection containing the groups to process in the reduce stage. This
+     *     parameter is provided automatically based on the results of the map stage.
      * @param {Iterator} reduceContext.errors Serialized errors that were thrown during previous attempts to execute the
      *     reduce function on the current group
-     * @param {number} reduceContext.executionNo Number of times the reduce function has been executed on the current group
+     * @param {number} reduceContext.executionNo Number of times the reduce function has been executed on the current
+     *     group
      * @param {boolean} reduceContext.isRestarted Indicates whether the current invocation of this function is the first
      *     invocation (if true, the current invocation is not the first invocation and this function has been restarted)
      * @param {string} reduceContext.key Key to be processed during the reduce stage
-     * @param {List<String>} reduceContext.values All values associated with a unique key that was passed to the reduce stage
-     *     for processing
+     * @param {List<String>} reduceContext.values All values associated with a unique key that was passed to the reduce
+     *     stage for processing
      * @since 2015.2
      */
     function reduce(reduceContext) {
