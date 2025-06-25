@@ -65,6 +65,16 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
     }
 
     /**
+     * Sanitizes commonly illegal characters from the passed file name
+     *
+     * @param {string} fileName
+     * @returns {string}
+     */
+    function sanitizeFileName(fileName) {
+        return fileName.replace(/[<>:"/\\|?*]/g, '_',);
+    }
+
+    /**
      *
      * @param {object} options
      * @param {string|number} [options.baseFolder=0] Base search folder ID (0 = File Cabinet root)
@@ -698,7 +708,7 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
 
     return {
         SearchType, ResultType,
-        splitPath, joinPath,
+        splitPath, joinPath, sanitizeFileName,
         getFileId, getFilePath, getFileName, getFileParent,
         copy: copyFile, create: createFile, delete: deleteFile, load: loadFile, move: moveFile,
         getFolderId, getFolderPath, getFolderName, getFolderParent,
