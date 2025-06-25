@@ -31,10 +31,10 @@ define(['N/crypto/random', 'N/record', 'N/runtime', 'N/search', '../next-list', 
             columns: ['taskid'],
         }).run().getRange({ start: 0, end: 1, })?.[0]?.getValue?.('taskid');
 
-        return nextTask.getOpenAsyncTasks().map(jobData => JSON.stringify({  // map status JSON and task ID into values
+        return nextTask.getOpenAsyncTasks().map(taskData => JSON.stringify({  // map status JSON and task ID into values
             statusList: JSON.stringify(nextList.load({ id: 'customlist_next_async_task_status', })),
             taskId:     currentMapReduceTaskId,
-            ...jobData,
+            ...taskData,
         }));
     }
 
@@ -57,18 +57,18 @@ define(['N/crypto/random', 'N/record', 'N/runtime', 'N/search', '../next-list', 
      * @since 2015.2
      */
     function map(mapContext) {
-        const jobData = JSON.parse(mapContext.value);
-        const AsyncTaskStatus = nextList.CustomList.fromJSON(jobData.statusList);
+        const taskData = JSON.parse(mapContext.value);
+        const AsyncTaskStatus = nextList.CustomList.fromJSON(taskData.statusList);
         const recordedStatus = AsyncTaskStatus.getByInternalId(search.lookupFields({
             type: 'customrecord_next_async_task',
-            id:   jobData.recordId,
+            id:   taskData.recordId,
             columns: ['custrecord_next_at_status'],
         })?.['custrecord_next_at_status']?.[0]?.value)?.id;
 
         // if function parameters are presumed to be too long for search-based retrieval, retrieve from the record here
-        if (jobData.functionData.paramsTooLong) {
-            jobData.functionData.parameters = JSON.parse(record.load({
-                type: 'customrecord_next_async_task', id: jobData.recordId,
+        if (taskData.functionData.paramsTooLong) {
+            taskData.functionData.parameters = JSON.parse(record.load({
+                type: 'customrecord_next_async_task', id: taskData.recordId,
             }).getValue({ fieldId: 'custrecord_next_at_parameters', }));
         }
 
@@ -76,26 +76,26 @@ define(['N/crypto/random', 'N/record', 'N/runtime', 'N/search', '../next-list', 
             case 'next_ats_new': {
                 // update task record status to "Added to Queue"
                 record.submitFields({
-                    type: 'customrecord_next_async_task', id: jobData.recordId,
+                    type: 'customrecord_next_async_task', id: taskData.recordId,
                     values: {
                         'custrecord_next_at_status': AsyncTaskStatus.getById('next_ats_queued').internalId,
-                        'custrecord_next_at_task':   jobData.taskId,
+                        'custrecord_next_at_task':   taskData.taskId,
                         'custrecord_next_at_result': '',
                         'custrecord_next_at_error':  '',
                     },
                 });
 
                 // for batching, modify below key
-                mapContext.write({ key: cryptoRandom.generateUUID(), value: JSON.stringify(jobData), });
+                mapContext.write({ key: cryptoRandom.generateUUID(), value: JSON.stringify(taskData), });
                 break;
             }
             case 'next_ats_retrying': {  // add retry logic here if it becomes necessary
                 // update task record status to "Cancelled"
                 record.submitFields({
-                    type: 'customrecord_next_async_task', id: jobData.recordId,
+                    type: 'customrecord_next_async_task', id: taskData.recordId,
                     values: {
                         'custrecord_next_at_status': AsyncTaskStatus.getById('next_ats_cancelled').internalId,
-                        'custrecord_next_at_task':   jobData.taskId,
+                        'custrecord_next_at_task':   taskData.taskId,
                         'custrecord_next_at_result': '',
                         'custrecord_next_at_error':  '',
                     },
@@ -126,22 +126,22 @@ define(['N/crypto/random', 'N/record', 'N/runtime', 'N/search', '../next-list', 
      * @since 2015.2
      */
     function reduce(reduceContext) {
-        for (const jobData of reduceContext.values.map(value => JSON.parse(value))) {
-            const AsyncTaskStatus = nextList.CustomList.fromJSON(jobData.statusList);
+        for (const taskData of reduceContext.values.map(value => JSON.parse(value))) {
+            const AsyncTaskStatus = nextList.CustomList.fromJSON(taskData.statusList);
 
             // update task record status to "In Progress"
             record.submitFields({
-                type: 'customrecord_next_async_task', id: jobData.recordId,
+                type: 'customrecord_next_async_task', id: taskData.recordId,
                 values: {
                     'custrecord_next_at_status': AsyncTaskStatus.getById('next_ats_processing').internalId,
-                    'custrecord_next_at_task':   jobData.taskId,
+                    'custrecord_next_at_task':   taskData.taskId,
                     'custrecord_next_at_result': '',
                     'custrecord_next_at_error':  '',
                 },
             });
 
             try {
-                const functionData = jobData.functionData;
+                const functionData = taskData.functionData;
                 // load module, execute function with parameters
                 let _asyncTaskResult;
                 require([functionData.module], asyncTaskModule =>
@@ -153,10 +153,10 @@ define(['N/crypto/random', 'N/record', 'N/runtime', 'N/search', '../next-list', 
 
                 // update task record status to "Complete", record result
                 record.submitFields({
-                    type: 'customrecord_next_async_task', id: jobData.recordId,
+                    type: 'customrecord_next_async_task', id: taskData.recordId,
                     values: {
                         'custrecord_next_at_status': AsyncTaskStatus.getById('next_ats_completed').internalId,
-                        'custrecord_next_at_task':   jobData.taskId,
+                        'custrecord_next_at_task':   taskData.taskId,
                         'custrecord_next_at_result': JSON.stringify(_asyncTaskResult ?? null),
                         'custrecord_next_at_error':  '',
                     },
@@ -164,10 +164,10 @@ define(['N/crypto/random', 'N/record', 'N/runtime', 'N/search', '../next-list', 
             } catch (asyncTaskError) {
                 // update task record status to "Failed"
                 record.submitFields({
-                    type: 'customrecord_next_async_task', id: jobData.recordId,
+                    type: 'customrecord_next_async_task', id: taskData.recordId,
                     values: {
                         'custrecord_next_at_status': AsyncTaskStatus.getById('next_ats_failed').internalId,
-                        'custrecord_next_at_task':   jobData.taskId,
+                        'custrecord_next_at_task':   taskData.taskId,
                         'custrecord_next_at_result': '',
                         'custrecord_next_at_error':
                             JSON.stringify(asyncTaskError, Object.getOwnPropertyNames(asyncTaskError)),
