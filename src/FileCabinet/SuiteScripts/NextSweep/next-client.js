@@ -38,8 +38,8 @@ define(['N/url'], (url) => {
 
         const queryPrefix = /\?./.test(baseUrl) ? '&' : '?'
 
-        return await fetch(
-            baseUrl + (options?.parameters ? `${queryPrefix}${new URLSearchParams(options.parameters).toString()}` : ''),
+        return await fetch(baseUrl
+            + (options?.parameters ? `${queryPrefix}${new URLSearchParams(options.parameters).toString()}` : ''),
             {
                 method: options?.method?.toUpperCase() ?? 'POST',
                 body: options?.body
