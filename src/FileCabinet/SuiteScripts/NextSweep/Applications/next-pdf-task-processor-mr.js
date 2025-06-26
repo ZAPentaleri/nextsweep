@@ -161,8 +161,8 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/render', 'N/search',
             for (let assignedIndex = 0; assignedIndex < taskData.assigned.length; assignedIndex++) {
                 const assignedMapping = taskData.assigned[assignedIndex];
                 try {
-                    const pdfName = nextFile.sanitizeFileName(
-                        `${assignedMapping.name ?? (assignedMapping.type + '_' + assignedMapping.id)}.pdf`);
+                    const pdfName = nextFile.sanitizeFileName(`${assignedMapping.name?.match?.(/^(.+?)(?:\.pdf)?$/)?.[1]
+                    ?? (assignedMapping.type + '_' + assignedMapping.id)}.pdf`);
 
                     // add logic here to leverage taskData.configuration
                     let renderer = null;
