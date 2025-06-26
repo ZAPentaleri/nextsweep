@@ -446,7 +446,7 @@ define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client',
         }
 
         // populate queue table page select
-        for (let qpi = 0; qpi < Math.floor(totalRecords / QUEUE_PAGE_SIZE); qpi++) {
+        for (let qpi = 0; qpi < Math.ceil(totalRecords / QUEUE_PAGE_SIZE); qpi++) {
             document.querySelector('#nmpr-select-queue-page').insertAdjacentHTML('beforeend',
                 `<option value="${qpi}">Page ${qpi + 1} (${(qpi * QUEUE_PAGE_SIZE) + 1}&ndash;${//qpi = queue page index
                     Math.min((qpi + 1) * QUEUE_PAGE_SIZE, totalRecords)
