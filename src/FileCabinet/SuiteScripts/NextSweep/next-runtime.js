@@ -1,4 +1,15 @@
 /**
+ *    __________ _ _____    ___
+ *    \____   // ||   _  \  \  \
+ *       /  //   ||  | \  \ |  |____       ___ __
+ *     /  //  /  ||  |_/  //  // ___\___  / __\ |_
+ *   /  //__/ |  ||   __//__/  \__ \/ . \|  _||  _|
+ * /_________\|__||__| /__/   /____/\___/|_|  \__\
+ *
+ * NextSweep Runtime Module: runtime data retrieval methods
+ *
+ * ZAPentaleri, 2025
+ *
  * @NApiVersion 2.1
  */
 define(['N/runtime', 'N/search'], (runtime, search) => {

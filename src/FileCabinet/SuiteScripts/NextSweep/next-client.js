@@ -1,4 +1,16 @@
 /**
+ *    __________ _ _____    ___
+ *    \____   // ||   _  \  \  \
+ *       /  //   ||  | \  \ |  |____       ___ __
+ *     /  //  /  ||  |_/  //  // ___\___  / __\ |_
+ *   /  //__/ |  ||   __//__/  \__ \/ . \|  _||  _|
+ * /_________\|__||__| /__/   /____/\___/|_|  \__\
+ *
+ * NextSweep Client Module: supports client script communications and DOM
+ * manipulation
+ *
+ * ZAPentaleri, 2025
+ *
  * @NApiVersion 2.1
  */
 define(['N/url'], (url) => {

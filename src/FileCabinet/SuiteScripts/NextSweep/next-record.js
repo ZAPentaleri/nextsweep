@@ -4,7 +4,7 @@
  *       /  //   ||  | \  \ |  |____       ___ __
  *     /  //  /  ||  |_/  //  // ___\___  / __\ |_
  *   /  //__/ |  ||   __//__/  \__ \/ . \|  _||  _|
- * /_________\|__||__| /__/(R)/____/\___/|_|  \__\
+ * /_________\|__||__| /__/   /____/\___/|_|  \__\
  *
  * NextSweep Record Module: provides a streamlined interface for modifications
  * to NetSuite records
