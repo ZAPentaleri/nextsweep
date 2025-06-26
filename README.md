@@ -8,15 +8,13 @@ Shorthand and helper methods to reduce SuiteScript boilerplate.
 
 ***
 
-# Utilities
+## Utilities
 
-## Next &gt;&gt; Mass PDF Utility
+### Next &gt;&gt; Mass PDF Utility
 
 A utility for mass-downloading PDF renders for transactions.
 
 ***
-
-# Utilities
 
 ## Next &gt;&gt; Mass PDF Utility
 
