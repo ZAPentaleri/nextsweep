@@ -21,5 +21,8 @@
         <customvalue scriptid="next_ats_cancelled">
             <value>Cancelled</value>
         </customvalue>
+        <customvalue scriptid="next_ats_retrying">
+            <value>Staged for Retry</value>
+        </customvalue>
     </customvalues>
 </customlist>

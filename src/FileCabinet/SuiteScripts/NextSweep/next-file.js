@@ -4,7 +4,7 @@
  *       /  //   ||  | \  \ |  |____       ___ __
  *     /  //  /  ||  |_/  //  // ___\___  / __\ |_
  *   /  //__/ |  ||   __//__/  \__ \/ . \|  _||  _|
- * /_________\|__||__| /__/(R)/____/\___/|_|  \__\
+ * /_________\|__||__| /__/   /____/\___/|_|  \__\
  *
  * NextSweep File Module: enhances the native N/file interface through
  * path-based file reference support and whole-folder operations
@@ -62,6 +62,16 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
         return [...(arguments.length === 1 && Array.isArray(arguments[0]) ? arguments[0] : arguments)].reverse().reduce(
             (path, arg) => `${arg.trim().replace(/\/$/, '')}${path ? '/' : ''}${path}`,
         '',);
+    }
+
+    /**
+     * Sanitizes commonly illegal characters from a passed file name
+     *
+     * @param {string} fileName
+     * @returns {string}
+     */
+    function sanitizeFileName(fileName) {
+        return fileName.replace(/[<>:"/\\|?*]/g, '_',);
     }
 
     /**
@@ -698,7 +708,7 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
 
     return {
         SearchType, ResultType,
-        splitPath, joinPath,
+        splitPath, joinPath, sanitizeFileName,
         getFileId, getFilePath, getFileName, getFileParent,
         copy: copyFile, create: createFile, delete: deleteFile, load: loadFile, move: moveFile,
         getFolderId, getFolderPath, getFolderName, getFolderParent,

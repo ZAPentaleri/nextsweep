@@ -1,0 +1,16 @@
+<suitelet scriptid="customscript_next_mass_pdf_render_sl">
+    <defaultfunction></defaultfunction>
+    <name>Next — Mass PDF Render SL</name>
+    <notifyowner>T</notifyowner>
+    <scriptfile>[/SuiteScripts/NextSweep/Applications/next-mass-pdf-render-suitelet.js]</scriptfile>
+    <scriptdeployments>
+        <scriptdeployment scriptid="customdeploy_next_mass_pdf_render_sl">
+            <audslctrole>ADMINISTRATOR</audslctrole>
+            <isdeployed>T</isdeployed>
+            <loglevel>DEBUG</loglevel>
+            <runasrole>ADMINISTRATOR</runasrole>
+            <status>TESTING</status>
+            <title>Next — Mass PDF Render SL</title>
+        </scriptdeployment>
+    </scriptdeployments>
+</suitelet>

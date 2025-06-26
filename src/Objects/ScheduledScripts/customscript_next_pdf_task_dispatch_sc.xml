@@ -1,26 +1,26 @@
-<scheduledscript scriptid="customscript_next_async_task_dispatch_sc">
+<scheduledscript scriptid="customscript_next_pdf_task_dispatch_sc">
     <defaultfunction></defaultfunction>
-    <name>Next — Async Task Process Dispatch SC</name>
+    <name>Next — PDF Task Process Dispatch SC</name>
     <notifyowner>T</notifyowner>
-    <scriptfile>[/SuiteScripts/NextSweep/Applications/next-async-task-dispatch-sc.js]</scriptfile>
+    <scriptfile>[/SuiteScripts/NextSweep/Applications/next-pdf-task-dispatch-sc.js]</scriptfile>
     <scriptdeployments>
-        <scriptdeployment scriptid="customdeploy_next_async_task_dispatch_m1">
+        <scriptdeployment scriptid="customdeploy_next_pdf_task_dispatch_m1">
             <isdeployed>T</isdeployed>
             <loglevel>DEBUG</loglevel>
             <status>NOTSCHEDULED</status>
-            <title>Next — Async Task Process Dispatch SC — Manual #1</title>
+            <title>Next — PDF Task Process Dispatch SC — Manual #1</title>
         </scriptdeployment>
-        <scriptdeployment scriptid="customdeploy_next_async_task_dispatch_m2">
+        <scriptdeployment scriptid="customdeploy_next_pdf_task_dispatch_m2">
             <isdeployed>T</isdeployed>
             <loglevel>DEBUG</loglevel>
             <status>NOTSCHEDULED</status>
-            <title>Next — Async Task Process Dispatch SC — Manual #2</title>
+            <title>Next — PDF Task Process Dispatch SC — Manual #2</title>
         </scriptdeployment>
-        <scriptdeployment scriptid="customdeploy_next_async_task_dispatch_s1">
+        <scriptdeployment scriptid="customdeploy_next_pdf_task_dispatch_s1">
             <isdeployed>T</isdeployed>
             <loglevel>DEBUG</loglevel>
             <status>SCHEDULED</status>
-            <title>Next — Async Task Process Dispatch SC — Scheduled #1</title>
+            <title>Next — PDF Task Process Dispatch SC — Scheduled #1</title>
             <recurrence>
                 <daily>
                     <everyxdays>1</everyxdays>
