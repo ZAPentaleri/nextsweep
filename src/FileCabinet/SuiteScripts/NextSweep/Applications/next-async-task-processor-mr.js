@@ -194,8 +194,13 @@ define(['N/crypto/random', 'N/record', 'N/search', '../next-list', '../next-runt
      */
     function summarize(summaryContext) {
         // attempt re-execution if open tasks found
-        if (nextTask.getOpenAsyncTasks().length > 0) {
+        const openAsyncTasks = nextTask.getOpenAsyncTasks();
+        if (openAsyncTasks.length > 0) {
+            log.audit({ title: 'Tasks Remain',
+                details: `${openAsyncTasks.length} unresolved tasks remain, attempting M/R dispatch`, });
             nextTask.dispatchAsyncTaskProcessor();
+        } else {
+            log.audit({ title: 'All Tasks Resolved', details: 'No open tasks remain, exiting', });
         }
     }
 
