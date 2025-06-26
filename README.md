@@ -19,10 +19,6 @@ Deployment ID: `customdeploy_next_mass_pdf_render_sl`
 
 ***
 
-## Next &gt;&gt; Mass PDF Utility
-
-***
-
 ## NextClient Module (next-client.js)
 
 Client-supporting helper methods.
