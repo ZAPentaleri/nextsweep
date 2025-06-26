@@ -34,8 +34,8 @@ define(['N/url'], (url) => {
     }
 
     /**
-     * Makes a network request to a Suitelet, returning a JSON, blob, or string
-     * response.
+     * Makes a network request to a Suitelet, returning a JSON (as object),
+     * blob, or string response.
      *
      * @param {object} options
      * @param {string} [options.url] The URL to request
