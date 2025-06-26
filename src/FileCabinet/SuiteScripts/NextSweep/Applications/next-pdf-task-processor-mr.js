@@ -3,8 +3,9 @@
  * @NScriptType MapReduceScript
  */
 
-const RENDERS_PER_REDUCE = 25;  // number of renders to complete on each reduce execution
-
+const RENDERS_PER_REDUCE = 90;  // number of renders to complete on each reduce execution
+const POST_UPDATE_EVERY  = 15;  // number of records to render before posting update to task record (should be factor of
+                                                                                                  // RENDERS_PER_REDUCE)
 define(['N/crypto/random', 'N/error', 'N/record', 'N/render', 'N/search',
     '../next-file', '../next-list', '../next-runtime', '../next-task'], (
     cryptoRandom, error, record, render, search, nextFile, nextList, nextRuntime, nextTask
@@ -151,7 +152,8 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/render', 'N/search',
     function reduce(reduceContext) {
         for (const taskData of reduceContext.values.map(value => JSON.parse(value))) {
             const newRendered = [];
-            for (const assignedMapping of taskData.assigned) {
+            for (let assignedIndex = 0; assignedIndex < taskData.assigned.length; assignedIndex++) {
+                const assignedMapping = taskData.assigned[assignedIndex];
                 try {
                     const pdfName = nextFile.sanitizeFileName(
                         `${assignedMapping.name ?? (assignedMapping.type + '_' + assignedMapping.id)}.pdf`);
@@ -175,6 +177,9 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/render', 'N/search',
                     const pdfId = pdfFile.save().toString();
 
                     newRendered.push({ ...assignedMapping, file: pdfId, });
+
+                    if ((assignedIndex + 1) % POST_UPDATE_EVERY === 0 || assignedIndex === taskData.assigned.length)
+                        updateTaskRecordRendered(taskData.recordId, newRendered,);
                 } catch (pdfTaskError) {
                     log.debug({ title: 'pdfTaskError',
                         details: JSON.stringify(pdfTaskError, Object.getOwnPropertyNames(pdfTaskError)), });
@@ -187,8 +192,6 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/render', 'N/search',
                 recordId: taskData.recordId,
                 rendered: newRendered
             }), });
-
-            updateTaskRecordRendered(taskData.recordId, newRendered,);
         }
     }
 
