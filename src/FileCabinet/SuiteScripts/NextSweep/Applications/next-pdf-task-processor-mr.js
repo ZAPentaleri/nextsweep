@@ -123,8 +123,7 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/render', 'N/search',
         }
 
         for (let pendingIndex = 0; pendingIndex < taskData.pending.length; pendingIndex += RENDERS_PER_REDUCE) {
-            mapContext.write({ key: cryptoRandom.generateUUID(), value: JSON.stringify({
-                ...taskData,
+            mapContext.write({ key: cryptoRandom.generateUUID(), value: JSON.stringify({ ...taskData,
                 assigned: taskData.pending.slice(pendingIndex, pendingIndex + RENDERS_PER_REDUCE),
             }), });
         }
