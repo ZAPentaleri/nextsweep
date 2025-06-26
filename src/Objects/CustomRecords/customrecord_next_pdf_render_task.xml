@@ -1,4 +1,4 @@
-<customrecordtype scriptid="customrecord_next_async_task">
+<customrecordtype scriptid="customrecord_next_pdf_render_task">
     <accesstype>USEPERMISSIONLIST</accesstype>
     <allowattachments>F</allowattachments>
     <allowinlinedeleting>F</allowinlinedeleting>
@@ -18,8 +18,8 @@
     <includename>F</includename>
     <numberinginit>1</numberinginit>
     <numberingmindigits>10</numberingmindigits>
-    <numberingprefix>NEXT_AT_</numberingprefix>
-    <recordname>Next — Asynchronous Task</recordname>
+    <numberingprefix>NEXT_PR_</numberingprefix>
+    <recordname>Next — PDF Render Task</recordname>
     <showcreationdate>T</showcreationdate>
     <showcreationdateonlist>T</showcreationdateonlist>
     <showid>T</showid>
@@ -28,10 +28,10 @@
     <shownotes>F</shownotes>
     <showowner>F</showowner>
     <customrecordcustomfields>
-        <customrecordcustomfield scriptid="custrecord_next_at_status">
+        <customrecordcustomfield scriptid="custrecord_next_pr_status">
             <accesslevel>2</accesslevel>
             <defaultselection>[scriptid=customlist_next_async_task_status.next_ats_new]</defaultselection>
-            <description>Asynchronous Task status (New, Added to Queue, In Progress, etc.)</description>
+            <description>PDF Render Task status (New, Added to Queue, In Progress, etc.)</description>
             <displaytype>STATICTEXT</displaytype>
             <fieldtype>SELECT</fieldtype>
             <label>Status</label>
@@ -40,61 +40,49 @@
             <showinlist>T</showinlist>
             <storevalue>T</storevalue>
         </customrecordcustomfield>
-        <customrecordcustomfield scriptid="custrecord_next_at_module">
+        <customrecordcustomfield scriptid="custrecord_next_pr_folder">
             <accesslevel>2</accesslevel>
-            <description>The path to the module that should be called when the task is executed.</description>
-            <displaytype>STATICTEXT</displaytype>
-            <fieldtype>TEXTAREA</fieldtype>
-            <label>Module</label>
-            <searchlevel>2</searchlevel>
-            <showinlist>T</showinlist>
-            <storevalue>T</storevalue>
-        </customrecordcustomfield>
-        <customrecordcustomfield scriptid="custrecord_next_at_function">
-            <accesslevel>2</accesslevel>
-            <description>The name of the function that should be called when the task is executed.</description>
+            <description>Render output folder</description>
             <displaytype>STATICTEXT</displaytype>
             <fieldtype>TEXT</fieldtype>
-            <label>Function</label>
+            <label>Folder ID</label>
             <searchlevel>2</searchlevel>
             <showinlist>T</showinlist>
             <storevalue>T</storevalue>
         </customrecordcustomfield>
-        <customrecordcustomfield scriptid="custrecord_next_at_spread">
+        <customrecordcustomfield scriptid="custrecord_next_pr_configuration">
             <accesslevel>2</accesslevel>
-            <description>Interpret parameter array as multiple parameters that should be passed into the function instead of one monolithic array parameter.&#xd;
-&#xd;
-Note: Parameters MUST be passed as an array if this options is selected.</description>
+            <description>Render configuration (form, template, etc.)</description>
             <displaytype>STATICTEXT</displaytype>
-            <fieldtype>CHECKBOX</fieldtype>
-            <label>Spread Parameters at Execution</label>
+            <fieldtype>TEXTAREA</fieldtype>
+            <label>Configuration</label>
             <searchlevel>2</searchlevel>
             <showinlist>T</showinlist>
             <storevalue>T</storevalue>
         </customrecordcustomfield>
-        <customrecordcustomfield scriptid="custrecord_next_at_parameters">
+        <customrecordcustomfield scriptid="custrecord_next_pr_staged_records">
             <accesslevel>2</accesslevel>
-            <description>The parameters taht should be passed to the function when the task is executed.</description>
+            <description>Identifying data for staged records (type, numeric ID, etc.)</description>
             <displaytype>STATICTEXT</displaytype>
             <fieldtype>CLOBTEXT</fieldtype>
-            <label>Parameters</label>
+            <label>Staged Records</label>
             <searchlevel>2</searchlevel>
             <showinlist>T</showinlist>
             <storevalue>T</storevalue>
         </customrecordcustomfield>
-        <customrecordcustomfield scriptid="custrecord_next_at_result">
+        <customrecordcustomfield scriptid="custrecord_next_pr_rendered_records">
             <accesslevel>2</accesslevel>
-            <description>The return value of the function after successful execution.</description>
+            <description>Identifying data for rendered records (type, numeric ID, etc.)</description>
             <displaytype>STATICTEXT</displaytype>
             <fieldtype>CLOBTEXT</fieldtype>
-            <label>Result</label>
+            <label>Rendered Records</label>
             <searchlevel>2</searchlevel>
             <showinlist>T</showinlist>
             <storevalue>T</storevalue>
         </customrecordcustomfield>
-        <customrecordcustomfield scriptid="custrecord_next_at_error">
+        <customrecordcustomfield scriptid="custrecord_next_pr_error">
             <accesslevel>2</accesslevel>
-            <description>The error produced by the function upon execution failure.</description>
+            <description>Any fatal error that prevented rendering process.</description>
             <displaytype>STATICTEXT</displaytype>
             <fieldtype>TEXTAREA</fieldtype>
             <label>Execution Error</label>

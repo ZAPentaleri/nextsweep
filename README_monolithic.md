@@ -1,10 +1,112 @@
-# NextSweep &mdash; SuiteScript Shorthand
+# NextSweep &mdash; SuiteScript Shorthand and Utilities
 
 Shorthand and helper methods to reduce SuiteScript boilerplate.
 
 ***
 
-# NextFile (next-file.js)
+# Utilities
+
+## Next &gt;&gt; Mass PDF Utility
+
+A utility for mass-downloading PDF renders for transactions.
+
+### Location
+
+Script ID: `customscript_next_mass_pdf_render_sl`  
+Deployment ID: `customdeploy_next_mass_pdf_render_sl`
+
+### Prerequisites
+
+One or more Transaction Saved Searches which should appear in the application
+should be created, named in the format
+**"[MASS PDF] &lt;your chosen name&gt;"**. The application searches for
+transaction searches with that prefix only &mdash; searches may not be added
+through any other means.
+
+### Usage Steps
+
+1. Select 1-5 searches
+2. (Optional) Input your desired file cabinet folder path for render storage
+3. (Optional) Select your desired number of PDFs to be saved to each downloaded .ZIP archive
+4. Click the "GO!" submit button
+5. View the search result preview and render queue to ensure the expected data was retrieved
+6. Click the "Render to FC" OR the "Download" button. "Render to FC" renders the PDFs and saves them to the file cabinet only, while "Download" both renders the PDFs and downloads them
+
+Renders occur asynchronously via a Map/Reduce script; exiting the Suitelet will
+not terminate rendering. Exercise caution that the mass render you request is
+the one you want.
+
+A maximum of 10000 (ten thousand) PDFs will be rendered per request. Take care
+that your PC does not go to sleep during long-lived download-renders, as
+unexpected client behavior may arise (the server will not be affected).
+
+***
+
+# NextClient Module (next-client.js)
+
+Client-supporting helper methods.
+
+## Module import
+
+```
+require(['SuiteScripts/NextSweep/next-client'], nextRuntime => {
+    // your code here
+});
+```
+
+# Functions
+
+## requestSuitelet
+
+Makes a network request to a Suitelet, returning a JSON (as object), blob, or
+string response.
+
+### Parameters
+
+|      Key       |  Type  | Required | Description                                                                                                |
+|:--------------:|:------:|:--------:|:-----------------------------------------------------------------------------------------------------------|
+|     `url`      | string | &#x2715; | A URL to request                                                                                           |
+|   `scriptId`   | string | &#x2715; | The script ID of a Suitelet to call                                                                        |
+| `deploymentId` | string | &#x2715; | The deployment ID of a Suitelet to call                                                                    |
+|    `method`    | string | &#x2715; | Request method (defaults to "GET")                                                                         |
+|  `parameters`  | string | &#x2715; | Request URL params                                                                                         |
+|     `body`     | string | &#x2715; | Request body                                                                                               |
+|   `headers`    | string | &#x2715; | Request headers                                                                                            |
+| `responseType` | string | &#x2715; | Request response type override (e.g. if JSON isn't identified automatically, this should be set to "JSON") |
+
+_Note: Either `url`, or a combination of `scriptId` and `deploymentId` should be
+provided. If neither option is provided, the URL of the requesting client will
+be requested (useful for calling the backend of a Suitelet from its associated
+Client execution environment; probably not useful in any other case)_
+
+### Returns
+
+An object (derived from JSON), Blob, or string representing a network response
+
+## escapeHtml
+
+Escapes various symbols that have syntactic meaning in HTML with their
+corresponding HTML entities for the purpose of later inserting the resultant
+strings into the DOM.
+
+Escaped characters: `&`, `<`, `>`, `"`, `'`
+
+Optionally escaped characters: `\n`
+
+### Parameters
+
+|      Parameter      |  Type   | Required | Description                                                                             |
+|:-------------------:|:-------:|:--------:|:----------------------------------------------------------------------------------------|
+|     `unescaped`     | string  | &#x3007; | The unescaped input string                                                              |
+| `convertLineBreaks` | boolean | &#x2715; | Whether to replace line breaks with <br> elements or leave them intact (defaults false) |
+
+### Returns
+
+A sanitized string
+
+***
+
+# NextFile Module (next-file.js)
 
 File management methods.
 
@@ -285,9 +387,9 @@ Initial and final slashes are ignored.
 
 ### Parameters
 
-|  Key   |  Type  | Required | Description           |
-|:------:|:------:|:--------:|:----------------------|
-| `path` | string | &#x3007; | A file or folder path |
+| Parameter |  Type  | Required | Description           |
+|:---------:|:------:|:--------:|:----------------------|
+|  `path`   | string | &#x3007; | A file or folder path |
 
 ### Returns
 
@@ -302,7 +404,7 @@ E.g. `["SuiteScripts", "NextSweep", "next-file.js"]` becomes
 
 ### Parameters
 
-|     Key     |                Type                 | Required | Description                 |
+|  Parameter  |                Type                 | Required | Description                 |
 |:-----------:|:-----------------------------------:|:--------:|:----------------------------|
 | (arguments) | string arguments \|<br>string array | &#x3007; | A split file or folder path |
 
@@ -310,15 +412,31 @@ E.g. `["SuiteScripts", "NextSweep", "next-file.js"]` becomes
 
 The input path joined by forward slashes (`/`)
 
+## sanitizeFileName
+
+Sanitizes a file name by replacing illegal characters with underscores.
+
+E.g. `"asdf?gh/jkl.txt"` becomes `asdf_gh_jkl.txt`
+
+### Parameters
+
+| Parameter  |  Type  | Required | Description |
+|:----------:|:------:|:--------:|:------------|
+| `fileName` | string | &#x3007; | A file name |
+
+### Returns
+
+The input path split by forward slash (`/`)
+
 ## getFileId
 
 Gets a file's ID by path.
 
 ### Parameters
 
-|  Key   |  Type  | Required | Description |
-|:------:|:------:|:--------:|:------------|
-| `path` | string | &#x3007; | A file path |
+| Parameter |  Type  | Required | Description |
+|:---------:|:------:|:--------:|:------------|
+|  `path`   | string | &#x3007; | A file path |
 
 ### Returns
 
@@ -330,9 +448,9 @@ Gets a file's path by ID.
 
 ### Parameters
 
-| Key  |  Type  | Required | Description |
-|:----:|:------:|:--------:|:------------|
-| `id` | string | &#x3007; | A file ID   |
+| Parameter |  Type  | Required | Description |
+|:---------:|:------:|:--------:|:------------|
+|   `id`    | string | &#x3007; | A file ID   |
 
 ### Returns
 
@@ -344,9 +462,9 @@ Gets a file's name (extension inclusive) by ID.
 
 ### Parameters
 
-| Key  |  Type  | Required | Description |
-|:----:|:------:|:--------:|:------------|
-| `id` | string | &#x3007; | A file ID   |
+| Parameter |  Type  | Required | Description |
+|:---------:|:------:|:--------:|:------------|
+|   `id`    | string | &#x3007; | A file ID   |
 
 ### Returns
 
@@ -358,9 +476,9 @@ Get's a file's parent folder (ID) by ID.
 
 ### Parameters
 
-| Key  |  Type  | Required | Description |
-|:----:|:------:|:--------:|:------------|
-| `id` | string | &#x3007; | A file ID   |
+| Parameter |  Type  | Required | Description |
+|:---------:|:------:|:--------:|:------------|
+|   `id`    | string | &#x3007; | A file ID   |
 
 ### Returns
 
@@ -372,9 +490,9 @@ Get's a folder's ID by path.
 
 ### Parameters
 
-|  Key   |  Type  | Required | Description   |
-|:------:|:------:|:--------:|:--------------|
-| `path` | string | &#x3007; | A folder path |
+| Parameter |  Type  | Required | Description   |
+|:---------:|:------:|:--------:|:--------------|
+|  `path`   | string | &#x3007; | A folder path |
 
 ### Returns
 
@@ -386,9 +504,9 @@ Gets a folder's path by ID.
 
 ### Parameters
 
-| Key  |  Type  | Required | Description |
-|:----:|:------:|:--------:|:------------|
-| `id` | string | &#x3007; | A folder ID |
+| Parameter |  Type  | Required | Description |
+|:---------:|:------:|:--------:|:------------|
+|   `id`    | string | &#x3007; | A folder ID |
 
 ### Returns
 
@@ -400,9 +518,9 @@ Get's a folder's name by ID.
 
 ### Parameters
 
-| Key  |  Type  | Required | Description |
-|:----:|:------:|:--------:|:------------|
-| `id` | string | &#x3007; | A folder ID |
+| Parameter |  Type  | Required | Description |
+|:---------:|:------:|:--------:|:------------|
+|   `id`    | string | &#x3007; | A folder ID |
 
 ### Returns
 
@@ -414,9 +532,9 @@ Gets a folder's parent (ID) by ID.
 
 ### Parameters
 
-| Key  |  Type  | Required | Description |
-|:----:|:------:|:--------:|:------------|
-| `id` | string | &#x3007; | A folder ID |
+| Parameter |  Type  | Required | Description |
+|:---------:|:------:|:--------:|:------------|
+|   `id`    | string | &#x3007; | A folder ID |
 
 ### Returns
 
@@ -425,7 +543,7 @@ or it doesn't exist
 
 ***
 
-# NextList (next-list.js)
+# NextList Module (next-list.js)
 
 Custom List mapping methods.
 
@@ -504,7 +622,7 @@ A CustomList instance
 
 ***
 
-# NextRecord (next-record.js)
+# NextRecord Module (next-record.js)
 
 Record management methods.
 
@@ -760,7 +878,35 @@ Record ID or Record instance (if `flags.noSave` is set)
 
 ***
 
-# NextTask (next-task.js)
+# NextRuntime Module (next-runtime.js)
+
+Runtime data retrieval methods.
+
+## Module import
+
+```
+require(['SuiteScripts/NextSweep/next-runtime'], nextRuntime => {
+    // your code here
+});
+```
+
+# Functions
+
+## getCurrentScheduledTaskId
+
+Gets the Task ID of the calling Scheduled or Map/Reduce Script.
+
+The task ID is normally not known to the script execution environment itself, so
+this function retrieves it by running a search of current scheduled script
+instances filtered by the caller's runtime Script ID and Deployment ID.
+
+### Returns
+
+A native Task ID
+
+***
+
+# NextTask Module (next-task.js)
 
 Asynchronous Task methods.
 
@@ -787,6 +933,26 @@ Encapsulates an Asynchronous Task result
 | `status` | string | Task status human-readable ID                                                                    |
 | `result` |  any   | Task result (the value returned by the requested function)                                       |
 | `error`  | object | Task error (a serialized representation of the error that caused the function execution to fail) |
+
+## PdfTaskResult
+
+Encapsulates an Asynchronous Task result
+
+|        Key         |     Type     | Description                                                                                  |
+|:------------------:|:------------:|:---------------------------------------------------------------------------------------------|
+|        `id`        |    string    | PDF Render Task record ID                                                                    |
+|      `status`      |    string    | Task status human-readable ID                                                                |
+|      `folder`      |    string    | Render output folder ID                                                                      |
+|      `staged`      | object array | An array of staged record data objects                                                       |
+|  `staged[*].type`  |    string    | Staged record render type                                                                    |
+|   `staged[*].id`   |    string    | Staged record ID                                                                             |
+|  `staged[*].name`  |    string    | Staged record render file name                                                               |
+|     `rendered`     | object array | An array of rendered record data objects                                                     |
+| `rendered[*].type` |    string    | Rendered record render type                                                                  |
+|  `rendered[*].id`  |    string    | Rendered record ID                                                                           |
+| `rendered[*].name` |    string    | Rendered record render file name                                                             |
+| `rendered[*].file` |    string    | Rendered record render file ID                                                               |
+|      `error`       |    object    | Task error (a serialized representation of the error that caused the task execution to fail) |
 
 # Functions
 
@@ -819,7 +985,7 @@ Nothing
 
 ## getOpenAsyncTasks
 
-Gets various data for open Asynchronous Tasks.
+Gets an array of various data for open Asynchronous Tasks.
 
 ### Returns
 
@@ -838,6 +1004,58 @@ Gets the result and/or status of an Asynchronous Task by ID.
 ### Returns
 
 An AsyncTaskResult instance
+
+## dispatchPdfTask
+
+Dispatches a new PDF Render Task.
+
+### Parameters
+
+|        Key        |     Type     | Required | Description                                                                     |
+|:-----------------:|:------------:|:--------:|:--------------------------------------------------------------------------------|
+|  `configuration`  |    object    | &#x3007; | Render configuration options (currently unused)                                 |
+|     `folder`      |    string    | &#x25B3; | The ID of the folder to which rendered PDFs should be saved                     |
+|   `folderPath`    |    string    | &#x25B3; | The path of the folder to which rendered PDFs should be saved                   |
+|     `records`     | object array | &#x3007; | An array of data representing records to be rendered                            |
+| `records[*].type` |    string    | &#x3007; | Render method (currently only a value of "transaction" is supported)            |
+|  `records[*].id`  |    string    | &#x3007; | Rendered record ID (currently must represent a transaction)                     |
+| `records[*].name` |    string    | &#x2715; | The name that should be assigned to the rendered PDF (e.g. "Invoice_12345.pdf") |
+
+### Returns
+
+A PDF Render Task record ID
+
+## dispatchPdfTaskProcessor (SERVER ONLY)
+
+Dispatches the PDF Render Task processor.
+
+**_CALLING THIS FUNCTION MANUALLY IS NEVER NECESSARY._**
+
+### Returns
+
+Nothing
+
+## getOpenPdfTasks
+
+Gets an array of various data for open PDF Render Tasks.
+
+### Returns
+
+An array of objects representing open PDF Render Tasks
+
+## getPdfTaskResult
+
+Gets the result and/or status of a PDF Render Task by ID.
+
+### Parameters
+
+| Key  |  Type  | Required | Description |
+|:----:|:------:|:--------:|:------------|
+| `id` | string | &#x3007; | The task ID |
+
+### Returns
+
+An PdfTaskResult instance
 
 ***
 

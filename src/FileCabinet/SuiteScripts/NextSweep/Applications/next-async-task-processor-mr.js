@@ -1,9 +1,16 @@
 /**
+ *    __________ _ _____    ___
+ *    \____   // ||   _  \  \  \
+ *       /  //   ||  | \  \ |  |____       ___ __
+ *     /  //  /  ||  |_/  //  // ___\___  / __\ |_
+ *   /  //__/ |  ||   __//__/  \__ \/ . \|  _||  _|
+ * /_________\|__||__| /__/   /____/\___/|_|  \__\
+ *
  * @NApiVersion 2.1
  * @NScriptType MapReduceScript
  */
-define(['N/crypto/random', 'N/record', 'N/runtime', 'N/search', '../next-list', '../next-task'], (
-    cryptoRandom, record, runtime, search, nextList, nextTask
+define(['N/crypto/random', 'N/record', 'N/search', '../next-list', '../next-runtime', '../next-task'], (
+    cryptoRandom, record, search, nextList, nextRuntime, nextTask
 ) => {
     /**
      * Defines the function that is executed at the beginning of the map/reduce
@@ -20,21 +27,11 @@ define(['N/crypto/random', 'N/record', 'N/runtime', 'N/search', '../next-list', 
      * @since 2015.2
      */
     function getInputData(inputContext) {
-        const currentScript = runtime.getCurrentScript();
-        const currentMapReduceTaskId = search.create({  // task ID is not known to the task itself, fetch it here
-            type: search.Type.SCHEDULED_SCRIPT_INSTANCE,
-            filters: [
-                ['status', 'anyof', 'PROCESSING',], 'AND',
-                ['script.scriptid', 'is', currentScript.id,], 'AND',
-                ['scriptdeployment.scriptid', 'is', currentScript.deploymentId,],
-            ],
-            columns: ['taskid'],
-        }).run().getRange({ start: 0, end: 1, })?.[0]?.getValue?.('taskid');
-
-        return nextTask.getOpenAsyncTasks().map(jobData => JSON.stringify({  // map status JSON and task ID into values
+        const currentMapReduceTaskId = nextRuntime.getCurrentScheduledTaskId() ?? 'UNKNOWN';
+        return nextTask.getOpenAsyncTasks().map(taskData => JSON.stringify({  // map status JSON and task ID into values
             statusList: JSON.stringify(nextList.load({ id: 'customlist_next_async_task_status', })),
             taskId:     currentMapReduceTaskId,
-            ...jobData,
+            ...taskData,
         }));
     }
 
@@ -57,35 +54,53 @@ define(['N/crypto/random', 'N/record', 'N/runtime', 'N/search', '../next-list', 
      * @since 2015.2
      */
     function map(mapContext) {
-        const jobData = JSON.parse(mapContext.value);
-        const AsyncTaskStatus = nextList.CustomList.fromJSON(jobData.statusList);
+        const taskData = JSON.parse(mapContext.value);
+        const AsyncTaskStatus = nextList.CustomList.fromJSON(taskData.statusList);
         const recordedStatus = AsyncTaskStatus.getByInternalId(search.lookupFields({
             type: 'customrecord_next_async_task',
-            id:   jobData.recordId,
+            id:   taskData.recordId,
             columns: ['custrecord_next_at_status'],
         })?.['custrecord_next_at_status']?.[0]?.value)?.id;
 
         // if function parameters are presumed to be too long for search-based retrieval, retrieve from the record here
-        if (jobData.functionData.paramsTooLong) {
-            jobData.functionData.parameters = JSON.parse(record.load({
-                type: 'customrecord_next_async_task', id: jobData.recordId,
+        if (taskData.functionData.paramsTooLong) {
+            taskData.functionData.parameters = JSON.parse(record.load({
+                type: 'customrecord_next_async_task', id: taskData.recordId,
             }).getValue({ fieldId: 'custrecord_next_at_parameters', }));
         }
 
-        if (recordedStatus === 'next_ats_new') {  // modify this conditional for retry logic
-            // update task record status to "Added to Queue"
-            record.submitFields({
-                type: 'customrecord_next_async_task', id: jobData.recordId,
-                values: {
-                    'custrecord_next_at_status': AsyncTaskStatus.getById('next_ats_queued').internalId,
-                    'custrecord_next_at_task':   jobData.taskId,
-                    'custrecord_next_at_result': '',
-                    'custrecord_next_at_error':  '',
-                },
-            });
+        switch (recordedStatus) {
+            case 'next_ats_new': {
+                // update task record status to "Added to Queue"
+                record.submitFields({
+                    type: 'customrecord_next_async_task', id: taskData.recordId,
+                    values: {
+                        'custrecord_next_at_status': AsyncTaskStatus.getById('next_ats_queued').internalId,
+                        'custrecord_next_at_task':   taskData.taskId,
+                        'custrecord_next_at_result': '',
+                        'custrecord_next_at_error':  '',
+                    },
+                });
 
-            // for batching, modify below key
-            mapContext.write({ key: cryptoRandom.generateUUID(), value: JSON.stringify(jobData), });
+                // for batching, modify below key
+                mapContext.write({ key: cryptoRandom.generateUUID(), value: JSON.stringify(taskData), });
+                break;
+            }
+            case 'next_ats_retrying': {  // add retry logic here if it becomes necessary
+                // update task record status to "Cancelled"
+                record.submitFields({
+                    type: 'customrecord_next_async_task', id: taskData.recordId,
+                    values: {
+                        'custrecord_next_at_status': AsyncTaskStatus.getById('next_ats_cancelled').internalId,
+                        'custrecord_next_at_task':   taskData.taskId,
+                        'custrecord_next_at_result': '',
+                        'custrecord_next_at_error':  '',
+                    },
+                });
+
+                break;
+            }
+            default: {}
         }
     }
 
@@ -95,35 +110,36 @@ define(['N/crypto/random', 'N/record', 'N/runtime', 'N/search', '../next-list', 
      * associated map stage is complete. This function is applied to each group
      * in the provided context.
      *
-     * @param {Object} reduceContext Data collection containing the groups to process in the reduce stage. This parameter is
-     *     provided automatically based on the results of the map stage.
+     * @param {Object} reduceContext Data collection containing the groups to process in the reduce stage. This
+     *     parameter is provided automatically based on the results of the map stage.
      * @param {Iterator} reduceContext.errors Serialized errors that were thrown during previous attempts to execute the
      *     reduce function on the current group
-     * @param {number} reduceContext.executionNo Number of times the reduce function has been executed on the current group
+     * @param {number} reduceContext.executionNo Number of times the reduce function has been executed on the current
+     *     group
      * @param {boolean} reduceContext.isRestarted Indicates whether the current invocation of this function is the first
      *     invocation (if true, the current invocation is not the first invocation and this function has been restarted)
      * @param {string} reduceContext.key Key to be processed during the reduce stage
-     * @param {List<String>} reduceContext.values All values associated with a unique key that was passed to the reduce stage
-     *     for processing
+     * @param {List<String>} reduceContext.values All values associated with a unique key that was passed to the reduce
+     *     stage for processing
      * @since 2015.2
      */
     function reduce(reduceContext) {
-        for (const jobData of reduceContext.values.map(value => JSON.parse(value))) {
-            const AsyncTaskStatus = nextList.CustomList.fromJSON(jobData.statusList);
+        for (const taskData of reduceContext.values.map(value => JSON.parse(value))) {
+            const AsyncTaskStatus = nextList.CustomList.fromJSON(taskData.statusList);
 
             // update task record status to "In Progress"
             record.submitFields({
-                type: 'customrecord_next_async_task', id: jobData.recordId,
+                type: 'customrecord_next_async_task', id: taskData.recordId,
                 values: {
                     'custrecord_next_at_status': AsyncTaskStatus.getById('next_ats_processing').internalId,
-                    'custrecord_next_at_task':   jobData.taskId,
+                    'custrecord_next_at_task':   taskData.taskId,
                     'custrecord_next_at_result': '',
                     'custrecord_next_at_error':  '',
                 },
             });
 
             try {
-                const functionData = jobData.functionData;
+                const functionData = taskData.functionData;
                 // load module, execute function with parameters
                 let _asyncTaskResult;
                 require([functionData.module], asyncTaskModule =>
@@ -135,10 +151,10 @@ define(['N/crypto/random', 'N/record', 'N/runtime', 'N/search', '../next-list', 
 
                 // update task record status to "Complete", record result
                 record.submitFields({
-                    type: 'customrecord_next_async_task', id: jobData.recordId,
+                    type: 'customrecord_next_async_task', id: taskData.recordId,
                     values: {
                         'custrecord_next_at_status': AsyncTaskStatus.getById('next_ats_completed').internalId,
-                        'custrecord_next_at_task':   jobData.taskId,
+                        'custrecord_next_at_task':   taskData.taskId,
                         'custrecord_next_at_result': JSON.stringify(_asyncTaskResult ?? null),
                         'custrecord_next_at_error':  '',
                     },
@@ -146,10 +162,10 @@ define(['N/crypto/random', 'N/record', 'N/runtime', 'N/search', '../next-list', 
             } catch (asyncTaskError) {
                 // update task record status to "Failed"
                 record.submitFields({
-                    type: 'customrecord_next_async_task', id: jobData.recordId,
+                    type: 'customrecord_next_async_task', id: taskData.recordId,
                     values: {
                         'custrecord_next_at_status': AsyncTaskStatus.getById('next_ats_failed').internalId,
-                        'custrecord_next_at_task':   jobData.taskId,
+                        'custrecord_next_at_task':   taskData.taskId,
                         'custrecord_next_at_result': '',
                         'custrecord_next_at_error':
                             JSON.stringify(asyncTaskError, Object.getOwnPropertyNames(asyncTaskError)),
@@ -185,8 +201,13 @@ define(['N/crypto/random', 'N/record', 'N/runtime', 'N/search', '../next-list', 
      */
     function summarize(summaryContext) {
         // attempt re-execution if open tasks found
-        if (nextTask.getOpenAsyncTasks().length > 0) {
+        const openAsyncTasks = nextTask.getOpenAsyncTasks();
+        if (openAsyncTasks.length > 0) {
+            log.audit({ title: 'Tasks Remain',
+                details: `${openAsyncTasks.length} unresolved tasks remain, attempting M/R dispatch`, });
             nextTask.dispatchAsyncTaskProcessor();
+        } else {
+            log.audit({ title: 'All Tasks Resolved', details: 'No open tasks remain, exiting', });
         }
     }
 
