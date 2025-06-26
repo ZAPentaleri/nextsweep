@@ -1,4 +1,4 @@
-# NextSweep &mdash; SuiteScript Shorthand
+# NextSweep &mdash; SuiteScript Shorthand and Utilities
 
 Shorthand and helper methods to reduce SuiteScript boilerplate.
 
@@ -8,7 +8,21 @@ Shorthand and helper methods to reduce SuiteScript boilerplate.
 
 ***
 
-## NextClient (next-client.js)
+# Utilities
+
+## Next &gt;&gt; Mass PDF Utility
+
+A utility for mass-downloading PDF renders for transactions.
+
+***
+
+# Utilities
+
+## Next &gt;&gt; Mass PDF Utility
+
+***
+
+## NextClient Module (next-client.js)
 
 Client-supporting helper methods.
 
@@ -22,7 +36,7 @@ require(['SuiteScripts/NextSweep/next-client'], nextClient => {
 
 ***
 
-## NextFile (next-file.js)
+## NextFile Module (next-file.js)
 
 File management methods.
 
@@ -36,7 +50,7 @@ require(['SuiteScripts/NextSweep/next-file'], nextFile => {
 
 ***
 
-## NextList (next-list.js)
+## NextList Module (next-list.js)
 
 Custom List mapping methods.
 
@@ -50,7 +64,7 @@ require(['SuiteScripts/NextSweep/next-list'], nextList => {
 
 ***
 
-## NextRecord (next-record.js)
+## NextRecord Module (next-record.js)
 
 Record management methods.
 
@@ -64,7 +78,7 @@ require(['SuiteScripts/NextSweep/next-record'], nextRecord => {
 
 ***
 
-## NextRuntime (next-runtime.js)
+## NextRuntime Module (next-runtime.js)
 
 Runtime data retrieval methods.
 
@@ -78,7 +92,7 @@ require(['SuiteScripts/NextSweep/next-runtime'], nextRuntime => {
 
 ***
 
-## NextTask (next-task.js)
+## NextTask Module (next-task.js)
 
 Asynchronous Task methods.
 

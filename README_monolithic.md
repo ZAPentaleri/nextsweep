@@ -1,10 +1,49 @@
-# NextSweep &mdash; SuiteScript Shorthand
+# NextSweep &mdash; SuiteScript Shorthand and Utilities
 
 Shorthand and helper methods to reduce SuiteScript boilerplate.
 
 ***
 
-# NextClient (next-client.js)
+# Utilities
+
+## Next &gt;&gt; Mass PDF Utility
+
+A utility for mass-downloading PDF renders for transactions.
+
+### Location
+
+Script ID: `customscript_next_mass_pdf_render_sl`
+
+Deployment ID: `customdeploy_next_mass_pdf_render_sl`
+
+### Prerequisites
+
+One or more Transaction Saved Searches which should appear in the application
+should be created, named in the format
+**"[MASS PDF] &lt;your chosen name&gt;"**. The application searches for
+transaction searches with that prefix only &mdash; searches may not be added
+through any other means.
+
+### Usage Steps
+
+1. Select 1-5 searches
+2. (Optional) Input your desired file cabinet folder path for render storage
+3. (Optional) Select your desired number of PDFs to be saved to each downloaded .ZIP archive
+4. Click the "GO!" submit button
+5. View the search result preview and render queue to ensure the expected data was retrieved
+6. Click the "Render to FC" OR the "Download" button. "Render to FC" renders the PDFs and saves them to the file cabinet only, while "Download" both renders the PDFs and downloads them
+
+Renders occur asynchronously via a Map/Reduce script; exiting the Suitelet will
+not terminate rendering. Exercise caution that the mass render you request is
+the one you want.
+
+A maximum of 10000 (ten thousand) PDFs will be rendered per request. Take care
+that your PC does not go to sleep during long-lived download-renders, as
+unexpected client behavior may arise (the server will not be affected).
+
+***
+
+# NextClient Module (next-client.js)
 
 Client-supporting helper methods.
 
@@ -68,7 +107,7 @@ A sanitized string
 
 ***
 
-# NextFile (next-file.js)
+# NextFile Module (next-file.js)
 
 File management methods.
 
@@ -505,7 +544,7 @@ or it doesn't exist
 
 ***
 
-# NextList (next-list.js)
+# NextList Module (next-list.js)
 
 Custom List mapping methods.
 
@@ -584,7 +623,7 @@ A CustomList instance
 
 ***
 
-# NextRecord (next-record.js)
+# NextRecord Module (next-record.js)
 
 Record management methods.
 
@@ -840,7 +879,7 @@ Record ID or Record instance (if `flags.noSave` is set)
 
 ***
 
-# NextRuntime (next-runtime.js)
+# NextRuntime Module (next-runtime.js)
 
 Runtime data retrieval methods.
 
@@ -868,7 +907,7 @@ A native Task ID
 
 ***
 
-# NextTask (next-task.js)
+# NextTask Module (next-task.js)
 
 Asynchronous Task methods.
 
@@ -895,6 +934,26 @@ Encapsulates an Asynchronous Task result
 | `status` | string | Task status human-readable ID                                                                    |
 | `result` |  any   | Task result (the value returned by the requested function)                                       |
 | `error`  | object | Task error (a serialized representation of the error that caused the function execution to fail) |
+
+## PdfTaskResult
+
+Encapsulates an Asynchronous Task result
+
+|        Key         |     Type     | Description                                                                                  |
+|:------------------:|:------------:|:---------------------------------------------------------------------------------------------|
+|        `id`        |    string    | PDF Render Task record ID                                                                    |
+|      `status`      |    string    | Task status human-readable ID                                                                |
+|      `folder`      |    string    | Render output folder ID                                                                      |
+|      `staged`      | object array | An array of staged record data objects                                                       |
+|  `staged[*].type`  |    string    | Staged record render type                                                                    |
+|   `staged[*].id`   |    string    | Staged record ID                                                                             |
+|  `staged[*].name`  |    string    | Staged record render file name                                                               |
+|     `rendered`     | object array | An array of rendered record data objects                                                     |
+| `rendered[*].type` |    string    | Rendered record render type                                                                  |
+|  `rendered[*].id`  |    string    | Rendered record ID                                                                           |
+| `rendered[*].name` |    string    | Rendered record render file name                                                             |
+| `rendered[*].file` |    string    | Rendered record render file ID                                                               |
+|      `error`       |    object    | Task error (a serialized representation of the error that caused the task execution to fail) |
 
 # Functions
 
