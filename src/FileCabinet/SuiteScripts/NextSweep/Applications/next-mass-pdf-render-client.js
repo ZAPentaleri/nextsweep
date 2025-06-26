@@ -166,11 +166,12 @@ define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client',
                         break;
                     }
                     case 'lookupSearches': {
+                        const requestedSearchIds = [].concat(param[1]).slice(0,5);
                         const selectedElem = document.querySelector('#nmpr-pseudoselect-selected-searches');
                         const currentSearchIds = this.parameters.lookupSearches;
-                        const addedSearchIds = new Set(param[1].filter(sId =>
+                        const addedSearchIds = new Set(requestedSearchIds.filter(sId =>
                             this.#SearchOptions.sortSearches.includes(sId) && !currentSearchIds.includes(sId)));
-                        const removedSearchIds = currentSearchIds.filter(sId => !param[1].includes(sId));
+                        const removedSearchIds = currentSearchIds.filter(sId => !requestedSearchIds.includes(sId));
 
                         for (const searchID of removedSearchIds)
                             selectedElem.querySelector(`[data-search="${searchID}"]`)?.remove();
