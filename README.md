@@ -8,6 +8,20 @@ Shorthand and helper methods to reduce SuiteScript boilerplate.
 
 ***
 
+## NextClient (next-client.js)
+
+Client-supporting helper methods.
+
+### Module import
+
+```
+require(['SuiteScripts/NextSweep/next-client'], nextClient => {
+    // your code here
+});
+```
+
+***
+
 ## NextFile (next-file.js)
 
 File management methods.
@@ -44,6 +58,20 @@ Record management methods.
 
 ```
 require(['SuiteScripts/NextSweep/next-record'], nextRecord => {
+    // your code here
+});
+```
+
+***
+
+## NextRuntime (next-runtime.js)
+
+Runtime data methods.
+
+### Module import
+
+```
+require(['SuiteScripts/NextSweep/next-runtime'], nextRuntime => {
     // your code here
 });
 ```
