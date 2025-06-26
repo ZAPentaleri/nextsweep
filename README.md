@@ -66,7 +66,7 @@ require(['SuiteScripts/NextSweep/next-record'], nextRecord => {
 
 ## NextRuntime (next-runtime.js)
 
-Runtime data methods.
+Runtime data retrieval methods.
 
 ### Module import
 
