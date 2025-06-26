@@ -587,6 +587,7 @@ define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client',
         if (!getForm().renderInProgress && stagedRecords.some(recordData => !recordData.rendered)) {
             renderPdfs();
             do { await new Promise(resolve => setTimeout(resolve, 250)); } while (getForm().renderInitiating)
+            if (!getForm().renderInProgress) return;
         }
 
         const wakelock = await navigator.wakeLock.request();
