@@ -71,10 +71,10 @@ define(['N/url'], (url) => {
         ).then(response => {
             if (response.ok) {
                 const contentType = response.headers.get('content-type');
-                if (contentType?.includes?.('application/json') || options?.responseType?.toUpperCase() === 'json') {
+                if (contentType?.includes?.('application/json') || options?.responseType?.toUpperCase() === 'JSON') {
                     return response.text().then(responseText => JSON.parse(cleanServerResponse(responseText)));
                 } else if (contentType?.includes?.('application/pdf') || contentType?.includes?.('image/')
-                    || options?.responseType === 'blob') {
+                    || options?.responseType?.toUpperCase() === 'BLOB') {
                     return response.blob();
                 } else {
                     return response.text();
