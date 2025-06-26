@@ -115,7 +115,7 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/search', './next-file', './
     }
 
     /**
-     * Gets certain data about open Asynchronous Tasks
+     * Gets an array of data concerning open Asynchronous Tasks
      *
      * @returns {{
      *     recordId: string, status: string,
@@ -224,7 +224,8 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/search', './next-file', './
     }
 
     /**
-     *
+     * Dispatches the PDF Task processor. You do not need to call this function
+     * directly, it happens automatically
      */
     function dispatchPdfTaskProcessor() {
         try {
@@ -240,6 +241,7 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/search', './next-file', './
     }
 
     /**
+     * Gets an array of data concerning open PDF Render Tasks
      *
      * @returns {{recordId: string, status: string, folder: string, config: object}[]}
      */

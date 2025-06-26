@@ -65,7 +65,7 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
     }
 
     /**
-     * Sanitizes commonly illegal characters from the passed file name
+     * Sanitizes commonly illegal characters from a passed file name
      *
      * @param {string} fileName
      * @returns {string}

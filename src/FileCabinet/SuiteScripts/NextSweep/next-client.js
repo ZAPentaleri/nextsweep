@@ -4,6 +4,14 @@
 define(['N/url'], (url) => {
     const _scriptUrlCache = {};
 
+    /**
+     * Resolves a script URL by Script ID and Deployment ID
+     *
+     * @param {object} options
+     * @param {string} options.scriptId
+     * @param {string} options.deploymentId
+     * @returns {*|String}
+     */
     function resolveScript(options) {
         const scriptKey = `${options.scriptId}_${options.deploymentId}`;
         if (_scriptUrlCache.hasOwnProperty(scriptKey))
@@ -14,7 +22,8 @@ define(['N/url'], (url) => {
     }
 
     /**
-     * Makes a network request to a Suitelet
+     * Makes a network request to a Suitelet, returning a JSON, blob, or string
+     * response.
      *
      * @param {object} options
      * @param {string} [options.url] The URL to request
@@ -90,6 +99,14 @@ define(['N/url'], (url) => {
         return reversedContent.split(/(?:)/u).reverse().join('');
     }
 
+    /**
+     * Escapes various symbols with syntactic meaning HTML for the purpose of
+     * inserting the resultant strings into the DOM
+     *
+     * @param {string} unescaped The unescaped input string
+     * @param {boolean} convertLineBreaks Whether to convert line breaks to <br> elements, or leave them in place
+     * @returns {string}
+     */
     function escapeHtml(unescaped, convertLineBreaks=false) {
         const escaped = `${unescaped}`.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
