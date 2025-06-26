@@ -79,9 +79,6 @@
         padding: 2px 0;
         font-weight: bold;
     }
-    #nmpr-container select {
-        border-color: gray;
-    }
     #nmpr-container button {
         border-radius: 4px;
         white-space: nowrap;
@@ -90,12 +87,28 @@
     #nmpr-container button,
     #nmpr-container select,
     .nmpr-pseudoselect-option {
-        border: 1px solid gray;
+        border: 1px solid gray !important;
+        color: black !important;
+    }
+    #nmpr-container input:disabled,
+    #nmpr-container button:disabled,
+    #nmpr-container select:disabled,
+    .nmpr-pseudoselect-option:disabled {
+        background-color: gainsboro !important;
+        color: gray !important;
+    }
+    #nmpr-container input:not(:disabled):hover,
+    #nmpr-container button:not(:disabled):hover,
+    #nmpr-container select:not(:disabled):hover,
+    .nmpr-pseudoselect-option:not(:disabled):hover {
+        border-color: black !important;
     }
     #nmpr-container input:active,
     #nmpr-container input:focus,
     #nmpr-container button:active,
     #nmpr-container button:focus,
+    #nmpr-container select:active,
+    #nmpr-container select:focus,
     .nmpr-pseudoselect-option:active,
     .nmpr-pseudoselect-option:focus {
         border-color: #408FDB !important;
