@@ -89,15 +89,11 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/render', 'N/search',
             columns: ['custrecord_next_pr_status'],
         })?.['custrecord_next_pr_status']?.[0]?.value)?.id;
 
-        log.debug({ title: 'taskData1', details: JSON.stringify(taskData), });
-
         const pdfTaskRecord = record.load({ type: 'customrecord_next_pdf_render_task', id: taskData.recordId, });
         taskData.staged =
             JSON.parse(pdfTaskRecord.getValue({ fieldId: 'custrecord_next_pr_staged_records', }) || '[]');
         taskData.rendered =
             JSON.parse(pdfTaskRecord.getValue({ fieldId: 'custrecord_next_pr_rendered_records', }) || '[]');
-
-        log.debug({ title: 'taskData2', details: JSON.stringify(taskData), });
 
         const renderedMap = taskData.rendered.reduce((accumulator, recMapping) => {
             if (!accumulator.hasOwnProperty(recMapping.type)) accumulator[recMapping.type] = [];
@@ -106,8 +102,6 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/render', 'N/search',
         }, {},);
         taskData.pending =
             taskData.staged.filter(recMapping => !renderedMap[recMapping.type]?.includes?.(recMapping.id));
-
-        log.debug({ title: 'taskData3', details: JSON.stringify(taskData), });
 
         switch (recordedStatus) {
             case 'next_ats_new':
@@ -126,8 +120,6 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/render', 'N/search',
                 return;
             }
         }
-
-        log.debug({ title: 'taskData4', details: JSON.stringify(taskData), });
 
         for (let pendingIndex = 0; pendingIndex < taskData.pending.length; pendingIndex += RENDERS_PER_REDUCE) {
             mapContext.write({ key: cryptoRandom.generateUUID(), value: JSON.stringify({
@@ -158,8 +150,6 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/render', 'N/search',
      */
     function reduce(reduceContext) {
         for (const taskData of reduceContext.values.map(value => JSON.parse(value))) {
-            log.debug({ title: 'taskData', details: JSON.stringify(taskData), });
-
             const newRendered = [];
             for (const assignedMapping of taskData.assigned) {
                 try {
@@ -190,9 +180,6 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/render', 'N/search',
                         details: JSON.stringify(pdfTaskError, Object.getOwnPropertyNames(pdfTaskError)), });
                 }
             }
-
-            log.debug({ title: 'taskData.recordId', details: taskData.recordId, });
-            log.debug({ title: 'newRendered', details: JSON.stringify(newRendered), });
 
             // this write() call DOES NOT behave the same as the one in map(); map() collates writes by key, reduce()
             // does not. Why? I have no earthly idea
@@ -241,8 +228,7 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/render', 'N/search',
         });
 
         for (const newRenderMap of Object.values(newRenderMapMap)) {
-            log.debug({ title: 'recordId', details: newRenderMap.recordId, });
-            log.debug({ title: 'rendered', details: newRenderMap.rendered, });
+            log.debug({ title: 'newRenderMap.recordId', details: newRenderMap.recordId, });
             if (newRenderMap.rendered.length > 0) {
                 updateTaskRecordRendered(newRenderMap.recordId, newRenderMap.rendered,);
             } else {
