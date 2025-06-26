@@ -143,7 +143,7 @@
     }
     #nmpr-pane-input {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr 1fr min-content;
         grid-template-rows: min-content auto repeat(2, min-content);
         grid-gap: 4px 8px;
         height: 25vh;
@@ -174,7 +174,7 @@
         text-transform: uppercase;
     }
     #nmpr-pane-division-misc  {
-        grid-column: 1 / -1;
+        grid-column: 1 / -2;
         grid-row: 3;
         display: grid;
         grid-template-columns: min-content auto;
@@ -188,11 +188,14 @@
         background-color: whitesmoke;
     }
     #nmpr-button-search {
-        grid-column: 1 / -1;
-        grid-row: 4;
-        line-height: 20px;
+        grid-column: 3;
+        grid-row: 1 / -2;
         font-size: 20px;
         font-weight: bold;
+        writing-mode: vertical-lr;
+    }
+    #nmpr-button-search span {
+        writing-mode: horizontal-tb;
     }
     #nmpr-pane-searches {
         overflow: scroll;
@@ -373,7 +376,9 @@
                     <option value="100" selected>Up to 100</option>
                 </select>
             </div>
-            <button type="button" id="nmpr-button-search" aria-label="Submit" disabled>GO&#x1f872;</button>
+            <button type="button" id="nmpr-button-search" aria-label="Submit" disabled>
+                <span>&#x1f876;</span>&nbsp;GO!&nbsp;<span>&#x1f876;</span>
+            </button>
         </div>
         <h2>
             Saved Search Result Preview
