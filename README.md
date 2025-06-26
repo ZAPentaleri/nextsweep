@@ -14,6 +14,9 @@ Shorthand and helper methods to reduce SuiteScript boilerplate.
 
 A utility for mass-downloading PDF renders for transactions.
 
+Script ID: `customscript_next_mass_pdf_render_sl`  
+Deployment ID: `customdeploy_next_mass_pdf_render_sl`
+
 ***
 
 ## Next &gt;&gt; Mass PDF Utility
