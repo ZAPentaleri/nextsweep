@@ -244,11 +244,13 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/render', 'N/search',
         }
 
         // attempt re-execution if open tasks found
-        if (nextTask.getOpenPdfTasks().length > 0) {
-            log.debug({ title: 'Tasks Remain', details: 'Unresolved tasks remain, attempting M/R dispatch', });
-            // nextTask.dispatchPdfTaskProcessor();
+        const openPdfTasks = nextTask.getOpenPdfTasks();
+        if (openPdfTasks.length > 0) {
+            log.audit({ title: 'Tasks Remain',
+                details: `${openPdfTasks.length} unresolved tasks remain, attempting M/R dispatch`, });
+            nextTask.dispatchPdfTaskProcessor();
         } else {
-            log.debug({ title: 'All Tasks Resolved', details: 'No open tasks remain, exiting', });
+            log.audit({ title: 'All Tasks Resolved', details: 'No open tasks remain, exiting', });
         }
     }
 

@@ -2,7 +2,7 @@
  * @NApiVersion 2.1
  * @NScriptType ScheduledScript
  */
-define(['N/task'], (task) => {
+define(['N/task', 'N/runtime'], (task, runtime) => {
     /**
      * Defines the Scheduled script trigger point.
      * @param {Object} scriptContext
@@ -11,6 +11,7 @@ define(['N/task'], (task) => {
      * @since 2015.2
      */
     function execute(scriptContext) {
+        const currentScript = runtime.getCurrentScript();
         try {
             // this WILL FAIL if the script is already running -- this a feature, not a bug.
             // we only *want* one execution to take place at a time
@@ -19,8 +20,11 @@ define(['N/task'], (task) => {
                 scriptId: 'customscript_next_pdf_task_process_mr',
                 deploymentId: 'customdeploy_next_pdf_task_process_mr',
             }).submit();
-        } catch {
-            // do nothing
+            log.audit({ title: 'Initiated Map/Reduce', details: `${currentScript.id}.${currentScript.deploymentId}`, });
+        } catch (submitError) {
+            log.audit({ title: 'Could not Initiate Map/Reduce',
+                details: `${currentScript.id}.${currentScript.deploymentId} : ${
+                    JSON.stringify(submitError, Object.getOwnPropertyNames(submitError))}` });
         }
     }
 
