@@ -92,6 +92,13 @@ require(['SuiteScripts/NextSweep/next-record'], nextRecord => {
 
 ***
 
+## External Library Attribution
+
+JSZip is included in this repository under the provisions of the MIT license.
+See `jszip.min.js` for details.
+
+***
+
 ```
       __________ _ _____    ___
       \____   // ||   _  \  \  \
