@@ -6,16 +6,19 @@ Shorthand and helper methods to reduce SuiteScript boilerplate.
 
 # Utilities
 
-## Next &gt;&gt; Mass PDF Utility
+Suitelets that offer a convenient interface for normally inconvenient or tedious
+operation.
+
+# Next &gt;&gt; Mass PDF Utility
 
 A utility for mass-downloading PDF renders for transactions.
 
-### Location
+## Location
 
 Script ID: `customscript_next_mass_pdf_render_sl`  
 Deployment ID: `customdeploy_next_mass_pdf_render_sl`
 
-### Prerequisites
+## Prerequisites
 
 One or more Transaction Saved Searches which should appear in the application
 should be created, named in the format
@@ -23,7 +26,7 @@ should be created, named in the format
 transaction searches with that prefix only &mdash; searches may not be added
 through any other means.
 
-### Usage Steps
+## Usage Steps
 
 1. Select 1-5 searches
 2. (Optional) Input your desired file cabinet folder path for render storage
@@ -49,7 +52,7 @@ Client-supporting helper methods.
 ## Module import
 
 ```
-require(['SuiteScripts/NextSweep/next-client'], nextRuntime => {
+require(['SuiteScripts/NextSweep/next-client'], nextClient => {
     // your code here
 });
 ```
@@ -1055,7 +1058,7 @@ Gets the result and/or status of a PDF Render Task by ID.
 
 ### Returns
 
-An PdfTaskResult instance
+A PdfTaskResult instance
 
 ***
 
