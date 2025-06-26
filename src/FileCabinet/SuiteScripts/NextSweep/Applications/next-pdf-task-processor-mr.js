@@ -164,12 +164,6 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/render', 'N/search',
                     const pdfName = nextFile.sanitizeFileName(
                         `${assignedMapping.name ?? (assignedMapping.type + '_' + assignedMapping.id)}.pdf`);
 
-                    try {
-                        nextFile.delete({ folder: taskData.folder, name: pdfName, });
-                    } catch {
-                        // if delete fails, that just means the file didn't need to be deleted
-                    }
-
                     // add logic here to leverage taskData.configuration
                     let renderer = null;
                     switch (assignedMapping.type) {
