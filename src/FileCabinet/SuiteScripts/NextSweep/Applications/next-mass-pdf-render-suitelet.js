@@ -33,7 +33,7 @@ define(['N/error', 'N/https', 'N/log', 'N/search', 'N/task', 'N/ui/serverWidget'
     function onRequest(scriptContext) {
         if ( scriptContext.request.method === 'GET' ) {
             // create form
-            let renderForm = uiServerWidget.createForm({ title: 'NextSweep >> Mass PDF', });
+            let renderForm = uiServerWidget.createForm({ title: 'NextSweep >> Mass PDF Utility', });
 
             // create fields
             let interfaceField = renderForm.addField({
