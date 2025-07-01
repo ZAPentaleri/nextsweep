@@ -60,8 +60,8 @@ h1.next-style {
 h2.next-style {
     font-size: 16px;
 }
-.next-base h2,
-h2.next-style {
+.next-base h3,
+h3.next-style {
     font-size: 12px;
 }
 table.next-table {
