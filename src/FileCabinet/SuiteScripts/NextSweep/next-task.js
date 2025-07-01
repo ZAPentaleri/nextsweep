@@ -144,6 +144,8 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/search', './next-file', './
             const paramsString = taskResult.getValue('custrecord_next_at_parameters');
             const noParams = paramsString === NO_PARAMS_STRING;  // check against magic string that signifies no params
             const paramsTooLongForSearch = paramsString.length >= 4000;  // searches can only return 4000 bytes of text
+            //TODO: evaluate above behavior; 4000 byte limit is not properly handled, but limit might not exist at all.
+            // It is documented in official NS documentation, but I haven't observed it in a live environment
 
             return {
                 recordId: taskResult.id,
