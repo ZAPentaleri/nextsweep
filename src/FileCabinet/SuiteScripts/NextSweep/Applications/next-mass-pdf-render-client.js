@@ -107,10 +107,10 @@ define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client',
             let queries = [];
             for (const statusName of [].concat(statusNames)) {
                 if (recordId === null) {
-                    queries.push(`#nmpr-table-queue .nmpr-status-box.nmpr-${statusName}`);
+                    queries.push(`#nmpr-table-queue .next-status-box.nmpr-${statusName}`);
                 } else {
                     queries.push(`#nmpr-table-queue tr[data-type="${recordType}"][data-record="${recordId}"] `
-                        + `.nmpr-status-box.nmpr-${statusName}`);
+                        + `.next-status-box.nmpr-${statusName}`);
                 }
             }
 
@@ -376,7 +376,7 @@ define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client',
         if (recordResponse.sortRecords.length === 0) {
             await uiDialog.alert({ title: 'Lookup error', message: 'Matching records were not found.', });
 
-            getForm().updateSearchStatus('ready');
+            getForm().updateSearchStatus('staged');
             getForm().searchInProgress = false;
 
             return;
@@ -400,7 +400,7 @@ define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client',
                 `<option value="${searchID}">${getForm().stagedRender.results[searchID].title}</option>`,);
 
             document.querySelector('#nmpr-pane-searches').insertAdjacentHTML('beforeend',
-                `<table class="nmpr-data-table nmpr-table-search" data-search="${searchID}" data-hidden="${
+                `<table class="next-table nmpr-table-search" data-search="${searchID}" data-hidden="${
                 searchIndex > 0 ? 'hidden' : ''}"><thead><tr></tr></thead><tbody></tbody></table>`,);
 
             const searchTableHeaderRowElem =
@@ -446,9 +446,9 @@ define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client',
                         ${nextClient.escapeHtml(recordData.entity ?? 'NULL')}</td>
                     <td>${recordData.date}</td>
                     <td>${recordData.fileName}</td>
-                    <td><span class="nmpr-status-box nmpr-rendered" data-state="staged"></span></td>
-                    <td><span class="nmpr-status-box nmpr-cached" data-state="staged"></span></td>
-                    <td><span class="nmpr-status-box nmpr-downloaded" data-state="staged"></span></td>
+                    <td><span class="next-status-box nmpr-rendered" data-state="staged"></span></td>
+                    <td><span class="next-status-box nmpr-cached" data-state="staged"></span></td>
+                    <td><span class="next-status-box nmpr-downloaded" data-state="staged"></span></td>
                 </tr>`,
             );
         }
@@ -462,7 +462,7 @@ define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client',
             );
         }
 
-        getForm().updateSearchStatus('ready');
+        getForm().updateSearchStatus('staged');
         getForm().updateQueueStatusMessage('Records staged.');
         getForm().updateSearchResultCount(totalRecords);
         getForm().searchInProgress = false;

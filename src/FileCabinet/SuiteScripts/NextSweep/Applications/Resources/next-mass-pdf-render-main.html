@@ -8,67 +8,6 @@
 
 -->
 <style>
-    .nmpr-data-table {}
-    .nmpr-data-table {
-        border-collapse: separate;
-        border-spacing: 0;
-    }
-    .nmpr-data-table thead {
-        position: sticky;
-        top: 0;
-        z-index: 1;
-    }
-    .nmpr-data-table th,
-    .nmpr-data-table td {
-        padding: 3px 6px;
-        border-bottom: 1px solid gray;
-        border-left: 1px solid gray;
-    }
-    .nmpr-data-table tr:first-child th {
-        border-top: 1px solid gray;
-    }
-    .nmpr-data-table th:last-child,
-    .nmpr-data-table td:last-child {
-        border-right: 1px solid gray;
-    }
-    .nmpr-data-table th {
-        background-color: lightsteelblue;
-        font-weight: bold;
-    }
-    .nmpr-status-box {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 16px;
-        height: 16px;
-        margin: 0 1px;
-    }
-    .nmpr-status-box::after {
-        display: block;
-        font-size: 16px;
-    }
-    .nmpr-status-box[data-state="pending"]::after {
-        content: "\25dd";
-        color: darkslateblue;
-        animation: nmpr-status-box-spin 1s linear infinite;
-    }
-    .nmpr-status-box[data-state="complete"]::after {
-        content: "\25ef";
-        color: green;
-        transform: scale(115%);
-    }
-    .nmpr-status-box[data-state="failed"]::after {
-        content: "\2715";
-        color: firebrick;
-        transform: scale(130%);
-    }
-    @keyframes nmpr-status-box-spin {
-        0%   { transform: scale(115%) rotate(0deg); }
-        100% { transform: scale(115%) rotate(360deg); }
-    }
-    input.nmpr-control {
-        display: none;
-    }
     #nmpr-container {
         display: flex;
         flex-direction: row;
@@ -80,68 +19,6 @@
     }
     #nmpr-container label {
         white-space: nowrap;
-    }
-    #nmpr-container input {
-        padding: 4px 6px;
-    }
-    #nmpr-container output {
-        padding: 2px 0;
-        font-weight: bold;
-    }
-    #nmpr-container button {
-        border-radius: 4px;
-        white-space: nowrap;
-    }
-    #nmpr-container input,
-    #nmpr-container button,
-    #nmpr-container select,
-    .nmpr-pseudoselect-option {
-        border: 1px solid gray !important;
-        color: black !important;
-    }
-    #nmpr-container input:disabled,
-    #nmpr-container button:disabled,
-    #nmpr-container select:disabled,
-    .nmpr-pseudoselect-option:disabled {
-        background-color: gainsboro !important;
-        color: gray !important;
-    }
-    #nmpr-container input:not(:disabled):hover,
-    #nmpr-container button:not(:disabled):hover,
-    #nmpr-container select:not(:disabled):hover,
-    .nmpr-pseudoselect-option:not(:disabled):hover {
-        border-color: black !important;
-    }
-    #nmpr-container input:active,
-    #nmpr-container input:focus,
-    #nmpr-container button:active,
-    #nmpr-container button:focus,
-    #nmpr-container select:active,
-    #nmpr-container select:focus,
-    .nmpr-pseudoselect-option:active,
-    .nmpr-pseudoselect-option:focus {
-        border-color: #408FDB !important;
-        box-shadow: 0 0 2px 2px rgba(64, 143, 219, 0.75);
-    }
-    #nmpr-container h2 {
-        margin: 14px 0 0 0;
-        font-size: 16px;
-        text-transform: uppercase;
-    }
-    #nmpr-container .nmpr-external {
-        display: inline-block;
-        width: 12px;
-        border-bottom: 2px solid lightslategray;
-        border-left: 2px solid lightslategray;
-        border-bottom-left-radius: 3px;
-        transform: translateY(-2px);
-    }
-    #nmpr-container .nmpr-external::after {
-        content: "\1f875";
-        display: block;
-        font-size: 7px;
-        color: lightslategray;
-        transform: scale(1.25) translateY(-1px);
     }
     #nmpr-pane-left {
         display: grid;
@@ -284,24 +161,7 @@
         font-style: italic;
         text-transform: none;
     }
-    .nmpr-loader {
-        display: flex;
-        justify-content: start;
-        height: 20px;
-        border: 1px solid rebeccapurple;
-    }
-    .nmpr-loader > span {
-        background-color: rebeccapurple;
-        display: block;
-        height: 100%;
-        font-size: 12px;
-        color: plum;
-    }
-    .nmpr-loader > span[data-progressannotation]::after {
-        padding: 0 4px;
-        content: attr(data-progressannotation);
-    }
-    #nmpr-widget-render-loader { border-color: firebrick; }
+    #nmpr-widget-render-loader { border-color: darkred; }
     #nmpr-widget-render-loader > span {
         background-color: darkred;
         color: pink;
@@ -365,7 +225,7 @@
         height: 64px;
     }
 </style>
-<div id="nmpr-container">
+<div id="nmpr-container" class="next-base">
     <div id="nmpr-pane-left">
         <div id="nmpr-pane-input">
             <label>Available Searches</label>
@@ -391,7 +251,7 @@
         </div>
         <h2>
             Saved Search Result Preview
-            <span class="nmpr-status-box" id="nmpr-status-search" data-state="staged"></span>
+            <span class="next-status-box" id="nmpr-status-search" data-state="staged"></span>
         </h2>
         <select id="nmpr-select-search"></select>
         <div id="nmpr-pane-searches"></div>
@@ -413,11 +273,11 @@
         </div>
         <div id="nmpr-pane-loaders">
             <label>Rendering</label>
-            <div class="nmpr-loader" id="nmpr-widget-render-loader"><span id="nmpr-widget-render-bar"></span></div>
+            <div class="next-loader-bar" id="nmpr-widget-render-loader"><span id="nmpr-widget-render-bar"></span></div>
             <label>Caching</label>
-            <div class="nmpr-loader" id="nmpr-widget-cache-loader"><span id="nmpr-widget-cache-bar"></span></div>
+            <div class="next-loader-bar" id="nmpr-widget-cache-loader"><span id="nmpr-widget-cache-bar"></span></div>
             <label>Downloading</label>
-            <div class="nmpr-loader" id="nmpr-widget-download-loader"><span id="nmpr-widget-download-bar"></span></div>
+            <div class="next-loader-bar" id="nmpr-widget-download-loader"><span id="nmpr-widget-download-bar"></span></div>
             <label>Status</label>
             <label id="nmpr-widget-download-status"></label>
         </div>
@@ -430,7 +290,7 @@
             </div>
         </div>
         <div id="nmpr-pane-queue">
-            <table class="nmpr-data-table" id="nmpr-table-queue">
+            <table class="next-table" id="nmpr-table-queue">
                 <thead>
                 <tr>
                     <th>Type</th>

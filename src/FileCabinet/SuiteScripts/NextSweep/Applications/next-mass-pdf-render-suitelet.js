@@ -41,9 +41,11 @@ define(['N/error', 'N/https', 'N/log', 'N/search', 'N/task', 'N/ui/serverWidget'
                 type: uiServerWidget.FieldType.INLINEHTML,
                 label: 'Main',
             });
-            interfaceField.defaultValue = nextFile.load({
+            interfaceField.defaultValue = `<style>${nextFile.load({
+                path: 'SuiteScripts/NextSweep/Applications/Resources/next-base.css',
+            }).getContents()}</style>${nextFile.load({
                 path: 'SuiteScripts/NextSweep/Applications/Resources/next-mass-pdf-render-main.html',
-            }).getContents();
+            }).getContents()}`;
 
             // add client script
             renderForm.clientScriptModulePath = './next-mass-pdf-render-client.js';
