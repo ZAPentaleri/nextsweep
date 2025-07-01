@@ -59,6 +59,22 @@
         font-weight: bold;
         text-transform: uppercase;
     }
+    .nmpr-pseudoselect-option {
+        border: 1px solid gray !important;
+        color: black !important;
+    }
+    .nmpr-pseudoselect-option:disabled {
+        background-color: gainsboro !important;
+        color: gray !important;
+    }
+    .nmpr-pseudoselect-option:not(:disabled):hover {
+        border-color: black !important;
+    }
+    .nmpr-pseudoselect-option:active,
+    .nmpr-pseudoselect-option:focus {
+        border-color: #408FDB !important;
+        box-shadow: 0 0 2px 2px rgba(64, 143, 219, 0.75);
+    }
     #nmpr-pane-division-misc  {
         grid-column: 1 / -2;
         grid-row: 3;
