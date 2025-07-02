@@ -9,9 +9,10 @@
  * @NApiVersion 2.1
  * @NScriptType Suitelet
  */
-define(['N/error', 'N/https', 'N/log', 'N/search', 'N/task', 'N/ui/serverWidget', '../next-file', '../next-list',
-    '../next-task',], (
-    error, https, log, search, task, uiServerWidget, nextFile, nextList, nextTask
+define(['N/error', 'N/https', 'N/log', 'N/search', 'N/task', '../next-file', '../next-list', '../next-task',
+    '../next-ui-server',
+], (
+    error, https, log, search, task, nextFile, nextList, nextTask, nextUiServer
 ) => {
     const SEARCH_PAGE_SIZE = 1000;
     const RECORD_SEARCH_COMBINE_MAX = 5;  // max searches to combine
@@ -32,26 +33,13 @@ define(['N/error', 'N/https', 'N/log', 'N/search', 'N/task', 'N/ui/serverWidget'
 
     function onRequest(scriptContext) {
         if ( scriptContext.request.method === 'GET' ) {
-            // create form
-            let renderForm = uiServerWidget.createForm({ title: 'NextSweep >> Mass PDF Utility', });
-
-            // create fields
-            let interfaceField = renderForm.addField({
-                id: 'interface_container',
-                type: uiServerWidget.FieldType.INLINEHTML,
-                label: 'Main',
-            });
-            interfaceField.defaultValue = `<style>${nextFile.load({
-                path: 'SuiteScripts/NextSweep/Applications/Resources/next-base.css',
-            }).getContents()}</style>${nextFile.load({
-                path: 'SuiteScripts/NextSweep/Applications/Resources/next-mass-pdf-render-main.html',
-            }).getContents()}`;
-
-            // add client script
-            renderForm.clientScriptModulePath = './next-mass-pdf-render-client.js';
-
-            // return response
-            scriptContext.response.writePage(renderForm);
+            // return form
+            scriptContext.response.writePage(nextUiServer.createHtmlForm({
+                title: 'NextSweep >> Mass PDF Utility',
+                documentPath: 'SuiteScripts/NextSweep/Applications/Resources/next-mass-pdf-render-main.html',
+                clientScriptPath: './next-mass-pdf-render-client.js',
+                includeBaseStyles: true,
+            }));
         } else {
             const requestType = scriptContext.request.parameters.nmprRequestType || null;
             const requestBody = JSON.parse( scriptContext.request.body || null );
