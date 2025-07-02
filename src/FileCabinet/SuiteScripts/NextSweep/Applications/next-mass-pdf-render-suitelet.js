@@ -37,7 +37,7 @@ define(['N/error', 'N/https', 'N/log', 'N/search', 'N/task', '../next-file', '..
             scriptContext.response.writePage(nextUiServer.createHtmlForm({
                 title: 'NextSweep >> Mass PDF Utility',
                 documentPath: 'SuiteScripts/NextSweep/Applications/Resources/next-mass-pdf-render-main.html',
-                clientScriptPath: './next-mass-pdf-render-client.js',
+                clientScriptPath: 'SuiteScripts/NextSweep/Applications/next-mass-pdf-render-client.js',
                 includeBaseStyles: true,
             }));
         } else {

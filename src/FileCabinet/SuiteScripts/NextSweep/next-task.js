@@ -76,8 +76,8 @@ define(['N/crypto/random', 'N/error', 'N/record', 'N/search', './next-file', './
             throw error.create({ message: 'Module path is not a string', name: TASK_ERR_NAME, });
         if ((typeof options.function) !== 'string')
             throw error.create({ message: 'Function name is not a string', name: TASK_ERR_NAME, });
-        if (/^\.\//.test(options.module))
-            throw error.create({ message: 'Module is relative path', name: TASK_ERR_NAME, });
+            if (nextFile.checkIfRelativePath(options.module))
+            throw error.create({ message: 'Module path is relative', name: TASK_ERR_NAME, });
 
         const asyncJobId = nextRecord.quickCreate({
             type: 'customrecord_next_async_task',

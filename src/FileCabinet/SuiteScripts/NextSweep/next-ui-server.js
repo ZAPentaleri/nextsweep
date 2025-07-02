@@ -13,9 +13,11 @@
  * @NApiVersion 2.1
  */
 
+
+const UI_ERR_NAME = 'NEXT_UI_ERROR';
 const BASE_STYLES_PATH = 'SuiteScripts/NextSweep/Applications/Resources/next-base.css';
 
-define(['N/ui/serverWidget', './next-file'], (uiServerWidget, nextFile) => {
+define(['N/error', 'N/ui/serverWidget', './next-file'], (error, uiServerWidget, nextFile) => {
     /**
      * Resolves a script URL by Script ID and Deployment ID
      *
@@ -28,6 +30,13 @@ define(['N/ui/serverWidget', './next-file'], (uiServerWidget, nextFile) => {
      * @returns {Form}
      */
     function createHtmlForm(options) {
+        if (nextFile.checkIfRelativePath(options.documentPath))
+            throw error.create({ message: 'Document path is relative', name: UI_ERR_NAME, });
+        if (options?.stylesPath && nextFile.checkIfRelativePath(options.stylesPath))
+            throw error.create({ message: 'Styles path is relative', name: UI_ERR_NAME, });
+        if (options?.clientScriptPath && nextFile.checkIfRelativePath(options.clientScriptPath))
+            throw error.create({ message: 'Client script path is relative', name: UI_ERR_NAME, });
+
         const escapeCss = unescaped =>  `${unescaped}`.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         let htmlFieldContent = '';
         if (options?.includeBaseStyles) htmlFieldContent +=

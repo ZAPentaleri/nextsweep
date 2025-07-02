@@ -75,6 +75,17 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
     }
 
     /**
+     * Checks if passed path is relative; i.e. a partial path relative to a
+     * certain folder rather than the File Cabinet root
+     *
+     * @param {string} path
+     * @returns {boolean}
+     */
+    function checkIfRelativePath(path) {
+        return /^\.{1,2}\//.test(path);
+    }
+
+    /**
      *
      * @param {object} options
      * @param {string|number} [options.baseFolder=0] Base search folder ID (0 = File Cabinet root)
@@ -708,7 +719,7 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
 
     return {
         SearchType, ResultType,
-        splitPath, joinPath, sanitizeFileName,
+        splitPath, joinPath, sanitizeFileName, checkIfRelativePath,
         getFileId, getFilePath, getFileName, getFileParent,
         copy: copyFile, create: createFile, delete: deleteFile, load: loadFile, move: moveFile,
         getFolderId, getFolderPath, getFolderName, getFolderParent,
