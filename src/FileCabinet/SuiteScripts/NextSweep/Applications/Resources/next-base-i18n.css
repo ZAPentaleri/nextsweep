@@ -1,19 +1,19 @@
 :root {
-    --i18n-loading:  "Loading...";
-    --i18n-complete: "Complete.";
+    --next-i18n-loading:  "Loading...";
+    --next-i18n-complete: "Complete.";
 }
 
 :root:lang(es) {
-    --i18n-loading:  "Cargando...";
-    --i18n-complete: "Completa.";
+    --next-i18n-loading:  "Cargando...";
+    --next-i18n-complete: "Completa.";
 }
 
 :root:lang(fr) {
-    --i18n-loading:  "Chargement...";
-    --i18n-complete: "Complète.";
+    --next-i18n-loading:  "Chargement...";
+    --next-i18n-complete: "Complète.";
 }
 
 :root:lang(ja) {
-    --i18n-loading:  "読み込み中";
-    --i18n-complete: "完了いたしました。";
+    --next-i18n-loading:  "読み込み中";
+    --next-i18n-complete: "完了いたしました。";
 }
