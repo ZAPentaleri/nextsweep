@@ -254,6 +254,7 @@ table.next-table th {
     position: absolute;
     width: 100%;
     text-align: center;
+    font-size: 12px;
 }
 .next-progress-bar:not([data-progress])::after,
 .next-progress-bar[data-progress=""]::after {
