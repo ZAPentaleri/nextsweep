@@ -91,7 +91,7 @@ define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client',
         }
 
         updateSearchStatus(status) {
-            document.querySelector('#nmpr-status-search').setAttribute('data-state', status);
+            nextUi.updateStatusBoxes({ id: 'nmpr-status-search', state: status, });
         }
 
         updateSearchResultCount(count) {
@@ -103,9 +103,9 @@ define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client',
             document.querySelector('#nmpr-widget-download-status').innerText = message;
         }
 
-        updateRecordStatuses(statusNames, state, recordType=null, recordId=null) {
+        updateRecordStatuses(boxNames, status, recordType=null, recordId=null) {
             let queries = [];
-            for (const statusName of [].concat(statusNames)) {
+            for (const statusName of [].concat(boxNames)) {
                 if (recordId === null) {
                     queries.push(`#nmpr-table-queue .next-status-box.nmpr-${statusName}`);
                 } else {
@@ -114,12 +114,7 @@ define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client',
                 }
             }
 
-            document.querySelectorAll(queries.join(', ')).forEach(statusElem => {
-                statusElem.setAttribute('data-state', state);
-                for (const animation of statusElem.getAnimations()) {
-                    animation.startTime = 0;
-                }
-            });
+            nextUi.updateStatusBoxes({ selector: queries.join(', '), state: status, });
         }
 
         updateLoaderBars(loaderNames, percentComplete) {
@@ -355,7 +350,7 @@ define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client',
         getForm().searchInProgress = true;
         getForm().stagedRender = null;
         getForm().updateLoaderBars(['render', 'cache', 'download',], null,);
-        getForm().updateSearchStatus('pending');
+        getForm().updateSearchStatus('PENDING');
         getForm().updateQueueStatusMessage('Loading search results...');
         getForm().updateSearchResultCount();
         getForm().clearSearchTables();
@@ -369,7 +364,7 @@ define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client',
         if (recordResponse.sortRecords.length === 0) {
             await uiDialog.alert({ title: 'Lookup error', message: 'Matching records were not found.', });
 
-            getForm().updateSearchStatus('staged');
+            getForm().updateSearchStatus('READY');
             getForm().searchInProgress = false;
 
             return;
@@ -455,7 +450,7 @@ define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client',
             );
         }
 
-        getForm().updateSearchStatus('staged');
+        getForm().updateSearchStatus('READY');
         getForm().updateQueueStatusMessage('Records staged.');
         getForm().updateSearchResultCount(totalRecords);
         getForm().searchInProgress = false;
@@ -497,7 +492,7 @@ define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client',
         getForm().renderInitiating = false;
         getForm().renderInProgress = true;
         getForm().updateLoaderBars('render', 0,);
-        getForm().updateRecordStatuses('rendered', 'pending',);
+        getForm().updateRecordStatuses('rendered', 'PENDING',);
 
         // collate staged records, process into render parameters
         const stagedRecordMap = getForm().stagedRender.sortRecords.map(recordID =>
@@ -550,10 +545,10 @@ define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client',
                 for (const recordData of newRenderedRecords) {
                     getForm().stagedRender.records[recordData.id].rendered = true;
                     getForm().stagedRender.records[recordData.id].taskRecordId = pendingTaskRecordId;
-                    getForm().updateRecordStatuses('rendered', 'complete', 'transaction', recordData.id,);
+                    getForm().updateRecordStatuses('rendered', 'COMPLETE', 'transaction', recordData.id,);
                 }
                 for (const recordData of failedRecords) {
-                    getForm().updateRecordStatuses('rendered', 'failed', 'transaction', recordData.id,);
+                    getForm().updateRecordStatuses('rendered', 'FAILED', 'transaction', recordData.id,);
                 }
 
                 // update render loading bar
@@ -586,7 +581,7 @@ define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client',
         const wakelock = await navigator.wakeLock.request();
         getForm().downloadInProgress = true;
         getForm().updateLoaderBars(['cache', 'download',], 0,);
-        getForm().updateRecordStatuses(['cached', 'downloaded',], 'pending',);
+        getForm().updateRecordStatuses(['cached', 'downloaded',], 'PENDING',);
 
         try {
             const currentDateNameSafe = dateToFileNameString(new Date(), true);
@@ -618,7 +613,7 @@ define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client',
                         });
 
                         getForm().stagedRender.records[recordData.id].cached = true;
-                        getForm().updateRecordStatuses('cached', 'complete', 'transaction', recordData.id,);
+                        getForm().updateRecordStatuses('cached', 'COMPLETE', 'transaction', recordData.id,);
                         getForm().updateLoaderBars('cache', (Object.values(getForm().stagedRender.records).filter(
                             recordData => recordData.cached
                         ).length / getForm().stagedRender.sortRecords.length),);
@@ -650,7 +645,7 @@ define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client',
                     // flag records as downloaded
                     for (const recordData of stagedRecordsPage) {
                         getForm().stagedRender.records[recordData.id].downloaded = true;
-                        getForm().updateRecordStatuses('downloaded', 'complete', 'transaction', recordData.id,);
+                        getForm().updateRecordStatuses('downloaded', 'COMPLETE', 'transaction', recordData.id,);
                         getForm().updateLoaderBars('download', Object.values(getForm().stagedRender.records).filter(
                             recordData => recordData.downloaded
                         ).length / getForm().stagedRender.sortRecords.length,);

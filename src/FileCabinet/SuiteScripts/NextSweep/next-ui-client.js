@@ -15,7 +15,7 @@
 
 define([], () => {
     /**
-     * Resolves a script URL by Script ID and Deployment ID
+     * Updates a Next Base Styles progress bar
      *
      * @param {object} options
      * @param {string} [options.id] Progress bar element ID
@@ -23,7 +23,7 @@ define([], () => {
      * @param {string} [options.progress] Progress percentage (a float in the range of 0-1 or null)
      */
     function updateProgressBars(options) {
-        if ((typeof options.id) !== 'string' && (typeof options.selector) !== 'string')
+        if ((typeof options?.id) !== 'string' && (typeof options?.selector) !== 'string')
             throw new Error('ID or selector must be provided');
 
         const percentage = options?.progress ?? 0;
@@ -32,5 +32,23 @@ define([], () => {
             elem.setAttribute('data-progress', (options?.progress ?? null) === null ? "" : percentageRounded));
     }
 
-    return { updateProgressBars, };
+    /**
+     * Updates a Next Base Styles status box
+     *
+     * @param {object} options
+     * @param {string} [options.id] Status element ID
+     * @param {string} [options.selector] Status element CSS selector
+     * @param {string} [options.status="ready"] Status name ("READY", "PENDING", "COMPLETE", or "FAILED")
+     */
+    function updateStatusBoxes(options) {
+        if ((typeof options?.id) !== 'string' && (typeof options?.selector) !== 'string')
+            throw new Error('ID or selector must be provided');
+        if (!['READY', 'PENDING', 'COMPLETE', 'FAILED'].includes(options?.status?.toUpperCase()))
+            throw new Error('Invalid status');
+
+        document.querySelectorAll(options?.id ? `#${options.id}` : options.selector).forEach(elem =>
+            elem.setAttribute('data-status', options?.status?.toUpperCase() ?? 'READY'));
+    }
+
+    return { updateProgressBars, updateStatusBoxes, };
 });
