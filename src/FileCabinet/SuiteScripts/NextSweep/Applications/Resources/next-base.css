@@ -113,10 +113,12 @@ table.next-table th {
 }
 .next-status-box[data-status="COMPLETE"]::after {
     content: "\25ef";
+    -webkit-text-stroke: 2px green;
     color: green;
 }
 .next-status-box[data-status="FAILED"]::after {
     content: "\2715";
+    -webkit-text-stroke: 2px firebrick;
     color: firebrick;
     transform: scale(115%);
 }
