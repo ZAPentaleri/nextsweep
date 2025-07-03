@@ -106,16 +106,16 @@ table.next-table th {
     display: block;
     font-size: 16px;
 }
-.next-status-box[data-state="PENDING"]::after {
+.next-status-box[data-status="PENDING"]::after {
     content: "\25dd";
     color: darkslateblue;
     animation: next-status-box-spin 1s linear infinite;
 }
-.next-status-box[data-state="COMPLETE"]::after {
+.next-status-box[data-status="COMPLETE"]::after {
     content: "\25ef";
     color: green;
 }
-.next-status-box[data-state="FAILED"]::after {
+.next-status-box[data-status="FAILED"]::after {
     content: "\2715";
     color: firebrick;
     transform: scale(115%);
