@@ -124,20 +124,139 @@ table.next-table th {
     0%   { transform: scale(115%) rotate(0deg); }
     100% { transform: scale(115%) rotate(360deg); }
 }
-.next-loader-bar {
-    display: flex;
-    justify-content: start;
+.next-progress-bar {
+    position: relative;
     height: 20px;
     border: 1px solid rebeccapurple;
 }
-.next-loader-bar > span {
-    background-color: rebeccapurple;
+.next-progress-bar::before {
+    position: absolute;
     display: block;
+    width: 0;
     height: 100%;
-    font-size: 12px;
-    color: plum;
+    background-color: rebeccapurple;
+    font-size: 1px;
+    content: "\a0";
 }
-.next-loader-bar > span[data-progressannotation]::after {
-    padding: 0 4px;
-    content: attr(data-progressannotation);
+@supports (x: attr(x type(*))) {
+    /* Browser has modern attr() support */
+    .next-progress-bar::before {
+        width: attr(data-progress %, 0);
+    }
+}
+@supports not (x: attr(x type(*))) {
+    /* Browser does not have modern attr() support */
+    .next-progress-bar:not([data-progress])::before,
+    .next-progress-bar[data-progress=""]::before,
+    .next-progress-bar[data-progress="0"]::before { width: 0; }
+    .next-progress-bar[data-progress="1"]::before { width: 1%; }
+    .next-progress-bar[data-progress="2"]::before { width: 2%; }
+    .next-progress-bar[data-progress="3"]::before { width: 3%; }
+    .next-progress-bar[data-progress="4"]::before { width: 4%; }
+    .next-progress-bar[data-progress="5"]::before { width: 5%; }
+    .next-progress-bar[data-progress="6"]::before { width: 6%; }
+    .next-progress-bar[data-progress="7"]::before { width: 7%; }
+    .next-progress-bar[data-progress="8"]::before { width: 8%; }
+    .next-progress-bar[data-progress="9"]::before { width: 9%; }
+    .next-progress-bar[data-progress="10"]::before { width: 10%; }
+    .next-progress-bar[data-progress="11"]::before { width: 11%; }
+    .next-progress-bar[data-progress="12"]::before { width: 12%; }
+    .next-progress-bar[data-progress="13"]::before { width: 13%; }
+    .next-progress-bar[data-progress="14"]::before { width: 14%; }
+    .next-progress-bar[data-progress="15"]::before { width: 15%; }
+    .next-progress-bar[data-progress="16"]::before { width: 16%; }
+    .next-progress-bar[data-progress="17"]::before { width: 17%; }
+    .next-progress-bar[data-progress="18"]::before { width: 18%; }
+    .next-progress-bar[data-progress="19"]::before { width: 19%; }
+    .next-progress-bar[data-progress="20"]::before { width: 20%; }
+    .next-progress-bar[data-progress="21"]::before { width: 21%; }
+    .next-progress-bar[data-progress="22"]::before { width: 22%; }
+    .next-progress-bar[data-progress="23"]::before { width: 23%; }
+    .next-progress-bar[data-progress="24"]::before { width: 24%; }
+    .next-progress-bar[data-progress="25"]::before { width: 25%; }
+    .next-progress-bar[data-progress="26"]::before { width: 26%; }
+    .next-progress-bar[data-progress="27"]::before { width: 27%; }
+    .next-progress-bar[data-progress="28"]::before { width: 28%; }
+    .next-progress-bar[data-progress="29"]::before { width: 29%; }
+    .next-progress-bar[data-progress="30"]::before { width: 30%; }
+    .next-progress-bar[data-progress="31"]::before { width: 31%; }
+    .next-progress-bar[data-progress="32"]::before { width: 32%; }
+    .next-progress-bar[data-progress="33"]::before { width: 33%; }
+    .next-progress-bar[data-progress="34"]::before { width: 34%; }
+    .next-progress-bar[data-progress="35"]::before { width: 35%; }
+    .next-progress-bar[data-progress="36"]::before { width: 36%; }
+    .next-progress-bar[data-progress="37"]::before { width: 37%; }
+    .next-progress-bar[data-progress="38"]::before { width: 38%; }
+    .next-progress-bar[data-progress="39"]::before { width: 39%; }
+    .next-progress-bar[data-progress="40"]::before { width: 40%; }
+    .next-progress-bar[data-progress="41"]::before { width: 41%; }
+    .next-progress-bar[data-progress="42"]::before { width: 42%; }
+    .next-progress-bar[data-progress="43"]::before { width: 43%; }
+    .next-progress-bar[data-progress="44"]::before { width: 44%; }
+    .next-progress-bar[data-progress="45"]::before { width: 45%; }
+    .next-progress-bar[data-progress="46"]::before { width: 46%; }
+    .next-progress-bar[data-progress="47"]::before { width: 47%; }
+    .next-progress-bar[data-progress="48"]::before { width: 48%; }
+    .next-progress-bar[data-progress="49"]::before { width: 49%; }
+    .next-progress-bar[data-progress="50"]::before { width: 50%; }
+    .next-progress-bar[data-progress="51"]::before { width: 51%; }
+    .next-progress-bar[data-progress="52"]::before { width: 52%; }
+    .next-progress-bar[data-progress="53"]::before { width: 53%; }
+    .next-progress-bar[data-progress="54"]::before { width: 54%; }
+    .next-progress-bar[data-progress="55"]::before { width: 55%; }
+    .next-progress-bar[data-progress="56"]::before { width: 56%; }
+    .next-progress-bar[data-progress="57"]::before { width: 57%; }
+    .next-progress-bar[data-progress="58"]::before { width: 58%; }
+    .next-progress-bar[data-progress="59"]::before { width: 59%; }
+    .next-progress-bar[data-progress="60"]::before { width: 60%; }
+    .next-progress-bar[data-progress="61"]::before { width: 61%; }
+    .next-progress-bar[data-progress="62"]::before { width: 62%; }
+    .next-progress-bar[data-progress="63"]::before { width: 63%; }
+    .next-progress-bar[data-progress="64"]::before { width: 64%; }
+    .next-progress-bar[data-progress="65"]::before { width: 65%; }
+    .next-progress-bar[data-progress="66"]::before { width: 66%; }
+    .next-progress-bar[data-progress="67"]::before { width: 67%; }
+    .next-progress-bar[data-progress="68"]::before { width: 68%; }
+    .next-progress-bar[data-progress="69"]::before { width: 69%; }
+    .next-progress-bar[data-progress="70"]::before { width: 70%; }
+    .next-progress-bar[data-progress="71"]::before { width: 71%; }
+    .next-progress-bar[data-progress="72"]::before { width: 72%; }
+    .next-progress-bar[data-progress="73"]::before { width: 73%; }
+    .next-progress-bar[data-progress="74"]::before { width: 74%; }
+    .next-progress-bar[data-progress="75"]::before { width: 75%; }
+    .next-progress-bar[data-progress="76"]::before { width: 76%; }
+    .next-progress-bar[data-progress="77"]::before { width: 77%; }
+    .next-progress-bar[data-progress="78"]::before { width: 78%; }
+    .next-progress-bar[data-progress="79"]::before { width: 79%; }
+    .next-progress-bar[data-progress="80"]::before { width: 80%; }
+    .next-progress-bar[data-progress="81"]::before { width: 81%; }
+    .next-progress-bar[data-progress="82"]::before { width: 82%; }
+    .next-progress-bar[data-progress="83"]::before { width: 83%; }
+    .next-progress-bar[data-progress="84"]::before { width: 84%; }
+    .next-progress-bar[data-progress="85"]::before { width: 85%; }
+    .next-progress-bar[data-progress="86"]::before { width: 86%; }
+    .next-progress-bar[data-progress="87"]::before { width: 87%; }
+    .next-progress-bar[data-progress="88"]::before { width: 88%; }
+    .next-progress-bar[data-progress="89"]::before { width: 89%; }
+    .next-progress-bar[data-progress="90"]::before { width: 90%; }
+    .next-progress-bar[data-progress="91"]::before { width: 91%; }
+    .next-progress-bar[data-progress="92"]::before { width: 92%; }
+    .next-progress-bar[data-progress="93"]::before { width: 93%; }
+    .next-progress-bar[data-progress="94"]::before { width: 94%; }
+    .next-progress-bar[data-progress="95"]::before { width: 95%; }
+    .next-progress-bar[data-progress="96"]::before { width: 96%; }
+    .next-progress-bar[data-progress="97"]::before { width: 97%; }
+    .next-progress-bar[data-progress="98"]::before { width: 98%; }
+    .next-progress-bar[data-progress="99"]::before { width: 99%; }
+    .next-progress-bar[data-progress="100"]::before { width: 100%; }
+}
+.next-progress-bar:not([data-progress])::after,
+.next-progress-bar[data-progress=""]::after {
+    content: "";
+}
+.next-progress-bar[data-progress]:not([data-progress=""]):not([data-progress="100"])::after {
+    content: attr(data-progress) "%";
+}
+.next-progress-bar[data-progress="100"]::after {
+    content: attr(data-progress) "Complete.";
 }

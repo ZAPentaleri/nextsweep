@@ -10,8 +10,8 @@
  * @NScriptType ClientScript
  * @NModuleScope SameAccount
  */
-define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client',], (
-    runtime, uiDialog, jsZip, nextClient,
+define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client', '../next-ui-client',], (
+    runtime, uiDialog, jsZip, nextClient, nextUi,
 ) => {
     const PDF_DOWNLOAD_RETRY_COOLDOWN = 5000;
     const PDF_DOWNLOAD_CHECK_COOLDOWN = 1000;
@@ -123,17 +123,10 @@ define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client',
         }
 
         updateLoaderBars(loaderNames, percentComplete) {
-            const percentageRounded = Math.round(10 * Math.min((100 * percentComplete), 100)) / 10
-            const progressBarElems =
-                document.querySelectorAll([].concat(loaderNames).map(name => `#nmpr-widget-${name}-bar`).join(', '));
-
-            for (const progressBarElem of progressBarElems) {
-                progressBarElem.setAttribute('style', `width:${percentageRounded}%;`,);
-                progressBarElem.setAttribute(
-                    'data-progressannotation',
-                    percentageRounded !== 100 ? `${percentageRounded.toFixed(1)}%` : 'Complete.',
-                );
-            }
+            nextUi.updateProgressBars({
+                selector: [].concat(loaderNames).map(name => `#nmpr-widget-${name}-loader`).join(', '),
+                progress: percentComplete,
+            });
         }
 
         clearSearchTables() {
@@ -361,7 +354,7 @@ define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client',
 
         getForm().searchInProgress = true;
         getForm().stagedRender = null;
-        getForm().updateLoaderBars(['render', 'cache', 'download',], 0,);
+        getForm().updateLoaderBars(['render', 'cache', 'download',], null,);
         getForm().updateSearchStatus('pending');
         getForm().updateQueueStatusMessage('Loading search results...');
         getForm().updateSearchResultCount();
