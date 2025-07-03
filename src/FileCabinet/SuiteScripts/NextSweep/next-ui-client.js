@@ -26,8 +26,10 @@ define([], () => {
         if ((typeof options?.id) !== 'string' && (typeof options?.selector) !== 'string')
             throw new Error('ID or selector must be provided');
 
-        const percentage = options?.progress ?? 0;
-        const percentageRounded = Math.max((percentage < 1 ? Math.min(Math.round(100 * percentage), 99) : 100), 0);
+        const percentage = options?.progress ? (100 * options.progress) : 0;
+        const percentageRounded = Math.max((percentage < 100 ? Math.min(Math.round(percentage), 99) : 100), 0);
+        // percentage is pinned to 99 if it's even one iota less than 100, so that 100% can always mean complete
+
         document.querySelectorAll(options?.id ? `#${options.id}` : options.selector).forEach(elem =>
             elem.setAttribute('data-progress', (options?.progress ?? null) === null ? "" : percentageRounded));
     }
