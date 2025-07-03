@@ -263,5 +263,5 @@ table.next-table th {
     content: attr(data-progress) "%";
 }
 .next-progress-bar[data-progress="100"]::after {
-    content: "Complete.";
+    content: var(--i18n-complete);
 }

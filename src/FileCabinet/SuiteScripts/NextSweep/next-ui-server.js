@@ -16,6 +16,7 @@
 
 const UI_ERR_NAME = 'NEXT_UI_ERROR';
 const BASE_STYLES_PATH = 'SuiteScripts/NextSweep/Applications/Resources/next-base.css';
+const BASE_STYLES_I18N_PATH = 'SuiteScripts/NextSweep/Applications/Resources/next-base-i18n.css';
 
 define(['N/error', 'N/ui/serverWidget', './next-file'], (error, uiServerWidget, nextFile) => {
     /**
@@ -39,10 +40,13 @@ define(['N/error', 'N/ui/serverWidget', './next-file'], (error, uiServerWidget, 
 
         const escapeCss = unescaped =>  `${unescaped}`.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         let htmlFieldContent = '';
-        if (options?.includeBaseStyles) htmlFieldContent +=
-            `<style>${escapeCss(nextFile.load({ path: BASE_STYLES_PATH, }).getContents())}</style>`;
-        if (options?.stylesPath) htmlFieldContent +=
-            `<style>${escapeCss(nextFile.load({ path: options.stylesPath, }).getContents())}</style>`;
+        if (options?.includeBaseStyles) {
+            for (const stylesPath of [BASE_STYLES_PATH, BASE_STYLES_I18N_PATH])
+                htmlFieldContent +=　`<style>${escapeCss(nextFile.load({path: stylesPath,}).getContents())}</style>`;
+        }
+        if (options?.stylesPath) {
+            htmlFieldContent += `<style>${escapeCss(nextFile.load({path: options.stylesPath,}).getContents())}</style>`;
+        }
 
         htmlFieldContent += `<div id="next-html-form" class="next-base">${
             nextFile.load({ path: options.documentPath, }).getContents()}</div>`;
