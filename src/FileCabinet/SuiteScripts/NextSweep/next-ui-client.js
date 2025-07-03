@@ -28,7 +28,7 @@ define([], () => {
 
         const percentage = options?.progress ? (100 * options.progress) : 0;
         const percentageRounded = Math.max((percentage < 100 ? Math.min(Math.round(percentage), 99) : 100), 0);
-        // percentage is pinned to 99 if it's even one iota less than 100, so that 100% can always mean complete
+        // percentage is pinned to 99 if it's even one iota less than 100, so that "100%" can always mean "complete"
 
         document.querySelectorAll(options?.id ? `#${options.id}` : options.selector).forEach(elem =>
             elem.setAttribute('data-progress', (options?.progress ?? null) === null ? "" : percentageRounded));
