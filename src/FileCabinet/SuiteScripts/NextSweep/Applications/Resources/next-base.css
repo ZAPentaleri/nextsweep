@@ -250,6 +250,11 @@ table.next-table th {
     .next-progress-bar[data-progress="99"]::before { width: 99%; }
     .next-progress-bar[data-progress="100"]::before { width: 100%; }
 }
+.next-progress-bar::after {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+}
 .next-progress-bar:not([data-progress])::after,
 .next-progress-bar[data-progress=""]::after {
     content: "";
@@ -258,5 +263,5 @@ table.next-table th {
     content: attr(data-progress) "%";
 }
 .next-progress-bar[data-progress="100"]::after {
-    content: attr(data-progress) "Complete.";
+    content: "Complete.";
 }
