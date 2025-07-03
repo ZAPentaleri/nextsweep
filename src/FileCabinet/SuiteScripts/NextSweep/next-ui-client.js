@@ -23,7 +23,7 @@ define([], () => {
      * @param {string} [options.progress] Progress percentage (a float in the range of 0-1 or null)
      */
     function updateProgressBars(options) {
-        if ((typeof options.id) !== 'string' && (typeof options.selector) !== string)
+        if ((typeof options.id) !== 'string' && (typeof options.selector) !== 'string')
             throw new Error('ID or selector must be provided');
 
         const percentage = options?.progress ?? 0;
