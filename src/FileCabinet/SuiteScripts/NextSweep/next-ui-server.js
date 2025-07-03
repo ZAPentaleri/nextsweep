@@ -22,11 +22,11 @@ define(['N/error', 'N/ui/serverWidget', './next-file'], (error, uiServerWidget, 
      * Resolves a script URL by Script ID and Deployment ID
      *
      * @param {object} options
-     * @param {string} options.title
-     * @param {string} options.documentPath
-     * @param {string} [options.stylesPath]
-     * @param {string} [options.clientScriptPath]
-     * @param {string} [options.includeBaseStyles]
+     * @param {string} options.title Form title -- shown in UI and in browser tab name
+     * @param {string} options.documentPath Form HTML document path
+     * @param {string} [options.stylesPath] CSS stylesheet path
+     * @param {string} [options.clientScriptPath] Client script path
+     * @param {string} [options.includeBaseStyles] Whether to include base stylesheet
      * @returns {Form}
      */
     function createHtmlForm(options) {
