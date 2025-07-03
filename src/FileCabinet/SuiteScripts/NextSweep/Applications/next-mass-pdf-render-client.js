@@ -91,7 +91,7 @@ define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client',
         }
 
         updateSearchStatus(status) {
-            nextUi.updateStatusBoxes({ id: 'nmpr-status-search', state: status, });
+            nextUi.updateStatusBoxes({ id: 'nmpr-status-search', status: status, });
         }
 
         updateSearchResultCount(count) {
@@ -114,7 +114,7 @@ define(['N/runtime', 'N/ui/dialog', './External/jszip.min.js', '../next-client',
                 }
             }
 
-            nextUi.updateStatusBoxes({ selector: queries.join(', '), state: status, });
+            nextUi.updateStatusBoxes({ selector: queries.join(', '), status: status, });
         }
 
         updateLoaderBars(loaderNames, percentComplete) {
