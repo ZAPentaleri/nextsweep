@@ -313,7 +313,7 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
                 }));
             } else if (parentFolderIDs.length > 0) {
                 // folder path segments not provided, get any matches for parent IDs
-                parentResults.push(...querySearchFolder({ ids: parentFolderIDs, }));
+                parentResults.push(...querySearchFolder({ ids: parentFolderIDs, directChild: false, }));
             }
         }
 
@@ -378,8 +378,12 @@ define(['N/error', 'N/file', 'N/query', 'N/record', 'N/search',], (error, file, 
             : null;  // server context, return null
         }
     }
-    function getFolderPath(id) { return searchInternal({ ids: id, type: SearchType.FOLDER, })?.[0]?.path ?? null; }
-    function getFilePath(id) { return searchInternal({ ids: id, type: SearchType.FILE, })?.[0]?.path ?? null; }
+    function getFolderPath(id) {
+        return searchInternal({ ids: id, type: SearchType.FOLDER, directChild: false, })?.[0]?.path ?? null;
+    }
+    function getFilePath(id) {
+        return searchInternal({ ids: id, type: SearchType.FILE, directChild: false, })?.[0]?.path ?? null;
+    }
     function getFolderName(id) {
         return search.lookupFields({ type: search.Type.FOLDER, id: id, columns: ['name'], })?.['name'] ?? null;
     }
